@@ -61,9 +61,10 @@ double LearnedIndexData::GetError() const { return error; }
 // Actual function doing learning
 bool LearnedIndexData::Learn() {
   // FILL IN GAMMA (error)
+  // printf("error bound %d\n",GetError()); 
   PLR plr = PLR(error);
-
-  // check if data if filled
+  // printf("error bound %d\n",error);
+    // check if data if filled
   if (string_keys.empty()) assert(false);
 
   // fill in some bounds for the model
@@ -79,9 +80,11 @@ bool LearnedIndexData::Learn() {
   segs.push_back((Segment){temp, 0, 0});
   string_segments = std::move(segs);
 
-  for (auto& str : string_segments) {
-    // printf("%s %f\n", str.first.c_str(), str.second);
-  }
+  // for (auto& str : string_segments) {
+  //   printf("%s %f\n", str.first.c_str(), str.second);
+  // }
+    // printf("Learned %d %d %lu %lu %lu\n", level, served,
+    //      string_segments.size(), cost, size);
 
   learned.store(true);
   // string_keys.clear();
@@ -147,12 +150,17 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
 
   Version* c = db->GetCurrentVersion();
   if (self->FillData(c, mas->meta)) {
+    // printf("______________true\n");
     self->Learn();
     entered = true;
   } else {
     self->learning.store(false);
   }
   adgMod::db->ReturnCurrentVersion(c);
+  
+  // printf("FileLearned %d %d %lu %lu %lu\n", self->level, self->served,
+  //        self->string_segments.size(), self->cost, self->size);
+
 
   auto time = instance->PauseTimer(11, true);
 
@@ -324,6 +332,9 @@ LearnedIndexData* FileLearnedIndexData::GetModel(int number) {
     file_learned_index_data.resize(number + 1, nullptr);
   if (file_learned_index_data[number] == nullptr)
     file_learned_index_data[number] = new LearnedIndexData(file_allowed_seek, false);
+
+  
+  // printf("file_learned_index_data[%d]->size %lu\n", file_learned_index_data[number]->size);
   return file_learned_index_data[number];
 }
 
@@ -372,8 +383,13 @@ void FileLearnedIndexData::Report() {
     if (pointer != nullptr && pointer->cost != 0) {
       printf("FileModel %lu %d ", i, i > watermark);
       pointer->ReportStats();
+      segement_size+=pointer->string_segments.size();
+      num_segments++;
     }
   }
+
+  if (segement_size != 0) segement_size = segement_size / num_segments;
+  printf("segement_size: %lu\n", segement_size);
 }
 
 void AccumulatedNumEntriesArray::Add(uint64_t num_entries, string&& key) {

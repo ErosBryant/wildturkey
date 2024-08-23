@@ -216,11 +216,11 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
 
 
 #ifdef INTERNAL_TIMER
-    instance->StartTimer(2);
+    instance->StartTimer(18);
 #endif
     iiter->Seek(k);
 #ifdef INTERNAL_TIMER
-    instance->PauseTimer(2);
+    instance->PauseTimer(18);
 #endif
 
     if (iiter->Valid()) {
@@ -237,21 +237,22 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
         auto time = instance->PauseTimer(15, true);
         adgMod::levelled_counters[9].Increment(level, time.second - time.first);
 #endif
-        // Not found
+
       } else {
 #ifdef INTERNAL_TIMER
         auto time = instance->PauseTimer(15, true);
         adgMod::levelled_counters[9].Increment(level, time.second - time.first);
-        instance->StartTimer(5);
+        instance->StartTimer(3);
 #endif
         Iterator* block_iter = BlockReader(this, options, iiter->value());
 #ifdef INTERNAL_TIMER
-        instance->PauseTimer(5);
-        instance->StartTimer(3);
+        instance->PauseTimer(3);
+        instance->StartTimer(19); 
 #endif
         block_iter->Seek(k);
 #ifdef INTERNAL_TIMER
-        instance->PauseTimer(3);
+        // instance->PauseTimer(3);
+        instance->PauseTimer(19);
 #endif
         if (block_iter->Valid()) {
           (*handle_result)(arg, block_iter->key(), block_iter->value());
@@ -302,10 +303,13 @@ void Table::FillData(const ReadOptions& options, adgMod::LearnedIndexData* data)
   Block::Iter* index_iter = dynamic_cast<Block::Iter*>(rep_->index_block->NewIterator(rep_->options.comparator));
   //uint64_t num_points = 0;
   for (uint32_t i = 0; i < index_iter->num_restarts_; ++i) {
+    // printf("index_iter->num_restarts_: %d\n", index_iter->num_restarts_);
     index_iter->SeekToRestartPoint(i);
     index_iter->ParseNextKey();
     assert(index_iter->Valid());
     Block::Iter* block_iter = dynamic_cast<Block::Iter*>(BlockReader(this, options, index_iter->value()));
+    // printf("block_iter->restarts_: %d\n", block_iter->restarts_);
+    // printf("index_iter->value().size(): %d\n", index_iter->value().size());
 
     ParsedInternalKey parsed_key;
     int num_entries_this_block = 0;
@@ -317,8 +321,10 @@ void Table::FillData(const ReadOptions& options, adgMod::LearnedIndexData* data)
 
     if (!adgMod::block_num_entries_recorded) {
         adgMod::block_num_entries = num_entries_this_block;
+        // printf("block_num_entries: %d\n", adgMod::block_num_entries);
         adgMod::block_num_entries_recorded = true;
         adgMod::entry_size = block_iter->restarts_ / num_entries_this_block;
+        // printf("entry_size: %d\n", adgMod::entry_size);
         BlockHandle temp;
         Slice temp_slice = index_iter->value();
         temp.DecodeFrom(&temp_slice);

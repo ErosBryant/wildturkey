@@ -47,7 +47,8 @@ namespace leveldb {
         // the level-0 compaction threshold based on number of files.
 
         // Result for both level-0 and level-1
-        double result = 10. * 1048576.0;
+        // double result = 10. * 1048576.0;
+        double result = 5. * 1048576.0;
         while (level > 1) {
             result *= 10;
             level--;
@@ -55,10 +56,20 @@ namespace leveldb {
         return result;
     }
 
-    static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
-        // We could vary per level to reduce number of files?
-        return TargetFileSize(options);
-    }
+static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
+    // Base case for level 0
+    // if (level == 0) {
+    //     options->max_file_size = TargetFileSize(options);
+        return options->max_file_size;
+    // }
+
+    // 计算随层级增加而翻倍的 max_file_size
+    // 该值为 level 时的 TargetFileSize 乘以 2 的 (level-1) 次幂
+    // options->max_file_size = TargetFileSize(options) * (1ULL << level);
+    // printf("level: %d, max_file_size: %lu\n", level, options->max_file_size);
+    // return options->max_file_size;
+}
+
 
     static int64_t TotalFileSize(const std::vector<FileMetaData *> &files) {
         int64_t sum = 0;
@@ -492,6 +503,10 @@ namespace leveldb {
                     s = vset_->table_cache_->Get(options, f->number, f->file_size, ikey,
                                                  &saver, SaveValue, level, f, position_lower, position_upper, false,
                                                  this, &model, &file_learned);
+                    // if (!s.ok()){
+                    //      s = vset_->table_cache_->Get(options, f->number, f->file_size, ikey,
+                    //                              &saver, SaveValue, level, f);
+                    // }
                 }
                 auto temp = instance->PauseTimer(6, true);
 
@@ -1475,6 +1490,55 @@ namespace leveldb {
         return c;
     }
 
+    Compaction *VersionSet::PickCompaction_titred() {
+        Compaction *c;
+        int level;
+
+        // We prefer compactions triggered by too much data in a level over
+        // the compactions triggered by seeks.
+        // const bool size_compaction = (current_->compaction_score_ >= 1);
+        // const bool seek_compaction = (current_->file_to_compact_ != nullptr);
+        // if (size_compaction) {
+            level = current_->compaction_level_;
+            assert(level >= 0);
+            assert(level + 1 < config::kNumLevels);
+            c = new Compaction(options_, level);
+
+            // Pick the first file that comes after compact_pointer_[level]
+            for (size_t i = 0; i < current_->files_[level].size(); i++) {
+                FileMetaData *f = current_->files_[level][i];
+                if (compact_pointer_[level].empty() ||
+                    icmp_.Compare(f->largest.Encode(), compact_pointer_[level]) > 0) {
+                    c->inputs_[0].push_back(f);
+                    break;
+                }
+            }
+            if (c->inputs_[0].empty()) {
+                // Wrap-around to the beginning of the key space
+                c->inputs_[0].push_back(current_->files_[level][0]);
+            }
+        
+
+        
+        c->input_version_ = current_;
+        c->input_version_->Ref();
+
+        // Files in level 0 may overlap each other, so pick up all overlapping ones
+        // if (level == 0) {
+            InternalKey smallest, largest;
+            GetRange(c->inputs_[0], &smallest, &largest);
+            // Note that the next call will discard the file we placed in
+            // c->inputs_[0] earlier and replace it with an overlapping set
+            // which will include the picked file.
+            current_->GetOverlappingInputs(0, &smallest, &largest, &c->inputs_[0]);
+            assert(!c->inputs_[0].empty());
+        // }
+
+        // SetupOtherInputs(c);
+
+        return c;
+    }
+
 // Finds the largest key in a vector of files. Returns true if files it not
 // empty.
     bool FindLargestKey(const InternalKeyComparator &icmp,
@@ -1657,8 +1721,32 @@ namespace leveldb {
               overlapped_bytes_(0) {
         for (int i = 0; i < config::kNumLevels; i++) {
             level_ptrs_[i] = 0;
-        }
+        }   
     }
+
+uint64_t Compaction::MaxOutputFileSizeineachlevel(int level) {
+    // if(level == 0){
+    //     return max_output_file_size_*pow(adgMod::sst_size,1);
+    // }else if (level == 1){
+    //     return max_output_file_size_*pow(adgMod::sst_size,2);
+    // } else if (level == 2){
+    //     return max_output_file_size_*pow(adgMod::sst_size,3);
+    // } else if (level == 3){
+    //     return max_output_file_size_*pow(adgMod::sst_size,4);
+    // } else if (level == 4){
+    //     return max_output_file_size_*pow(adgMod::sst_size,5);
+    // } else if (level == 5){
+    //     return max_output_file_size_*pow(adgMod::sst_size,6);
+    // }
+
+    return max_output_file_size_*adgMod::sst_size;
+    // return 4 * 1024 * 1024;
+
+    //int test = pow((max_output_file_size_/1024/1024),level+1)*1024*1024;
+    //int test = (max_output_file_size_/1024/1024)*1024*1024;
+    // return test;
+}
+
 
     Compaction::~Compaction() {
         if (input_version_ != nullptr) {

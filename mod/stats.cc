@@ -28,10 +28,11 @@ namespace adgMod {
         levelled_counters[8].name = "FalseTime";
         levelled_counters[9].name = "FilteredLookup";
         levelled_counters[10].name = "PutWait";
-        levelled_counters[11].name = "FileLearn";
+        levelled_counters[11].name = "FileLearning";
         levelled_counters[12].name = "LevelLearn";
         levelled_counters[13].name = "LevelModelUse";
         levelled_counters[14].name = "LevelModelNotUse";
+        //16 time to compact memtable
     }
 
     Stats* Stats::GetInstance() {
@@ -61,14 +62,11 @@ namespace adgMod {
 
     void Stats::ReportTime() {
         for (int i = 0; i < timers.size(); ++i) {
-            printf("Timer %u: %lu\n", i, timers[i].Time());
+           // printf("Timer %u: %lu : %f\n", i, timers[i].Time(), timers[i].Time()/1000000000);
+           printf("Timer %u: %lu : %.9f\n", i, timers[i].Time(), timers[i].Time()/1000000000.0);
+
         }
     }
-
-
-
-
-
 
 
 

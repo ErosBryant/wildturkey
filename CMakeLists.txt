@@ -28,7 +28,7 @@ option(LEVELDB_BUILD_TESTS "Build LevelDB's unit tests" ON)
 option(LEVELDB_BUILD_BENCHMARKS "Build LevelDB's benchmarks" ON)
 option(LEVELDB_INSTALL "Install LevelDB's header and library" ON)
 option(LEVEL_SWITCH "Record file info in each level" OFF)
-option(INTERNAL_TIMER_SWITCH "Enable internal timer" OFF)
+option(INTERNAL_TIMER_SWITCH "Enable internal timer" ON)
 option(PROFILER_SWITCH "Enable profiler" OFF)
 option(NDEBUG_SWITCH "disable assertion" OFF)
 
@@ -196,23 +196,23 @@ target_sources(leveldb
     "${PROJECT_SOURCE_DIR}/util/options.cc"
     "${PROJECT_SOURCE_DIR}/util/random.h"
     "${PROJECT_SOURCE_DIR}/util/status.cc"
-    "${PROJECT_SOURCE_DIR}/mod/stats.cpp"
+    "${PROJECT_SOURCE_DIR}/mod/stats.cc"
     "${PROJECT_SOURCE_DIR}/mod/stats.h"
     "${PROJECT_SOURCE_DIR}/mod/plr.h"
-    "${PROJECT_SOURCE_DIR}/mod/plr.cpp"
-    "${PROJECT_SOURCE_DIR}/mod/learned_index.cpp"
+    "${PROJECT_SOURCE_DIR}/mod/plr.cc"
+    "${PROJECT_SOURCE_DIR}/mod/learned_index.cc"
     "${PROJECT_SOURCE_DIR}/mod/learned_index.h"
-    "${PROJECT_SOURCE_DIR}/mod/util.cpp"
+    "${PROJECT_SOURCE_DIR}/mod/util.cc"
     "${PROJECT_SOURCE_DIR}/mod/util.h"
-    "${PROJECT_SOURCE_DIR}/mod/Vlog.cpp"
+    "${PROJECT_SOURCE_DIR}/mod/Vlog.cc"
     "${PROJECT_SOURCE_DIR}/mod/Vlog.h"
-        "${PROJECT_SOURCE_DIR}/mod/Counter.cpp"
+        "${PROJECT_SOURCE_DIR}/mod/Counter.cc"
         "${PROJECT_SOURCE_DIR}/mod/Counter.h"
-        "${PROJECT_SOURCE_DIR}/mod/timer.cpp"
+        "${PROJECT_SOURCE_DIR}/mod/timer.cc"
         "${PROJECT_SOURCE_DIR}/mod/timer.h"
-        "${PROJECT_SOURCE_DIR}/mod/event.cpp"
+        "${PROJECT_SOURCE_DIR}/mod/event.cc"
         "${PROJECT_SOURCE_DIR}/mod/event.h"
-        "${PROJECT_SOURCE_DIR}/mod/CBMode_Learn.cpp"
+        "${PROJECT_SOURCE_DIR}/mod/CBMode_Learn.cc"
         "${PROJECT_SOURCE_DIR}/mod/CBMode_Learn.h"
 
   # Only CMake 3.3+ supports PUBLIC sources in targets exported by "install".

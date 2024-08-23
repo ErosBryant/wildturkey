@@ -257,6 +257,7 @@ class VersionSet {
   // Otherwise returns a pointer to a heap-allocated object that
   // describes the compaction.  Caller should delete the result.
   Compaction* PickCompaction();
+  Compaction* PickCompaction_titred();
 
   // Return a compaction object for compacting the range [begin,end] in
   // the specified level.  Returns nullptr if there is nothing in that
@@ -348,6 +349,7 @@ class VersionSet {
 // A Compaction encapsulates information about a compaction.
 class Compaction {
  public:
+ 
   ~Compaction();
 
   // Return the level that is being compacted.  Inputs from "level"
@@ -366,6 +368,8 @@ class Compaction {
 
   // Maximum size of files to build during this compaction.
   uint64_t MaxOutputFileSize() const { return max_output_file_size_; }
+  uint64_t MaxOutputFileSizeineachlevel(int level);
+
 
   // Is this a trivial compaction that can be implemented by just
   // moving a single input file to the next level (no merging or splitting)

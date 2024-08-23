@@ -36,6 +36,7 @@ public:
 
 class TableCache {
  public:
+ int i=0;
   TableCache(const std::string& dbname, const Options& options, int entries);
   ~TableCache();
 

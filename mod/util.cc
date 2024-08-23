@@ -13,13 +13,15 @@ namespace adgMod {
 
     int MOD = 5;
     bool string_mode = true;
+    uint64_t segement_size = 0;
     uint64_t key_multiple = 1;
-    uint32_t file_model_error = 10;
+    uint32_t file_model_error = 8;
+
     uint32_t level_model_error = 1;
     int block_restart_interval = 16;
     uint32_t test_num_level_segments = 100;
     uint32_t test_num_file_segments = 100;
-    int key_size;
+    int key_size=16;    
     int value_size;
     leveldb::Env* env;
     leveldb::DBImpl* db;
@@ -35,14 +37,17 @@ namespace adgMod {
 
     // the time we wait before learning (as the file may die within this short time and
     // if we learn, we waste the learning)
+    // t wait
     uint64_t learn_trigger_time = 50000000;
+    // uint64_t learn_trigger_time = 0;
     int policy = 0;
     std::atomic<int> num_read(0);
     std::atomic<int> num_write(0);
 
     int file_allowed_seek = 10;
     int level_allowed_seek = 1;
-    float reference_frequency = 2.6;
+    // cpu frequency mhz
+    float reference_frequency = 3.6;
     bool block_num_entries_recorded = false;
     bool level_learning_enabled = false;
     bool file_learning_enabled = true;
@@ -51,6 +56,8 @@ namespace adgMod {
     uint64_t block_num_entries = 0;
     uint64_t block_size = 0;
     uint64_t entry_size = 0;
+    
+    int sst_size = 1;
 
 
     vector<Counter> levelled_counters(15);
@@ -84,9 +91,20 @@ namespace adgMod {
 
 
     string generate_key(const string& key) {
-        string result = string(key_size - key.length(), '0') + key;
+         string result ;
+        if (key.length() > key_size) {
+            // printf("generate_key: %s\n", key.substr(0, key_size).c_str());
+            result = string(key.substr(0, 14));
+            result = string(key_size - result.length(), '0') + result;
+            return std::move(result);  // 截断超长的 key
+        }
+        // printf("key_length: %d\n", key.length());
+        result = string(key_size - key.length(), '0') + key;
+
         return std::move(result);
     }
+
+
 
     string generate_value(uint64_t value) {
         string value_string = to_string(value);

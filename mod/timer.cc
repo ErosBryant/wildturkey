@@ -43,7 +43,6 @@ namespace adgMod {
     }
 
     uint64_t Timer::Time() {
-        //assert(!started);
         return time_accumulated;
     }
 }

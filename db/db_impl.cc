@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 #include <unistd.h>
+#include <iostream>
 
 #include "db/builder.h"
 #include "db/db_iter.h"
@@ -137,6 +138,9 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
       owns_info_log_(options_.info_log != raw_options.info_log),
       owns_cache_(options_.block_cache != raw_options.block_cache),
       dbname_(dbname),
+      mem_stall_time_(0),
+      L0_stop_stall_time_(0),
+      l0_slow_tall_time_(0),
       table_cache_(new TableCache(dbname_, options_, TableCacheSize(options_))),
       db_lock_(nullptr),
       shutting_down_(false),
@@ -160,11 +164,35 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
 
 DBImpl::~DBImpl() {
   // Wait for background work to finish.
+
+  // for (int i = 0; i < adgMod::levelled_counters.size(); ++i) {
+  //   adgMod::levelled_counters[i].Report();
+  // }
+  //printf("-----------------\n");
+  // PrintFileInfo();
+// adgMod::file_data->Report();
+
+  //versions_->current()->WriteLevelModel();
   mutex_.Lock();
   shutting_down_.store(true, std::memory_order_release);
   while (background_compaction_scheduled_) {
     background_work_finished_signal_.Wait();
   }
+
+  // if (adgMod::MOD >= 7) {
+  //       adgMod::file_data->Report();
+  //       // Version* current = adgMod::db->versions_->current();
+  //       // std::cout << "Level model stats:" << std::endl;
+  //       // for (int i = 1; i < config::kNumLevels; ++i) {
+  //       //     current->learned_index_data_[i]->ReportStats();
+  //       // }
+  //       adgMod::learn_cb_model->Report();
+
+  // adgMod::Stats* instance = adgMod::Stats::GetInstance();
+  //  instance->ReportTime();
+  // //adgMod::learn_cb_model->Report();
+  // }
+
 
   if (adgMod::MOD >= 7) {
     CompactMemTable(imm_);
@@ -287,6 +315,9 @@ void DBImpl::DeleteObsoleteFiles() {
       if (!keep) {
         if (type == kTableFile) {
           table_cache_->Evict(number);
+
+          // use cb model
+          
           if (!adgMod::fresh_write) {
             // when a file is deleted due to compaction, its stats during the lifetime
             // is recorded by CBA
@@ -622,7 +653,7 @@ int DBImpl::CompactMemTable() {
     adgMod::levelled_counters[5].Increment(edit.new_files_[0].first, time.second - time.first);
     adgMod::compaction_counter_mutex.Unlock();
 
-    env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
+    //env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
 
 
 
@@ -801,6 +832,7 @@ void DBImpl::BackgroundCompaction() {
         (m->done ? "(end)" : manual_end.DebugString().c_str()));
   } else {
     c = versions_->PickCompaction();
+    // c = versions_->PickCompaction_titred();
   }
 
   Status status;
@@ -872,8 +904,6 @@ void DBImpl::BackgroundCompaction() {
         }
         adgMod::events[0].push_back(new CompactionEvent(time, std::move(changed_level_string)));
         adgMod::compaction_counter_mutex.Unlock();
-
-
 
     } else {
         instance->PauseTimer(7);
@@ -1000,6 +1030,8 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
   }
 
 
+
+
   uint32_t dummy;
   FileMetaData* meta = new FileMetaData();
   adgMod::Stats* instance = adgMod::Stats::GetInstance();
@@ -1009,6 +1041,7 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
   meta->largest = output->largest;
 
   // When a new file is generated, it's put into learning_prepare queue.
+  //  file learing
   env_->PrepareLearning((__rdtscp(&dummy) - instance->initial_time) / adgMod::reference_frequency, level, meta);
 
   if (s.ok() && current_entries > 0) {
@@ -1148,6 +1181,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
         (int)last_sequence_for_key, (int)compact->smallest_snapshot);
 #endif
 
+    
     if (!drop) {
       // Open output file if necessary
       if (compact->builder == nullptr) {
@@ -1164,7 +1198,8 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
 
       // Close output file if it is big enough
       if (compact->builder->FileSize() >=
-          compact->compaction->MaxOutputFileSize()) {
+            compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
+          // compact->compaction->MaxOutputFileSize()) {
         status = FinishCompactionOutputFile(compact, input);
         if (!status.ok()) {
           break;
@@ -1177,6 +1212,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
 
   if (status.ok() && shutting_down_.load(std::memory_order_acquire)) {
     status = Status::IOError("Deleting DB during compaction");
+    // printf("Deleting DB during compaction\n");
   }
   if (status.ok() && compact->builder != nullptr) {
     status = FinishCompactionOutputFile(compact, input);
@@ -1200,6 +1236,8 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
 
   mutex_.Lock();
   stats_[compact->compaction->level() + 1].Add(stats);
+  stats_[compact->compaction->level()].compaction_count+=1;
+  
 
   if (status.ok()) {
     status = InstallCompactionResults(compact);
@@ -1331,6 +1369,7 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
 #ifdef INTERNAL_TIMER
       instance->PauseTimer(14);
 #endif
+    //printf("------start get from current\n");
       s = current->Get(options, lkey, value, &stats);
     }
 
@@ -1342,10 +1381,15 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
       uint64_t value_address = DecodeFixed64(value->c_str());
       uint32_t value_size = DecodeFixed32(value->c_str() + sizeof(uint64_t));
       *value = std::move(vlog->ReadRecord(value_address, value_size));
+      // printf("value: %s\n", value->c_str());
 #ifdef INTERNAL_TIMER
       instance->PauseTimer(12);
 #endif
+    } else if (adgMod::MOD >= 7 &&!s.ok()) {
+    // printf("get from current failed\n");
+     
     }
+
     mutex_.Lock();
   }
 
@@ -1555,10 +1599,13 @@ Status DBImpl::MakeRoomForWrite(bool force) {
       // individual write by 1ms to reduce latency variance.  Also,
       // this delay hands over some CPU to the compaction thread in
       // case it is sharing the same core as the writer.
+      uint64_t start = env_->NowMicros();
       mutex_.Unlock();
       adgMod::levelled_counters[10].Increment(0);
       env_->SleepForMicroseconds(1000);
       allow_delay = false;  // Do not delay a single write more than once
+             uint64_t end = env_->NowMicros();
+       l0_slow_tall_time_ += (end - start);
       mutex_.Lock();
     } else if (!force &&
                (mem_->ApproximateMemoryUsage() <= options_.write_buffer_size)) {
@@ -1568,13 +1615,20 @@ Status DBImpl::MakeRoomForWrite(bool force) {
       // We have filled up the current memtable, but the previous
       // one is still being compacted, so we wait.
       adgMod::levelled_counters[10].Increment(1);
+      uint64_t start = env_->NowMicros();
       Log(options_.info_log, "Current memtable full; waiting...\n");
       background_work_finished_signal_.Wait();
+            uint64_t end = env_->NowMicros();
+      mem_stall_time_ += (end - start);
     } else if (versions_->NumLevelFiles(0) >= config::kL0_StopWritesTrigger) {
       // There are too many level-0 files.
+       uint64_t start = env_->NowMicros();
       adgMod::levelled_counters[10].Increment(2);
       Log(options_.info_log, "Too many L0 files; waiting...\n");
       background_work_finished_signal_.Wait();
+             uint64_t end = env_->NowMicros();
+      
+       L0_stop_stall_time_ += (end - start);
     } else {
       // Attempt to switch to a new memtable and trigger compaction of old
       assert(versions_->PrevLogNumber() == 0);
@@ -1626,22 +1680,54 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
     }
   } else if (in == "stats") {
     char buf[200];
+    int waf =  0;
+    float bytes_written_total =  0;
+    float NumLevelBytes_total = 0;
     snprintf(buf, sizeof(buf),
              "                               Compactions\n"
-             "Level  Files Size(MB) Time(sec) Read(MB) Write(MB)\n"
-             "--------------------------------------------------\n");
+             "Level  Files Size(MB) Time(sec) Read(MB) Write(MB)  Count\n"
+             "----------------------------------------------------------\n");
     value->append(buf);
     for (int level = 0; level < config::kNumLevels; level++) {
       int files = versions_->NumLevelFiles(level);
       if (stats_[level].micros > 0 || files > 0) {
-        snprintf(buf, sizeof(buf), "%3d %8d %8.0f %9.0f %8.0f %9.0f\n", level,
+        snprintf(buf, sizeof(buf), "%3d %8d %8.0f %9.0f %8.0f %9.0f %7d\n", level,
                  files, versions_->NumLevelBytes(level) / 1048576.0,
                  stats_[level].micros / 1e6,
                  stats_[level].bytes_read / 1048576.0,
-                 stats_[level].bytes_written / 1048576.0);
+                 stats_[level].bytes_written / 1048576.0,
+                 stats_[level].compaction_count);
+                 bytes_written_total+= stats_[level].bytes_written / 1048576.0;
+                 NumLevelBytes_total+= versions_->NumLevelBytes(level) / 1048576.0;
         value->append(buf);
       }
+
+
     }
+
+  std::cout<<  "--------------------------------------------------"<<std::endl;
+  std::cout << "memtable stall time: " <<1.0 * mem_stall_time_ /1000000 << " s" << std::endl;
+  std::cout << "L0 stall time: " << 1.0 * L0_stop_stall_time_ /1000000<< "  s" << std::endl; 
+  std::cout << "L0 slow stall time: " << 1.0 * l0_slow_tall_time_ /1000000 << "  s" << std::endl; 
+  std::cout << "waf:" << bytes_written_total / NumLevelBytes_total << std::endl;
+  //versions_->current()->PrintAll();
+ 
+    // if (adgMod::MOD >= 7) {
+    //       adgMod::file_data->Report();
+    //       // Version* current = adgMod::db->versions_->current();
+    //       // std::cout << "Level model stats:" << std::endl;
+    //       // for (int i = 1; i < config::kNumLevels; ++i) {
+    //       //     current->learned_index_data_[i]->ReportStats();
+    //       // }
+    //       adgMod::learn_cb_model->Report();
+    // }
+    adgMod::Stats* instance = adgMod::Stats::GetInstance();
+    instance->ReportTime();
+    //adgMod::learn_cb_model->Report();
+
+
+    // PrintFileInfo();
+
     return true;
   } else if (in == "sstables") {
     *value = versions_->current()->DebugString();
@@ -1708,6 +1794,12 @@ DB::~DB() {}
 Status DB::Open(const Options& options, const std::string& dbname, DB** dbptr) {
   *dbptr = nullptr;
 
+  // printf("DBImpl::Open----------------------\n");
+  // std::cout << "DBImpl::Open----------------------" << std::endl;
+  // adgMod::MOD = 7;
+  // adgMod::sst_size = 1;
+  // adgMod::file_model_error =8;
+  
   adgMod::env = options.env;
   adgMod::file_data = new adgMod::FileLearnedIndexData();
   adgMod::learn_cb_model = new CBModel_Learn();
@@ -1790,9 +1882,9 @@ Status DestroyDB(const std::string& dbname, const Options& options) {
 void DBImpl::PrintFileInfo() {
     MutexLock l(&mutex_);
     Version* ver = versions_->current();
-    ver->Ref();
+    // ver->Ref();
     ver->PrintAll();
-    ver->Unref();
+    // ver->Unref();
 }
 
 Version* DBImpl::GetCurrentVersion() {

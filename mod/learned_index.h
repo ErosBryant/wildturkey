@@ -67,7 +67,7 @@ namespace adgMod {
         friend class leveldb::VersionSet;
     private:
         // predefined model error
-        double error;
+        double error; 
         // some flags used in online learning to control the state of the model
         std::atomic<bool> learned;
         std::atomic<bool> aborted;
@@ -87,6 +87,7 @@ namespace adgMod {
         uint64_t min_key;
         uint64_t max_key;
         uint64_t size;
+       
 
 
 
@@ -163,6 +164,7 @@ namespace adgMod {
         AccumulatedNumEntriesArray* GetAccumulatedArray(int file_num);
         LearnedIndexData* GetModel(int number);
         void Report();
+         int num_segments=0;
         ~FileLearnedIndexData();
     };
 

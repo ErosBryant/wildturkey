@@ -29,6 +29,10 @@ class VersionSet;
 
 class DBImpl : public DB {
  public:
+     uint64_t mem_stall_time_;
+    uint64_t L0_stop_stall_time_;  
+    uint64_t l0_slow_tall_time_ ;
+
   DBImpl(const Options& options, const std::string& dbname);
 
   DBImpl(const DBImpl&) = delete;
@@ -102,17 +106,21 @@ private:
   // Per level compaction stats.  stats_[level] stores the stats for
   // compactions that produced data for the specified "level".
   struct CompactionStats {
-    CompactionStats() : micros(0), bytes_read(0), bytes_written(0) {}
+    CompactionStats() : micros(0), bytes_read(0), bytes_written(0), compaction_count(0) {}
 
     void Add(const CompactionStats& c) {
       this->micros += c.micros;
       this->bytes_read += c.bytes_read;
       this->bytes_written += c.bytes_written;
+      this->compaction_count += c.compaction_count;
     }
 
     int64_t micros;
     int64_t bytes_read;
     int64_t bytes_written;
+    int64_t compaction_count;
+    // int64_t max_compaction_write;
+
   };
 
   Iterator* NewInternalIterator(const ReadOptions&,

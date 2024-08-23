@@ -1,0 +1,5 @@
+19
+./ycsbc -db leveldb -dbpath /mnt/1tb/ycsb/ycsb_db -threads 1 -P workloads/load20G1kb.spec -load true -dboption 1 -dbstatistics true -dbwaitforbalance false -timeseries false 
+19
+./ycsbc -db leveldb -dbpath /mnt/1tb/ycsb/ycsb_db -threads 1 -P workloads/1M_workloadc.spec -run true -dboption 1 -dbstatistics true -dbwaitforbalance false -timeseries false
+0
