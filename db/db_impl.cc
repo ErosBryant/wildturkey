@@ -1198,8 +1198,8 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
 
       // Close output file if it is big enough
       if (compact->builder->FileSize() >=
-            compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
-          // compact->compaction->MaxOutputFileSize()) {
+            // compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
+          compact->compaction->MaxOutputFileSize()) {
         status = FinishCompactionOutputFile(compact, input);
         if (!status.ok()) {
           break;
@@ -1385,10 +1385,11 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
 #ifdef INTERNAL_TIMER
       instance->PauseTimer(12);
 #endif
-    } else if (adgMod::MOD >= 7 &&!s.ok()) {
-    // printf("get from current failed\n");
-     
     }
+    // } else if (adgMod::MOD >= 7 &&!s.ok()) {
+    // // printf("get from current failed\n");
+     
+    // }
 
     mutex_.Lock();
   }

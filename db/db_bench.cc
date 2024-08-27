@@ -487,9 +487,9 @@ class Benchmark {
       } else if (name == Slice("real_workload_w")) {
       uint64_t key;
       fresh_db = true;
-      // input_file = "/mnt/1tb/data_set/data/wiki_ts_200M_uint64";
+      input_file = "/mnt/1tb/data_set/data/wiki_ts_200M_uint64";
       //input_file = "/mnt/1tb/data_set/data/books_200M_uint64";
-      input_file = "/mnt/1tb/data_set/data/osm_cellids_200M_uint64";
+      // input_file = "/mnt/1tb/data_set/data/osm_cellids_200M_uint64";
       std::ifstream input; 
       input.open(input_file, std::ios::binary); 
       if (!input.is_open()) {
@@ -502,6 +502,8 @@ class Benchmark {
       input.close();
       std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
+
+
 
       }else if (name == Slice("real_workload_r")) {
 

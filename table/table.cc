@@ -237,7 +237,7 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
         auto time = instance->PauseTimer(15, true);
         adgMod::levelled_counters[9].Increment(level, time.second - time.first);
 #endif
-
+        // Not found
       } else {
 #ifdef INTERNAL_TIMER
         auto time = instance->PauseTimer(15, true);
@@ -247,12 +247,12 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
         Iterator* block_iter = BlockReader(this, options, iiter->value());
 #ifdef INTERNAL_TIMER
         instance->PauseTimer(3);
-        instance->StartTimer(19); 
+        instance->StartTimer(19);
 #endif
         block_iter->Seek(k);
 #ifdef INTERNAL_TIMER
-        // instance->PauseTimer(3);
         instance->PauseTimer(19);
+        // instance->PauseTimer(19);
 #endif
         if (block_iter->Valid()) {
           (*handle_result)(arg, block_iter->key(), block_iter->value());

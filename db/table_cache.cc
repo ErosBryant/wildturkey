@@ -3,7 +3,7 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include <fcntl.h>
-#include "table/filter_block.h"
+#include <table/filter_block.h>
 #include "db/table_cache.h"
 #include "db/filename.h"
 #include "leveldb/env.h"
@@ -163,11 +163,10 @@ Status TableCache::Get(const ReadOptions& options, uint64_t file_number,
       assert(file_learned != nullptr);
       *file_learned = (*model)->Learned();
       // printf("file_learned: %d\n", *file_learned);  
-      // printf("learned: %d\n", learned);
+      //  prsintf("learned: %d\n", learned);
 
       // if level model is used or file model is available, go Bourbon path
       if (learned || *file_learned) {
-          // printf("Bourbon path\n");
           LevelRead(options, file_number, file_size, k, arg, handle_result, level, meta, lower, upper, learned, version);
           return Status::OK();
       }
@@ -318,7 +317,6 @@ void TableCache::LevelRead(const ReadOptions &options, uint64_t file_number,
     if (!learned) {
       // if level model is not used, consult file model for predicted position
 #ifdef INTERNAL_TIMER
-
       instance->StartTimer(2);
 #endif
       ParsedInternalKey parsed_key;
@@ -463,11 +461,8 @@ void TableCache::LevelRead(const ReadOptions &options, uint64_t file_number,
     assert(key_ptr != nullptr && shared == 0 && "Entry Corruption");
     //  printf("key_ptr: %s\n", key_ptr);
 #ifdef INTERNAL_TIMER
-    // if (!first_search) {
-    //   instance->PauseTimer(3);
-    // } else {
+
       instance->PauseTimer(5);
-    // }
 #endif
     Slice key(key_ptr, non_shared), value(key_ptr + non_shared, value_length);
     handle_result(arg, key, value);

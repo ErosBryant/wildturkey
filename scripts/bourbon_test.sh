@@ -3,24 +3,24 @@
 python3 ../test.py testing start 
 
 # Define the desired --num values in an array
-nums=(80000000)
+nums=(10000000)
 
 # Define error bounds
-error_bound=(8)
+error_bound=(2 4 8 16 32 64)
 
 # Define various configurations
-memtable_size=(4 8 16 32 64)
-max_file_size=(2 4 8 16 32)
+memtable_size=(4)
+max_file_size=(2)
 sst_time=(1)
 number_of_runs=1
 mod=(7)
 
 # Define output directories
-output_dir="/mnt/1tb/sec5_5_bour/"
+output_dir="/mnt/1tb/Bourbon_original_errorbound/3_3_errorbound/"
 
-test_dir="/home/eros/workspace-lsm/wildturkey/build/db_bench/"
+test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
-total_experiment="/mnt/1tb/result/sec5_5_bour/"
+total_experiment="/mnt/1tb/result/3_3_errorbound/"
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 
@@ -55,7 +55,8 @@ for num in "${nums[@]}"; do
                for i in $(seq 1 $number_of_runs); do
                   output_file="${output_dir}SST_MEM_${mem_size}MB_${sst_size}MB_${sst_times}_Entry_${num}_error_${error}_${i}.txt"
                   echo "Running db_bench with --num=$num --error_bound=$error --sst_times=$sst_times" >> "$output_file"
-                  ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --mod=7 --num=$num --write_buffer_size=$mem_size --max_file_size=$sst_size --file_error=$error --sst_times=$sst_times >> "$output_file"
+                  # ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --mod=7 --num=$num --write_buffer_size=$mem_size --max_file_size=$sst_size --file_error=$error --sst_times=$sst_times >> "$output_file"
+                  ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --mod=7 --num=$num --file_error=$error  >> "$output_file"
                   echo "-------------------------------------" >> "$output_file"
                
                   # Extract fillrandom and readrandom performance data
