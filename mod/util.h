@@ -37,6 +37,7 @@ namespace adgMod {
     // MOD=8 means WiscKey (simple port)
     extern int MOD;
     extern int sst_size;
+    extern int bwise;
     // used in early testing
     extern uint64_t segement_size;
     extern bool string_mode;

@@ -33,6 +33,7 @@ echo 3 > /proc/sys/vm/drop_caches
 - TImer 12: Value reading time
 - Timer 14: value read from memtable or immtable
 ----
+- Timer 17: get model time 
 - Timer 18: search indexblock
 - Timer 19: search datablock 
 

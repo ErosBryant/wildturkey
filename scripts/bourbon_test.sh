@@ -6,21 +6,21 @@ python3 ../test.py testing start
 nums=(10000000)
 
 # Define error bounds
-error_bound=(2 4 8 16 32 64)
+# error_bound=(2 4 8 16 32 64)
 
 # Define various configurations
-memtable_size=(4)
-max_file_size=(2)
+# memtable_size=(4)
+max_file_size=(4 8 16)
 sst_time=(1)
-number_of_runs=1
+number_of_runs=2
 mod=(7)
 
 # Define output directories
-output_dir="/mnt/1tb/Bourbon_original_errorbound/3_3_errorbound/"
+output_dir="/home/eros/workspace-lsm/wildturkey/0906-figure_5/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
-total_experiment="/mnt/1tb/result/3_3_errorbound/"
+# total_experiment="/mnt/1tb/Bourbon_original_errorbound/3_3_errorbound/3_3_errorbound_2/"
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 
@@ -29,14 +29,14 @@ if [ ! -d "$output_dir" ]; then
    mkdir -p "$output_dir"
 fi
 
-if [ ! -d "$total_experiment" ]; then
-   mkdir -p "$total_experiment"
-fi
+# if [ ! -d "$total_experiment" ]; then
+#    mkdir -p "$total_experiment"
+# fi
 
 # Execute the db_bench command for each configuration and save results
 for num in "${nums[@]}"; do
    for sst_times in "${sst_time[@]}"; do
-      for error in "${error_bound[@]}"; do
+      # for error in "${error_bound[@]}"; do
          for mem_size in "${memtable_size[@]}"; do
             for sst_size in "${max_file_size[@]}"; do
                declare -a fill_array=()
@@ -73,10 +73,14 @@ for num in "${nums[@]}"; do
                   sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
                done
          
-               # Calculate averages and write to file
-               fill_avg=$(IFS=+; bc <<< "scale=2;(${fill_array[*]})/$number_of_runs")
-               read_avg=$(IFS=+; bc <<< "scale=2;(${fread_array[*]})/$number_of_runs")
-               segment_avg=$(IFS=+; bc <<< "scale=2;(${segment_array[*]})/$number_of_runs")
+               fill_sum=$(IFS=+; echo "${fill_array[*]}" | bc)
+               read_sum=$(IFS=+; echo "${fread_array[*]}" | bc)
+               segment_sum=$(IFS=+; echo "${segment_array[*]}" | bc)
+
+               fill_avg=$(echo "scale=2; $fill_sum/$number_of_runs" | bc)
+               read_avg=$(echo "scale=2; $read_sum/$number_of_runs" | bc)
+               segment_avg=$(echo "scale=2; $segment_sum/$number_of_runs" | bc)
+
             
                echo "fillrandom_avg: $fill_avg" >> "$summary_output"
                echo "readrandom_avg: $read_avg" >> "$summary_output"

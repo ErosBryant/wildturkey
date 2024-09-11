@@ -12,6 +12,7 @@ using std::to_string;
 namespace adgMod {
 
     int MOD = 5;
+    int bwise = 0;
     bool string_mode = true;
     uint64_t segement_size = 0;
     uint64_t key_multiple = 1;
@@ -37,8 +38,7 @@ namespace adgMod {
 
     // the time we wait before learning (as the file may die within this short time and
     // if we learn, we waste the learning)
-    // t wait
-    uint64_t learn_trigger_time = 40000000;
+    uint64_t learn_trigger_time = 60000000;
     // uint64_t learn_trigger_time = 0;
     int policy = 0;
     std::atomic<int> num_read(0);
@@ -93,9 +93,11 @@ namespace adgMod {
     string generate_key(const string& key) {
          string result ;
         if (key.length() > key_size) {
-            // printf("generate_key: %s\n", key.substr(0, key_size).c_str());
-            result = string(key.substr(0, 14));
+            // printf("generate_key: %s\n", key.c_str());
+            result = string(key.substr(0, key_size));
+            //  result = string(key.substr(0, 10));
             result = string(key_size - result.length(), '0') + result;
+            // printf("generate_key: %s\n",  result.c_str());
             return std::move(result);  // 截断超长的 key
         }
         // printf("key_length: %d\n", key.length());

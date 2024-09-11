@@ -332,12 +332,15 @@ void DBImpl::DeleteObsoleteFiles() {
             adgMod::file_stats_mutex.Unlock();
           }
 
-//          adgMod::LearnedIndexData* model = adgMod::file_data->GetModel(number);
-//          delete model;
+        //  adgMod::LearnedIndexData* model = adgMod::file_data->GetModel(number);
+        //  delete model;
         }
         Log(options_.info_log, "Delete type=%d #%lld\n", static_cast<int>(type),
             static_cast<unsigned long long>(number));
         env_->DeleteFile(dbname_ + "/" + filenames[i]);
+        env_->DeleteFile(dbname_ + "/" + to_string(number) + ".fmodel");
+
+        
       }
     }
   }
@@ -1078,6 +1081,7 @@ Status DBImpl::InstallCompactionResults(CompactionState* compact) {
   return versions_->LogAndApply(compact->compaction->edit(), &mutex_);
 }
 
+
 Status DBImpl::DoCompactionWork(CompactionState* compact) {
   const uint64_t start_micros = env_->NowMicros();
   int64_t imm_micros = 0;  // Micros spent doing imm_ compactions
@@ -1196,13 +1200,19 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       compact->current_output()->largest.DecodeFrom(key);
       compact->builder->Add(key, input->value());
 
-      // Close output file if it is big enough
-      if (compact->builder->FileSize() >=
-            // compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
-          compact->compaction->MaxOutputFileSize()) {
-        status = FinishCompactionOutputFile(compact, input);
-        if (!status.ok()) {
-          break;
+      if (adgMod::bwise==1){
+          if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
+          status = FinishCompactionOutputFile(compact, input);
+          if (!status.ok()) {
+            break;
+          }
+        }
+      }else {
+        if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSize()) {
+          status = FinishCompactionOutputFile(compact, input);
+          if (!status.ok()) {
+            break;
+          }
         }
       }
     }
@@ -1720,11 +1730,11 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
     //       // for (int i = 1; i < config::kNumLevels; ++i) {
     //       //     current->learned_index_data_[i]->ReportStats();
     //       // }
-    //       adgMod::learn_cb_model->Report();
+    //       // adgMod::learn_cb_model->Report();
     // }
     adgMod::Stats* instance = adgMod::Stats::GetInstance();
     instance->ReportTime();
-    //adgMod::learn_cb_model->Report();
+    // adgMod::learn_cb_model->Report();
 
 
     // PrintFileInfo();

@@ -502,10 +502,6 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                     s = vset_->table_cache_->Get(options, f->number, f->file_size, ikey,
                                                  &saver, SaveValue, level, f, position_lower, position_upper, false,
                                                  this, &model, &file_learned);
-                    // if (!s.ok()){
-                    //      s = vset_->table_cache_->Get(options, f->number, f->file_size, ikey,
-                    //                              &saver, SaveValue, level, f);
-                    // }
                 }
                 auto temp = instance->PauseTimer(6, true);
 
@@ -564,7 +560,7 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
 
         return Status::NotFound(Slice());  // Use an empty error message for speed
     }
-
+    
     bool Version::UpdateStats(const GetStats &stats) {
         FileMetaData *f = stats.seek_file;
         if (f != nullptr) {
@@ -1724,21 +1720,21 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
     }
 
 uint64_t Compaction::MaxOutputFileSizeineachlevel(int level) {
-    // if(level == 0){
-    //     return max_output_file_size_*pow(adgMod::sst_size,1);
-    // }else if (level == 1){
-    //     return max_output_file_size_*pow(adgMod::sst_size,2);
-    // } else if (level == 2){
-    //     return max_output_file_size_*pow(adgMod::sst_size,3);
-    // } else if (level == 3){
-    //     return max_output_file_size_*pow(adgMod::sst_size,4);
-    // } else if (level == 4){
-    //     return max_output_file_size_*pow(adgMod::sst_size,5);
-    // } else if (level == 5){
-    //     return max_output_file_size_*pow(adgMod::sst_size,6);
-    // }
+    if(level == 0){
+        return max_output_file_size_*pow(adgMod::sst_size,1);
+    }else if (level == 1){
+        return max_output_file_size_*pow(adgMod::sst_size,2);
+    } else if (level == 2){
+        return max_output_file_size_*pow(adgMod::sst_size,3);
+    } else if (level == 3){
+        return max_output_file_size_*pow(adgMod::sst_size,4);
+    } else if (level == 4){
+        return max_output_file_size_*pow(adgMod::sst_size,5);
+    } else if (level == 5){
+        return max_output_file_size_*pow(adgMod::sst_size,6);
+    }
 
-    return max_output_file_size_*adgMod::sst_size;
+    return 2097152*adgMod::sst_size;
     // return 4 * 1024 * 1024;
 
     //int test = pow((max_output_file_size_/1024/1024),level+1)*1024*1024;

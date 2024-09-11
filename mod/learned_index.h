@@ -79,6 +79,9 @@ namespace adgMod {
     public:
         // is the data of this model filled (ready for learning)
         bool filled;
+        
+        // check if the model is loaded
+        bool check_loaded;
         // is this a level model
         bool is_level;
 
@@ -113,7 +116,7 @@ namespace adgMod {
 
 
         explicit LearnedIndexData(int allowed_seek, bool level_model) : error(level_model?level_model_error:file_model_error), learned(false), aborted(false), learning(false),
-            learned_not_atomic(false), allowed_seek(allowed_seek), current_seek(0), filled(false), is_level(level_model), level(0), served(0), cost(0) {};
+             learned_not_atomic(false),check_loaded(false), allowed_seek(allowed_seek), current_seek(0), filled(false), is_level(level_model), level(0), served(0), cost(0) {};
         LearnedIndexData(const LearnedIndexData& other) = delete;
 
         // Inference function. Return the predicted interval.
@@ -155,6 +158,7 @@ namespace adgMod {
         std::vector<LearnedIndexData*> file_learned_index_data;
     public:
         uint64_t watermark;
+        bool check_loaded_file=false;
 
 
         bool Learned(Version* version, FileMetaData* meta, int level);

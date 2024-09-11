@@ -204,7 +204,6 @@ Iterator* Table::NewIterator(const ReadOptions& options) const {
       rep_->index_block->NewIterator(rep_->options.comparator),
       &Table::BlockReader, const_cast<Table*>(this), options);
 }
-
 Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
                           void (*handle_result)(void*, const Slice&, const Slice&), int level,
                           FileMetaData* meta, uint64_t lower, uint64_t upper, bool learned, Version* version) {
@@ -216,11 +215,11 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
 
 
 #ifdef INTERNAL_TIMER
-    instance->StartTimer(18);
+    instance->StartTimer(2);
 #endif
     iiter->Seek(k);
 #ifdef INTERNAL_TIMER
-    instance->PauseTimer(18);
+    instance->PauseTimer(2);
 #endif
 
     if (iiter->Valid()) {
@@ -242,17 +241,16 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
 #ifdef INTERNAL_TIMER
         auto time = instance->PauseTimer(15, true);
         adgMod::levelled_counters[9].Increment(level, time.second - time.first);
-        instance->StartTimer(3);
+        instance->StartTimer(5);
 #endif
         Iterator* block_iter = BlockReader(this, options, iiter->value());
 #ifdef INTERNAL_TIMER
-        instance->PauseTimer(3);
-        instance->StartTimer(19);
+        instance->PauseTimer(5);
+        instance->StartTimer(3);
 #endif
         block_iter->Seek(k);
 #ifdef INTERNAL_TIMER
-        instance->PauseTimer(19);
-        // instance->PauseTimer(19);
+        instance->PauseTimer(3);
 #endif
         if (block_iter->Valid()) {
           (*handle_result)(arg, block_iter->key(), block_iter->value());

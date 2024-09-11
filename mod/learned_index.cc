@@ -2,6 +2,7 @@
 // Created by daiyi on 2020/02/02.
 //
 
+
 #include "learned_index.h"
 
 #include "db/version_set.h"
@@ -10,6 +11,8 @@
 #include <cstdint>
 #include <fstream>
 #include <iostream>
+#include <sstream>
+
 #include <utility>
 
 #include "util/mutexlock.h"
@@ -39,6 +42,7 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
   }
 
   // calculate the interval according to the selected segment
+  // predicted position
   double result =
       target_int * string_segments[left].k + string_segments[left].b;
   result = is_level ? result / 2 : result;
@@ -61,10 +65,9 @@ double LearnedIndexData::GetError() const { return error; }
 // Actual function doing learning
 bool LearnedIndexData::Learn() {
   // FILL IN GAMMA (error)
-  // printf("error bound %d\n",GetError()); 
   PLR plr = PLR(error);
-  // printf("error bound %d\n",error);
-    // check if data if filled
+
+  // check if data if filled
   if (string_keys.empty()) assert(false);
 
   // fill in some bounds for the model
@@ -80,11 +83,9 @@ bool LearnedIndexData::Learn() {
   segs.push_back((Segment){temp, 0, 0});
   string_segments = std::move(segs);
 
-  // for (auto& str : string_segments) {
-  //   printf("%s %f\n", str.first.c_str(), str.second);
-  // }
-    // printf("Learned %d %d %lu %lu %lu\n", level, served,
-    //      string_segments.size(), cost, size);
+  for (auto& str : string_segments) {
+    // printf("%s %f\n", str.first.c_str(), str.second);
+  }
 
   learned.store(true);
   // string_keys.clear();
@@ -150,17 +151,12 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
 
   Version* c = db->GetCurrentVersion();
   if (self->FillData(c, mas->meta)) {
-    // printf("______________true\n");
     self->Learn();
     entered = true;
   } else {
     self->learning.store(false);
   }
   adgMod::db->ReturnCurrentVersion(c);
-  
-  // printf("FileLearned %d %d %lu %lu %lu\n", self->level, self->served,
-  //        self->string_segments.size(), self->cost, self->size);
-
 
   auto time = instance->PauseTimer(11, true);
 
@@ -173,12 +169,12 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
     learn_counter_mutex.Unlock();
   }
 
-  //        if (fresh_write) {
-  //            self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
-  //            to_string(mas->meta->number) + ".fmodel");
-  //            self->string_keys.clear();
-  //            self->num_entries_accumulated.array.clear();
-  //        }
+         if (!fresh_write) {
+             self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
+             to_string(mas->meta->number) + ".fmodel");
+             self->string_keys.clear();
+             self->num_entries_accumulated.array.clear();
+         }
 
   if (!fresh_write) delete mas->meta;
   delete mas;
@@ -250,42 +246,45 @@ void LearnedIndexData::WriteModel(const string& filename) {
 
   std::ofstream output_file(filename);
   output_file.precision(15);
-  output_file << adgMod::block_num_entries << " " << adgMod::block_size << " "
-              << adgMod::entry_size << "\n";
+  // output_file << adgMod::block_num_entries << " " << adgMod::block_size << " "
+  //             << adgMod::entry_size << "\n";
   for (Segment& item : string_segments) {
     output_file << item.x << " " << item.k << " " << item.b << "\n";
   }
-  output_file << "StartAcc"
-              << " " << min_key << " " << max_key << " " << size << " " << level
-              << " " << cost << "\n";
-  for (auto& pair : num_entries_accumulated.array) {
-    output_file << pair.first << " " << pair.second << "\n";
-  }
+  output_file << 621;
+  //             << " " << min_key << " " << max_key << " " << size << " " << level
+  //             << " " << cost << "\n";
+  // for (auto& pair : num_entries_accumulated.array) {
+  //   output_file << pair.first << " " << pair.second << "\n";
+  // }
 }
-
 void LearnedIndexData::ReadModel(const string& filename) {
-  std::ifstream input_file(filename);
+    std::ifstream input_file(filename);
 
-  if (!input_file.good()) return;
-  input_file >> adgMod::block_num_entries >> adgMod::block_size >>
-      adgMod::entry_size;
-  while (true) {
-    string x;
-    double k, b;
-    input_file >> x;
-    if (x == "StartAcc") break;
-    input_file >> k >> b;
-    string_segments.emplace_back(atoll(x.c_str()), k, b);
-  }
-  input_file >> min_key >> max_key >> size >> level >> cost;
-  while (true) {
-    uint64_t first;
-    string second;
-    if (!(input_file >> first >> second)) break;
-    num_entries_accumulated.Add(first, std::move(second));
-  }
+    if (!input_file.good()) return;
 
-  learned.store(true);
+    std::string line;
+    while (std::getline(input_file, line)) {
+        std::istringstream iss(line);
+        uint64_t x;
+        double k = 0.0, b = 0.0;
+
+        // 尝试读取 x, k, b
+        if (!(iss >> x >> k >> b)) {
+            // 检查是否遇到结束标记
+            if (line == "621") {
+                break;  // 读取到结束标记时停止读取
+            } else {
+                // std::cerr << "Error reading values from line: " << line << std::endl;
+                continue;  // 跳过这一行，继续处理下一行
+            }
+        }
+
+        // 将读取的数据添加到 string_segments_read 中
+        string_segments.emplace_back(x, k, b);
+    }
+
+    learned.store(true);
 }
 
 void LearnedIndexData::ReportStats() {
@@ -332,9 +331,6 @@ LearnedIndexData* FileLearnedIndexData::GetModel(int number) {
     file_learned_index_data.resize(number + 1, nullptr);
   if (file_learned_index_data[number] == nullptr)
     file_learned_index_data[number] = new LearnedIndexData(file_allowed_seek, false);
-
-  
-  // printf("file_learned_index_data[%d]->size %lu\n", file_learned_index_data[number]->size);
   return file_learned_index_data[number];
 }
 
@@ -383,13 +379,8 @@ void FileLearnedIndexData::Report() {
     if (pointer != nullptr && pointer->cost != 0) {
       printf("FileModel %lu %d ", i, i > watermark);
       pointer->ReportStats();
-      segement_size+=pointer->string_segments.size();
-      num_segments++;
     }
   }
-
-  if (segement_size != 0) segement_size = segement_size / num_segments;
-  printf("segement_size: %lu\n", segement_size);
 }
 
 void AccumulatedNumEntriesArray::Add(uint64_t num_entries, string&& key) {
