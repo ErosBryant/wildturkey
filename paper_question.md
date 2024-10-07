@@ -1,58 +1,44 @@
-1. 27 페이지를 보면 Wisckey와 Bourbon의 차이가
-- 7 단계 중에서 3), 5), 6) 단계에서는 이득이 있고 다른 단계를 동일한데 맞니?
-  - 네 맞습니다.
-  - 이 부분을 논문에서 디테일하게 설명 
-- 반면 31 페이지 Bourbon+는 다른 단계에서도 이득을 얻을 수 있고: 예를 들어 단계 1)과 단계 2)에서도
-- 31 페이지 성능 그림을 27 페이지의 Bourbon과 동일한 label을 사용하여 다시 그리면 좋을 듯...
+네, **쓰기 성능**, **읽기 성능**, **WA(Write Amplification)**, **Compaction Count**, **메모리 사용량** 등을 이용하여 성능을 평가하는 수식을 만들 수 있습니다. 이러한 평가를 위한 공식은 각 성능 지표에 가중치를 부여하고, 이들의 합을 통해 전체적인 성능을 평가하는 방식으로 접근할 수 있습니다.
 
+### 성능 평가를 위한 기본적인 공식
 
-![alt text](image.png)   ![alt text](image-1.png)
+먼저, 각 항목의 측정 값을 기준으로 점수를 계산하는 식을 정의한 후, 최종 성능 점수를 산출할 수 있습니다.
 
+#### 1. **쓰기 성능 (Write Performance, \(P_w\))**
+   - 단위 시간당 처리할 수 있는 쓰기 작업의 수로 정의합니다.
+   - 이를 최대화하려는 항목이므로, 직접적으로 사용합니다.
+   - 예시: \(P_w = \frac{\text{처리한 쓰기 작업 수}}{\text{걸린 시간}}\)
 
-2. 28 페이지에 rethinking trade-off를 논의 했는데,
-- 꼼꼼하게 읽어보고 우리의 motivation이 맞는지 확인 부탁..
-(혹시 추가 또는 변경하고 싶은 내용이 있으면 자유롭게 수정해도 됩니다.^^)
+#### 2. **읽기 성능 (Read Performance, \(P_r\))**
+   - 단위 시간당 처리할 수 있는 읽기 작업의 수로 정의합니다.
+   - 마찬가지로 최대화하려는 항목입니다.
+   - 예시: \(P_r = \frac{\text{처리한 읽기 작업 수}}{\text{걸린 시간}}\)
 
-- borbon의 compaction 개수 그래프 & compaction data  추가 
+#### 3. **WA (Write Amplification, \(WA\))**
+   - **WA**는 쓰기 증폭을 나타내며, 값을 최소화하는 것이 목표입니다.
+   - 이 값을 최종 점수에서 패널티로 적용할 수 있습니다.
+   - 예시: \(WA\)는 역수로 계산하여 최종 점수에서 고려: \(WA_{adj} = \frac{1}{WA}\)
 
-3. 28 페이지 동기에 따라 새로운 기법 2개를 제안하였는데
-- 29 페이지의 SEC와 30 페이지의 LAC
-  - SEC에서 error bound 32 이상의 그래프 추가 
-    - Balance the prediction and correction time and memory usage  
-![alt text](image-2.png)
-- 각 기법의 동작을 이렇게 정리해도 되는지, 또는 변경이 필요한지 확인 부탁..
+#### 4. **Compaction Count (\(C_c\))**
+   - 컴팩션이 자주 발생하면 성능에 부정적인 영향을 줄 수 있습니다.
+   - 컴팩션 횟수도 최소화하는 것이 목표입니다.
+   - 역수를 사용하여 패널티로 적용: \(C_{c\_adj} = \frac{1}{C_c}\)
 
+#### 5. **메모리 사용량 (Memory Usage, \(M_u\))**
+   - 메모리 사용량은 낮을수록 좋습니다. 메모리 사용량이 높을 경우 점수를 낮게 부여합니다.
+   - 역수를 사용하여 점수를 조정: \(M_{u\_adj} = \frac{1}{M_u}\)
 
-4. 현재 논문에서 여러 실험 결과가 LevelDB나 Wisckey를 기반으로 하였는데,
-- 모두 Bourbon을 기반으로 실험한 것으로 바꾸는 것이 어떨까?
-- 초반 motivation의 일부는  leveldb 나머지는 bourbon으로 실험 진행 
+### 최종 성능 점수 공식
+<p>각 성능 지표에 가중치를 부여하여 최종 점수를 계산할 수 있습니다. 각 가중치는 시스템이나 워크로드에 따라 달라질 수 있으며, <i>w<sub>w</sub></i>, <i>w<sub>r</sub></i>, <i>w<sub>wa</sub></i>, <i>w<sub>c</sub></i>, <i>w<sub>m</sub></i>으로 가중치를 설정합니다.</p>
 
----
+<p>
+  <b>Final Score =</b> w<sub>w</sub> &middot; P<sub>w</sub> + w<sub>r</sub> &middot; P<sub>r</sub> - w<sub>wa</sub> &middot; WA<sub>adj</sub> - w<sub>c</sub> &middot; C<sub>c_adj</sub> - w<sub>m</sub> &middot; M<sub>u_adj</sub>
+</p>
 
-Question 1: the below results are total latency of all lookups while Bourbon’s results are per lookup latency. Right?
-- How many lookups? Do you also use SATA SSD? Or NVMe SSD?
-- Why you use total instead of individual?
+<ul>
+  <li><i>w<sub>w</sub></i>, <i>w<sub>r</sub></i>, <i>w<sub>wa</sub></i>, <i>w<sub>c</sub></i>, <i>w<sub>m</sub></i>은 각 성능 항목에 대한 가중치입니다. 예를 들어, 쓰기 성능을 더 중요하게 생각하면 <i>w<sub>w</sub></i>를 크게 설정할 수 있습니다.</li>
+</ul>
 
-Q2: Bourbon uses the following lookup steps.
-- 1) Findfiles, 2) LoadIB+FB, 3) SearchIB or SearchModel(prediction), 4) SearchFB, 5) LoadDB or LoadChunk, 6) SearchDB or SearchKey (correction) , 7) ReadValue
-- By the way, in your figure, where is LoadData (LoadDB or LoadChunk)?
-- From Bourbon, I think SearchIB is replaced with SearchModel (prediction) and SearchDB is replaced with correction. But, this figure has both. What are differences between SearchDB and correction?
+- **최종 점수**는 최대화해야 할 요소(쓰기/읽기 성능)와 최소화해야 할 요소(WA, 컴팩션 횟수, 메모리 사용량)의 균형을 고려하여 산출됩니다.
 
-Q3: In Bourbon’s results, the total search overheads are roughly 40% for Wisckey and 20% for Bourbon è refer to the figure of previous slide 
-- But in your results, total search overheads (SearchIB + SearchDB) are 50% or larger. Why?
-
-Q4: In Bourbon’s results, except search, other components are hardly changed.
-- But, in your results, Findfiles and LoadIB+FB are changed noticeably. Why?
-
-In this evaluation, I think your utilize both LAC (Learned-aware compaction) and larger error-bound
--  1) LAC è larger SSTable è smaller # of SSTable files è less Findfiles overhead (matched well with our results below)
-- 2) Q1: Why the LoadIB+FB is decreased in Bourbon+? I guess, Larger error-bound è less strict learning è less # of segments è less IB size è less LoadIB overhead è Can you measure the # of segments and the IB size from Bourbon and Bourbon+? I guess LAC also affect this decreasing. Please show quantitative data.
--  7) Larger error-bound è less strict learning è less # of segments è less prediction time.
-
-Q2: Bourbon+ increases the prediction overhead. Why? Could you explain with data?
-
-- 8) Larger error-bound è more correction time (matched well with our results below)
-- 3) In search index block, both utilize model for prediction. Right? Then, Q3: Why Bourbon+ outperforms Bourbon? I think this overhead depends on the model size, # of SSTable accesses, and the # of prediction trials. Could you measure these?
-- 5) In search data block, Q4 I also wonder why Bourbon+ outperforms Bourbon.
--  4) Filter block: same overhead. reasonable
- - 6) ReadValue: same overhead. Also reasonable
+이 수식은 각 시스템의 목적에 따라 유연하게 가중치를 조정하여 특정 항목에 대한 중요도를 반영할 수 있습니다.

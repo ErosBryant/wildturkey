@@ -568,7 +568,10 @@ class Benchmark {
       } else if (name == Slice("fillrandom")) {
         fresh_db = true;
         method = &Benchmark::WriteRandom;
-      } else if (name == Slice("overwrite")) {
+      }  else if (name == Slice("zipfian")) {
+        fresh_db = true;
+        method = &Benchmark::zipfian;
+      }else if (name == Slice("overwrite")) {
         fresh_db = false;
         method = &Benchmark::WriteRandom;
       } else if (name == Slice("fillsync")) {
@@ -812,11 +815,44 @@ class Benchmark {
 
   void WriteRandom(ThreadState* thread) { DoWrite(thread, false); }
 
+  
+  void zipfian(ThreadState* thread) { // here
+    RandomGenerator gen;
+    WriteBatch batch;
+    Status s;
+    int64_t bytes = 0;
+    // std::ofstream output_file("/home/eros/workspace-lsm/wildturkey/db/k_values.txt");
+    if (num_ != FLAGS_num) {
+      char msg[100];
+      snprintf(msg, sizeof(msg), "(%d ops)", num_);
+      thread->stats.AddMessage(msg);
+    }
+    if(!FLAGS_use_real_data){ 
+      for (int i = 0; i < num_; i += entries_per_batch_) {
+        batch.Clear();
+        for (int j = 0; j < entries_per_batch_; j++) {
+      
+          const int k =  thread->rand.Zipfian(FLAGS_num, 1.0);
+          // printf("key: %d\n", k);
+          // output_file << k << std::endl;
+
+          char key[100];
+          snprintf(key, sizeof(key), "%016d", k);
+          db_->Put(write_options_, key, gen.Generate(value_size_));
+          bytes += value_size_ + strlen(key);
+          thread->stats.FinishedSingleOp();
+        }
+      }
+      thread->stats.AddBytes(bytes);
+    }
+    }
+    
   void DoWrite(ThreadState* thread, bool seq) { // here
     RandomGenerator gen;
     WriteBatch batch;
     Status s;
     int64_t bytes = 0;
+    // std::ofstream output_file("/home/eros/workspace-lsm/wildturkey/db/k_values.txt");
     if (num_ != FLAGS_num) {
       char msg[100];
       snprintf(msg, sizeof(msg), "(%d ops)", num_);
@@ -827,6 +863,9 @@ class Benchmark {
         batch.Clear();
         for (int j = 0; j < entries_per_batch_; j++) {
           const int k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
+          // printf("key: %d\n", k);
+          // output_file << k << std::endl;
+
           char key[100];
           snprintf(key, sizeof(key), "%016d", k);
           db_->Put(write_options_, key, gen.Generate(value_size_));
@@ -835,35 +874,35 @@ class Benchmark {
         }
       }
       thread->stats.AddBytes(bytes);
-    } else if(FLAGS_use_real_data){
-      std::ifstream real_data_file(std::string(FLAGS_path_real_data) + "osm50m.txt");
-      std::string real_data_key;
+    // } else if(FLAGS_use_real_data){
+    //   std::ifstream real_data_file(std::string(FLAGS_path_real_data) + "osm50m.txt");
+    //   std::string real_data_key;
 
-      if (!real_data_file.is_open()) {
-        fprintf(stderr, "Invalid real data file: %s\n", (std::string(FLAGS_path_real_data) + "osm50m.txt").c_str());
-        exit(1);
-      }
+    //   if (!real_data_file.is_open()) {
+    //     fprintf(stderr, "Invalid real data file: %s\n", (std::string(FLAGS_path_real_data) + "osm50m.txt").c_str());
+    //     exit(1);
+    //   }
 
-      for (int i = 0; i < num_; i += entries_per_batch_) {
-        batch.Clear();
-        for (int j = 0; j < entries_per_batch_; j++) {
-          char key[100];
-          int k;
-          if (!std::getline(real_data_file, real_data_key)) {
-            fprintf(stderr, "Not enough keys in the file. Generating key instead.\n"); // not engouh keys so we generate
-            k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
-            snprintf(key, sizeof(key), "%016d", k);
-          } else {
-            // fprintf(stderr, "written key: %s\n", real_data_key.c_str());
-            snprintf(key, sizeof(key), "%s", real_data_key.c_str());
-          }
-          db_->Put(write_options_, key, gen.Generate(value_size_));
-          bytes += value_size_ + strlen(key);
-          thread->stats.FinishedSingleOp();
-        }
-      }
+    //   for (int i = 0; i < num_; i += entries_per_batch_) {
+    //     batch.Clear();
+    //     for (int j = 0; j < entries_per_batch_; j++) {
+    //       char key[100];
+    //       int k;
+    //       if (!std::getline(real_data_file, real_data_key)) {
+    //         fprintf(stderr, "Not enough keys in the file. Generating key instead.\n"); // not engouh keys so we generate
+    //         k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
+    //         snprintf(key, sizeof(key), "%016d", k);
+    //       } else {
+    //         // fprintf(stderr, "written key: %s\n", real_data_key.c_str());
+    //         snprintf(key, sizeof(key), "%s", real_data_key.c_str());
+    //       }
+    //       db_->Put(write_options_, key, gen.Generate(value_size_));
+    //       bytes += value_size_ + strlen(key);
+    //       thread->stats.FinishedSingleOp();
+    //     }
+    //   }
     }
-    
+    //  output_file.close();
   }
 
 
@@ -1203,7 +1242,8 @@ int main(int argc, char** argv) {
       adgMod::sst_size = 3;
     }else if (sscanf(argv[i], "--file_error=%d%c", &n, &junk) == 1) {
       adgMod::file_model_error  = n;
-    } else if (sscanf(argv[i], "--sst_times=%d%c", &n, &junk) == 1) {
+    } else if (sscanf(argv[i], "--lac=%d%c", &n, &junk) == 1) {
+      adgMod::bwise = 1;
       adgMod::sst_size = n;
     } else if (sscanf(argv[i], "--file_input=",13) == 1) {
      input_file = argv[i] + 13;

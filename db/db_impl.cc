@@ -179,19 +179,19 @@ DBImpl::~DBImpl() {
     background_work_finished_signal_.Wait();
   }
 
-  // if (adgMod::MOD >= 7) {
-  //       adgMod::file_data->Report();
-  //       // Version* current = adgMod::db->versions_->current();
-  //       // std::cout << "Level model stats:" << std::endl;
-  //       // for (int i = 1; i < config::kNumLevels; ++i) {
-  //       //     current->learned_index_data_[i]->ReportStats();
-  //       // }
-  //       adgMod::learn_cb_model->Report();
+  if (adgMod::MOD >= 7) {
+        // adgMod::file_data->Report();
+        // Version* current = adgMod::db->versions_->current();
+        // std::cout << "Level model stats:" << std::endl;
+        // for (int i = 1; i < config::kNumLevels; ++i) {
+        //     current->learned_index_data_[i]->ReportStats();
+        // }
+        adgMod::learn_cb_model->Report();
 
   // adgMod::Stats* instance = adgMod::Stats::GetInstance();
   //  instance->ReportTime();
   // //adgMod::learn_cb_model->Report();
-  // }
+  }
 
 
   if (adgMod::MOD >= 7) {
@@ -813,8 +813,8 @@ void DBImpl::BackgroundCompaction() {
   instance->StartTimer(7);
 
   if (imm_ != nullptr) {
-    int level = CompactMemTable();
     instance->PauseTimer(7);
+    int level = CompactMemTable();
     return;
   }
 
@@ -1086,6 +1086,10 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
   const uint64_t start_micros = env_->NowMicros();
   int64_t imm_micros = 0;  // Micros spent doing imm_ compactions
 
+
+
+
+  
   Log(options_.info_log, "Compacting %d@%d + %d@%d files",
       compact->compaction->num_input_files(0), compact->compaction->level(),
       compact->compaction->num_input_files(1),
@@ -1113,6 +1117,8 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
 
 //  vector<string> keys;
 
+
+
   for (; input->Valid() && !shutting_down_.load(std::memory_order_acquire);) {
     // Prioritize immutable compaction work
     if (has_imm_.load(std::memory_order_relaxed)) {
@@ -1139,6 +1145,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
         break;
       }
     }
+
 
     // Handle key/value, add to state, etc.
     bool drop = false;
@@ -1234,19 +1241,32 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
   input = nullptr;
 
   CompactionStats stats;
+  int64_t write_size = 0;
+  int64_t read_size = 0;
   stats.micros = env_->NowMicros() - start_micros - imm_micros;
   for (int which = 0; which < 2; which++) {
     for (int i = 0; i < compact->compaction->num_input_files(which); i++) {
       stats.bytes_read += compact->compaction->input(which, i)->file_size;
+      read_size = compact->compaction->input(which, i)->file_size;
+      stats.max_bytes_read = std::max(stats.max_bytes_read,read_size);
+
+      // printf("max_bytes_read: %ld\n", stats.max_bytes_read);
+      // printf("read_size: %ld\n", read_size);
     }
   }
   for (size_t i = 0; i < compact->outputs.size(); i++) {
     stats.bytes_written += compact->outputs[i].file_size;
+    write_size = compact->outputs[i].file_size;
+    stats.max_bytes_written = std::max(stats.bytes_written, write_size);
+    
   }
-
+  stats.compaction_count+=1;
+  // stats_[compact->compaction->level()+1].compaction_count+=1;
+  stats_[compact->compaction->level()].Add(stats);
   mutex_.Lock();
-  stats_[compact->compaction->level() + 1].Add(stats);
-  stats_[compact->compaction->level()].compaction_count+=1;
+  // asd+=1;
+  // printf("asd: %d\n", asd);
+  
   
 
   if (status.ok()) {
@@ -1257,6 +1277,8 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
   }
   VersionSet::LevelSummaryStorage tmp;
   Log(options_.info_log, "compacted to: %s", versions_->LevelSummary(&tmp));
+  read_size=0;  
+  write_size=0;
   return status;
 }
 
@@ -1669,7 +1691,7 @@ Status DBImpl::MakeRoomForWrite(bool force) {
 
 bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   value->clear();
-
+  WaitForBackground();
   MutexLock l(&mutex_);
   Slice in = property;
   Slice prefix("leveldb.");
@@ -1690,26 +1712,29 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
       return true;
     }
   } else if (in == "stats") {
-    char buf[200];
+    char buf[256];
     int waf =  0;
     float bytes_written_total =  0;
     float NumLevelBytes_total = 0;
     snprintf(buf, sizeof(buf),
              "                               Compactions\n"
-             "Level  Files Size(MB) Time(sec) Read(MB) Write(MB)  Count\n"
-             "----------------------------------------------------------\n");
+             "Level  Files Size(MB) Time(sec) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count \n"
+             "-------------------------------------------------------------------------------- \n");
     value->append(buf);
     for (int level = 0; level < config::kNumLevels; level++) {
       int files = versions_->NumLevelFiles(level);
       if (stats_[level].micros > 0 || files > 0) {
-        snprintf(buf, sizeof(buf), "%3d %8d %8.0f %9.0f %8.0f %9.0f %7d\n", level,
-                 files, versions_->NumLevelBytes(level) / 1048576.0,
-                 stats_[level].micros / 1e6,
-                 stats_[level].bytes_read / 1048576.0,
-                 stats_[level].bytes_written / 1048576.0,
-                 stats_[level].compaction_count);
+          snprintf(buf, sizeof(buf), "%3d %8d %8.0f %9.0f %8.0f %9.0f %8.0f %9.0f %7ld\n", level,
+                  files, versions_->NumLevelBytes(level) / 1048576.0,
+                  stats_[level].micros / 1e6,
+                  stats_[level].bytes_read / 1048576.0,
+                  stats_[level].bytes_written / 1048576.0,
+                  stats_[level].max_bytes_written / 1048576.0,
+                  stats_[level].max_bytes_read / 1048576.0,
+                  stats_[level].compaction_count);
                  bytes_written_total+= stats_[level].bytes_written / 1048576.0;
                  NumLevelBytes_total+= versions_->NumLevelBytes(level) / 1048576.0;
+                 
         value->append(buf);
       }
 

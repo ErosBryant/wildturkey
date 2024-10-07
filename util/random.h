@@ -6,6 +6,8 @@
 #define STORAGE_LEVELDB_UTIL_RANDOM_H_
 
 #include <stdint.h>
+#include <cmath>
+#include <vector>
 
 namespace leveldb {
 
@@ -15,6 +17,7 @@ namespace leveldb {
 class Random {
  private:
   uint32_t seed_;
+  std::vector<double> cumulative_probabilities_; // 누적 분포 저장
 
  public:
   explicit Random(uint32_t s) : seed_(s & 0x7fffffffu) {
@@ -56,6 +59,34 @@ class Random {
   // return "base" random bits.  The effect is to pick a number in the
   // range [0,2^max_log-1] with exponential bias towards smaller numbers.
   uint32_t Skewed(int max_log) { return Uniform(1 << Uniform(max_log + 1)); }
+
+
+
+// Zipfian distributed random number generator
+  // Generates a number in the range [1, n]
+// Zipfian distributed random number generator
+  uint32_t Zipfian(int n, double skew) {
+    if (cumulative_probabilities_.empty()) {
+      // Precompute cumulative probabilities
+      double denom = 0;
+      for (int i = 1; i <= n; ++i) {
+        denom += 1.0 / std::pow(i, skew);
+      }
+
+      double cumulative = 0;
+      for (int i = 1; i <= n; ++i) {
+        cumulative += (1.0 / std::pow(i, skew)) / denom;
+        cumulative_probabilities_.push_back(cumulative);
+      }
+    }
+
+    // Generate a uniform random number between 0 and 1
+    double u = static_cast<double>(Next()) / 2147483647.0;
+
+    // Perform binary search to find the corresponding Zipfian value
+    auto it = std::lower_bound(cumulative_probabilities_.begin(), cumulative_probabilities_.end(), u);
+    return std::distance(cumulative_probabilities_.begin(), it) + 1;
+  }
 };
 
 }  // namespace leveldb

@@ -1,23 +1,3 @@
-Timer 0: Finde file (level에서 해당 file 찾기)
-Timer 1: load,  reading time file(?) table cache에서 file 찾기
-Timer 2: file model 찾기
-Timer 3: 0
-Timer 4: 0
-Timer 5: 0
-Timer 6: 0
-Timer 7: 0
-Timer 8: 0
-Timer 9: 0
-Timer 10: 0
-Timer 11: 0
-Timer 12: 0
-Timer 13: 0
-Timer 14: 0
-Timer 15: 0
-Timer 16: 0
-Timer 17: 0
-Timer 18: 0
-Timer 19: 0
 
 echo 3 > /proc/sys/vm/drop_caches
 
@@ -33,6 +13,7 @@ echo 3 > /proc/sys/vm/drop_caches
 - TImer 12: Value reading time
 - Timer 14: value read from memtable or immtable
 ----
+- 还没设置
 - Timer 17: get model time 
 - Timer 18: search indexblock
 - Timer 19: search datablock 
@@ -49,3 +30,4 @@ echo 3 > /proc/sys/vm/drop_caches
 - Timer 8 is the total level learning time
 - timer 9: Total fresh write time (db load)
 - timer 16: time to compact memtable
+
