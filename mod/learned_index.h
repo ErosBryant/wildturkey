@@ -11,6 +11,13 @@
 #include "util.h"
 #include <atomic>
 #include "plr.h"
+#include <unordered_map>
+#include <vector>
+#include <iostream>
+#include <cstdlib>   // rand() 和 srand()
+#include <ctime>     // time()
+#include "Q_table.h"
+#include <random>
 
 
 
@@ -77,6 +84,7 @@ namespace adgMod {
         int allowed_seek;
         int current_seek;
     public:
+
         // is the data of this model filled (ready for learning)
         bool filled;
         
@@ -90,7 +98,25 @@ namespace adgMod {
         uint64_t min_key;
         uint64_t max_key;
         uint64_t size;
-       
+        uint64_t inverse_density;
+        int8_t state;
+        uint64_t load_model_time;
+        uint64_t correct_time;
+        uint64_t build_time;
+
+
+        // // Q-table 由state-error_bound对以及model_load和correct_time还有build_time组成
+        // struct QTableEntry {
+        //     double q_value;               // Q 值
+        //     double error_bound;           // 误差界限
+        //     double avg_load_model;        // 平均加载模型时间
+        //     double avg_correct_time;      // 平均校正时间
+        //     double avg_build_time;        // 平均构建时间
+        // };
+        // std::vector<QTableEntry> Q_table;
+
+
+       double getRandomAction(double error_) const;
 
 
 
@@ -103,6 +129,7 @@ namespace adgMod {
         int level;
         mutable int served;
         uint64_t cost;
+        FileMetaData* meta;
 
 //        int num_neg_model = 0, num_pos_model = 0, num_neg_baseline = 0, num_pos_baseline = 0;
 //        uint64_t time_neg_model = 0, time_pos_model = 0, time_neg_baseline = 0, time_pos_baseline = 0;
@@ -112,10 +139,8 @@ namespace adgMod {
 //        double gain_p = 0;
 //        uint64_t file_size = 0;
 
-
-
-
-        explicit LearnedIndexData(int allowed_seek, bool level_model) : error(level_model?level_model_error:file_model_error), learned(false), aborted(false), learning(false),
+        explicit LearnedIndexData(int allowed_seek, bool level_model) 
+        : error(level_model?level_model_error:file_model_error), learned(false), aborted(false), learning(false),
              learned_not_atomic(false),check_loaded(false), allowed_seek(allowed_seek), current_seek(0), filled(false), is_level(level_model), level(0), served(0), cost(0) {};
         LearnedIndexData(const LearnedIndexData& other) = delete;
 
@@ -149,6 +174,8 @@ namespace adgMod {
         void FillCBAStat(bool positive, bool model, uint64_t time);
 
         bool Learn(bool file);
+
+
     };
 
     // an array storing all file models and provide similar access interface with multithread protection

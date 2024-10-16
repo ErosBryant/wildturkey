@@ -12,12 +12,16 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <random>
 
 #include <utility>
 
 #include "util/mutexlock.h"
 
 #include "util.h"
+#include "Q_table.h"
+#include <cmath> 
+#include <chrono>
 
 namespace adgMod {
 
@@ -46,11 +50,17 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
   double result =
       target_int * string_segments[left].k + string_segments[left].b;
   result = is_level ? result / 2 : result;
+  //double error_bound = this->meta->error;     // 调用对应SST的error_bound
+  //std::cout << this->meta->error << std::endl;
+  //double error_bound = this->meta->error > 3 ? this->meta->error : 40;     // 调用对应SST的error_bound
+  double error_bound = this->meta->error;
+  //error_bound = 50;
   uint64_t lower =
-      result - error > 0 ? (uint64_t)std::floor(result - error) : 0;
-  uint64_t upper = (uint64_t)std::ceil(result + error);
+      result - error > 0 ? (uint64_t)std::floor(result - error_bound) : 0;
+  uint64_t upper = (uint64_t)std::ceil(result + error_bound);
   if (lower >= size) return std::make_pair(size, size);
   upper = upper < size ? upper : size - 1;
+  //std::cout << error_bound << std::endl;
   //                printf("%s %s %s\n", string_keys[lower].c_str(),
   //                string(target_x.data(), target_x.size()).c_str(),
   //                string_keys[upper].c_str()); assert(target_x >=
@@ -60,24 +70,120 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
 
 uint64_t LearnedIndexData::MaxPosition() const { return size - 1; }
 
-double LearnedIndexData::GetError() const { return error; }
+double LearnedIndexData::GetError() const { return this->meta->error; }
+
+double LearnedIndexData::getRandomAction(double error_) const {
+    double epsilon = 0.3; // 探索率 30%
+
+    thread_local std::random_device rd;
+    thread_local std::mt19937 gen(rd());
+    thread_local std::uniform_real_distribution<> dis(0.0, 1.0);
+
+    double random_value = dis(gen);
+
+    bool is_exploration = random_value < epsilon;
+    //std::cout << "Random Value: " << random_value << ", Epsilon: " << epsilon
+              //<< ", Exploration: " << (is_exploration ? "Yes" : "No") << std::endl;
+
+    if (is_exploration) {
+        // 探索：选择与当前 error_ 相邻的值
+        std::vector<double> possible_errors;
+
+        // 定义最小和最大允许的 error_bound
+        double min_error = 4;
+        double max_error = 40;
+
+        // 添加比当前 error_ 小的值
+        if (error_ - 4 >= min_error) {
+            possible_errors.push_back(error_ - 4);
+        }
+        // 添加比当前 error_ 大的值
+        if (error_ + 4 <= max_error) {
+            possible_errors.push_back(error_ + 4);
+        }
+
+        // 确保有候选值
+        if (!possible_errors.empty()) {
+            std::uniform_int_distribution<> error_dis(0, possible_errors.size() - 1);
+            double new_error = possible_errors[error_dis(gen)];
+            return new_error;
+        } else {
+            // 如果没有相邻的候选值，保持不变
+            return error_;
+        }
+    } else {
+        // 利用：选择当前最优动作（即当前的 error_）
+        return error_;
+    }
+}
+
+
+
 
 // Actual function doing learning
 bool LearnedIndexData::Learn() {
+
+  srand(static_cast<unsigned>(time(0)));  // 设置随机数种子
+
   // FILL IN GAMMA (error)
-  PLR plr = PLR(error);
+  // PLR plr = PLR(error);                           // error可调整为q-table对应的error
 
   // check if data if filled
   if (string_keys.empty()) assert(false);
 
   // fill in some bounds for the model
   uint64_t temp = atoll(string_keys.back().c_str());
-  min_key = atoll(string_keys.front().c_str());
-  max_key = atoll(string_keys.back().c_str());
-  size = string_keys.size();
+  min_key = atoll(string_keys.front().c_str());   // SST内最小Key, 为Uint64型
+  max_key = atoll(string_keys.back().c_str());    // SST内最大Key, 为Uint64型
+  size = string_keys.size();                      // SST内Key的数量, 为Uint64型   以上三变量均可用于计算SST内key分布的模拟密度
+  inverse_density = static_cast<uint64_t>((max_key - min_key) / size);            // SST内key分布的模拟密度
+  // 预定将inverse_density < 40 为一档， < 70为二档， < 100为3档， >100为4档， 档位越大，密度越小
+  // 为了方便计算，将inverse_density的值设定为档位的值，即inverse_density = 1, 2, 3, 4
+  if(inverse_density < 10) inverse_density = 0;
+  else if(inverse_density < 30) inverse_density = 1;
+  else if(inverse_density < 70) inverse_density = 2;
+  else inverse_density = 3;
+  double temp_error = getRandomAction(adgMod::getQTableManagerInstance().Q_table[inverse_density].error_bound);  // 根据档位选择对应的error_bound
+  //error = 32;
+  //temp_error = 32;
+  PLR plr = PLR(temp_error);                           // error可调整为q-table对应的error
+  this->meta = new FileMetaData();
+  this->meta->error = temp_error;   
+  
 
   // actual training
+  // 记录训练时间
+  auto start = std::chrono::high_resolution_clock::now();
   std::vector<Segment> segs = plr.train(string_keys, !is_level);
+  auto end = std::chrono::high_resolution_clock::now();
+  uint64_t build_time = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
+
+  // 计算平均模型加载时间、平均校正时间， 参照zipf's law
+  int segment_count = segs.size();
+  double sum_prob = 0.0;
+  for (int i = 1; i <= segment_count; ++i) {
+    sum_prob += 1.0 / pow(i, 1);  // 计算 Zipf 总和
+  }
+  double weighted_sum = 0.0;
+  for (int i = 1; i <= segment_count; ++i) {
+    double P_i = (1.0 / pow(i, 1)) / sum_prob;  // 段 i 的访问概率
+    double S_i = log2(i);  // 段 i 的查找步数
+    weighted_sum += P_i * S_i;  // 加权累加
+  }
+  double reward = adgMod::getQTableManagerInstance().compute_reward(
+    inverse_density,
+    weighted_sum,    // new_load_model_cost
+    temp_error,      // new_correct_time
+    build_time       // new_build_time
+  );
+  double Q_value = adgMod::getQTableManagerInstance().compute_q_value(inverse_density, reward);
+
+  //std::cout << "max_key: " << max_key << " | min_key: " << min_key << " | size: " << size << " | inverse_density: " << inverse_density << " | error_bound: " << temp_error << " | Q_value " << Q_value << std::endl;
+  std::cout << " | size: " << size << " | inverse_density: " << inverse_density << " | build_time " << build_time << " | load_time " << weighted_sum <<" | loged_error " << adgMod::getQTableManagerInstance().Q_table[inverse_density].error_bound << " | error_bound: " << temp_error << " | meta's_err " << this->meta->error << " | Q_value " << Q_value << std::endl;
+  adgMod::getQTableManagerInstance().Q_table[inverse_density].error_bound = temp_error;
+  
+
+
   if (segs.empty()) return false;
   // fill in a dummy last segment (used in segment binary search)
   segs.push_back((Segment){temp, 0, 0});
@@ -89,6 +195,11 @@ bool LearnedIndexData::Learn() {
 
   learned.store(true);
   // string_keys.clear();
+
+  
+
+
+
   return true;
 }
 
@@ -148,6 +259,7 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
   MetaAndSelf* mas = reinterpret_cast<MetaAndSelf*>(arg);
   LearnedIndexData* self = mas->self;
   self->level = mas->level;
+  self->meta = mas->meta;
 
   Version* c = db->GetCurrentVersion();
   if (self->FillData(c, mas->meta)) {

@@ -29,6 +29,7 @@ struct FileMetaData {
   InternalKey smallest;  // Smallest internal key served by table
   InternalKey largest;   // Largest internal key served by table
   int num_keys;
+  double error;
 };
 
 class VersionEdit {

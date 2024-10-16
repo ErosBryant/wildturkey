@@ -1839,6 +1839,7 @@ Status DB::Open(const Options& options, const std::string& dbname, DB** dbptr) {
   adgMod::env = options.env;
   adgMod::file_data = new adgMod::FileLearnedIndexData();
   adgMod::learn_cb_model = new CBModel_Learn();
+  adgMod::getQTableManagerInstance().initQTable(); //Qtable初始化
 
   DBImpl* impl = new DBImpl(options, dbname);
   impl->mutex_.Lock();

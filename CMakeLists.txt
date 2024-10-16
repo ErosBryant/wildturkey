@@ -206,6 +206,8 @@ target_sources(leveldb
     "${PROJECT_SOURCE_DIR}/mod/util.h"
     "${PROJECT_SOURCE_DIR}/mod/Vlog.cc"
     "${PROJECT_SOURCE_DIR}/mod/Vlog.h"
+    "${PROJECT_SOURCE_DIR}/mod/Q_table.cc"
+    "${PROJECT_SOURCE_DIR}/mod/Q_table.h"
         "${PROJECT_SOURCE_DIR}/mod/Counter.cc"
         "${PROJECT_SOURCE_DIR}/mod/Counter.h"
         "${PROJECT_SOURCE_DIR}/mod/timer.cc"
