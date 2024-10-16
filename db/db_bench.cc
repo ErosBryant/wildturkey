@@ -568,7 +568,7 @@ class Benchmark {
       } else if (name == Slice("fillrandom")) {
         fresh_db = true;
         method = &Benchmark::WriteRandom;
-      }  else if (name == Slice("zipfian")) {
+      }  else if (name == Slice("zipfill")) {
         fresh_db = true;
         method = &Benchmark::zipfian;
       }else if (name == Slice("overwrite")) {
@@ -590,7 +590,9 @@ class Benchmark {
         method = &Benchmark::ReadReverse;
       } else if (name == Slice("readrandom")) {
         method = &Benchmark::ReadRandom;
-      } else if (name == Slice("readmissing")) {
+      } else if (name == Slice("zipread")) {
+        method = &Benchmark::zipfianread;
+      }else if (name == Slice("readmissing")) {
         method = &Benchmark::ReadMissing;
       } else if (name == Slice("seekrandom")) {
         method = &Benchmark::SeekRandom;
@@ -1005,6 +1007,58 @@ class Benchmark {
     thread->stats.AddBytes(bytes);
   }
 
+ void zipfianread(ThreadState* thread) {
+    ReadOptions options;
+    std::string value;
+    int found = 0;
+    char key[100];
+    int64_t bytes = 0;
+    int k;
+    if(!FLAGS_use_real_data){ // kaloiii - diri ang original 
+      for (int i = 0; i < reads_; i++) {
+        int k =  thread->rand.Zipfian(FLAGS_num, 1.0);
+        snprintf(key, sizeof(key), "%016d", k);
+        if (db_->Get(options, key, &value).ok()) {
+          found++;
+          bytes += value.size() + strlen(key);
+        }
+        thread->stats.FinishedSingleOp();
+      }
+    } else if(FLAGS_use_real_data){
+      std::ifstream real_data_file(std::string(FLAGS_path_real_data) + "osm50m.txt");
+      std::string real_data_key;
+
+      if (!real_data_file.is_open()) {
+        fprintf(stderr, "Invalid real data file: %s\n", (std::string(FLAGS_path_real_data) + "osm50m.txt").c_str());
+        exit(1);
+      }
+
+      for (int i = 0; i < reads_; i++) {
+
+        if (!std::getline(real_data_file, real_data_key)) {
+          fprintf(stderr, "Not enough keys in the file. Generating key instead.\n"); // not engouh keys so we generate
+          k = thread->rand.Next() % FLAGS_num;
+          snprintf(key, sizeof(key), "%016d", k);
+        } else {
+          // fprintf(stderr, "read key: %s\n", real_data_key.c_str());
+          snprintf(key, sizeof(key), "%s", real_data_key.c_str());
+        }
+        
+        if (db_->Get(options, key, &value).ok()) {
+          found++;
+        }
+        thread->stats.FinishedSingleOp();
+      }
+
+      // snprintf(key, sizeof(key), "%s", real_data_key.c_str());
+
+    }
+    thread->stats.AddBytes(bytes);
+    char msg[100];
+    snprintf(msg, sizeof(msg), "(%d of %d found)", found, num_);
+    thread->stats.AddMessage(msg);
+  }
+  
  void ReadRandom(ThreadState* thread) {
     ReadOptions options;
     std::string value;

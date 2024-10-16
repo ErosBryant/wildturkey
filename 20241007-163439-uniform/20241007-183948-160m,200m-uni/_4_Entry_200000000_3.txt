@@ -1,0 +1,121 @@
+Running db_bench with --num=200000000 --lac=4
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    200000000
+RawSize:    22125.2 MB (estimated)
+FileSize:   12588.5 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+fillrandom   :       5.766 micros/op;   19.2 MB/s;  1153.133
+readrandom   :       5.055 micros/op;   21.9 MB/s (199721548 of 200000000 found);  1010.917
+--------------------------------------------------
+memtable stall time: 41.6112 s
+L0 stall time: 0  s
+L0 slow stall time: 960.717  s
+waf:17.98
+Timer 0: 4387090944 : 4.387090944
+Timer 1: 2217040896 : 2.217040896
+Timer 2: 18312931328 : 18.312931328
+Timer 3: 17340178432 : 17.340178432
+Timer 4: 0 : 0.000000000
+Timer 5: 17186709504 : 17.186709504
+Timer 6: 47976640512 : 47.976640512
+Timer 7: 1203702071296 : 1203.702071296
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 16425096192 : 16.425096192
+Timer 12: 22124578816 : 22.124578816
+Timer 13: 0 : 0.000000000
+Timer 14: 17311969280 : 17.311969280
+Timer 15: 539517824 : 0.539517824
+Timer 16: 122187268096 : 122.187268096
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files Size(MB) Time(sec) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+-------------------------------------------------------------------------------- 
+  0        0        0       300    13480     21021       27         4     342
+  1        6        9       368    33516     33360        8         8    1223
+  2       17       98       389    38964     37631       55        49     537
+  3       36      960        61     6376      5762      198       129      38
+  4       47     4371         0        0         0        0         0       0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 345731294432 735487278336 917019580488 468247636992 63107235840 0 0 0
+7222 3152 1568 1778 638 86 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup -2147483648 179306496 1298399232 1966211072 1633026048 1917452288 0 0 0
+551230297 14586964 101974001 157876951 126634653 150157728 0 0 0
+Counter PutWait 912015 911429 586 0 0 0 0 0 0
+912015 911429 586 0 0 0 0 0 0
+Counter FileLearning -2147483648 0 558057472 1486542080 3643953152 10736566272 0 0 0
+89 0 27 25 17 20 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 744391226 0 199969628 199498870 194626954 150295774 0 0 0
+744391226 0 199969628 199498870 194626954 150295774 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+-------------------------------------

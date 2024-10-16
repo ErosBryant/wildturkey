@@ -165,9 +165,9 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
 DBImpl::~DBImpl() {
   // Wait for background work to finish.
 
-  // for (int i = 0; i < adgMod::levelled_counters.size(); ++i) {
-  //   adgMod::levelled_counters[i].Report();
-  // }
+  for (int i = 0; i < adgMod::levelled_counters.size(); ++i) {
+    adgMod::levelled_counters[i].Report();
+  }
   //printf("-----------------\n");
   // PrintFileInfo();
 // adgMod::file_data->Report();
@@ -319,11 +319,10 @@ void DBImpl::DeleteObsoleteFiles() {
           // use cb model
           
           if (!adgMod::fresh_write) {
-            // when a file is deleted due to compaction, its stats during the lifetime
-            // is recorded by CBA
+
             adgMod::file_stats_mutex.Lock();
             auto iter = adgMod::file_stats.find(number);
-            //assert(iter != adgMod::file_stats.end());
+
             adgMod::FileStats& file_stat = iter->second;
             file_stat.Finish();
             if (file_stat.end - file_stat.start >= adgMod::learn_trigger_time) {
@@ -656,7 +655,7 @@ int DBImpl::CompactMemTable() {
     adgMod::levelled_counters[5].Increment(edit.new_files_[0].first, time.second - time.first);
     adgMod::compaction_counter_mutex.Unlock();
 
-    //env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
+    env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
 
 
 
@@ -1084,16 +1083,27 @@ Status DBImpl::InstallCompactionResults(CompactionState* compact) {
 
 Status DBImpl::DoCompactionWork(CompactionState* compact) {
   const uint64_t start_micros = env_->NowMicros();
+  int64_t write_size = 0;
+  int64_t read_size = 0;
   int64_t imm_micros = 0;  // Micros spent doing imm_ compactions
 
-
-
-
-  
   Log(options_.info_log, "Compacting %d@%d + %d@%d files",
       compact->compaction->num_input_files(0), compact->compaction->level(),
       compact->compaction->num_input_files(1),
       compact->compaction->level() + 1);
+
+
+  for (int which = 0; which < 2; which++) {
+    for (int i = 0; i < compact->compaction->num_input_files(which); i++) {
+        read_size += compact->compaction->input(which, i)->file_size;
+    }
+  }
+
+    // if (read_size >= 200743680) {
+    //       adgMod::sst_size--; 
+    //       // printf("read_size = %ld\n", read_size);
+    //       // printf("sst_size = %d\n", adgMod::sst_size);
+    // }
 
   assert(versions_->NumLevelFiles(compact->compaction->level()) > 0);
   assert(compact->builder == nullptr);
@@ -1241,25 +1251,43 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
   input = nullptr;
 
   CompactionStats stats;
-  int64_t write_size = 0;
-  int64_t read_size = 0;
+  
   stats.micros = env_->NowMicros() - start_micros - imm_micros;
-  for (int which = 0; which < 2; which++) {
-    for (int i = 0; i < compact->compaction->num_input_files(which); i++) {
-      stats.bytes_read += compact->compaction->input(which, i)->file_size;
-      read_size = compact->compaction->input(which, i)->file_size;
+  // for (int which = 0; which < 2; which++) {
+  //   for (int i = 0; i < compact->compaction->num_input_files(which); i++) {
+  //     stats.bytes_read += compact->compaction->input(which, i)->file_size;
+  // //     read_size = compact->compaction->input(which, i)->file_size;
+  
+
+  //   }
+  // }
+
+      stats.bytes_read += read_size;
       stats.max_bytes_read = std::max(stats.max_bytes_read,read_size);
 
-      // printf("max_bytes_read: %ld\n", stats.max_bytes_read);
-      // printf("read_size: %ld\n", read_size);
-    }
-  }
+      stats.max_micros = std::max(stats.max_micros,stats.micros);
+
   for (size_t i = 0; i < compact->outputs.size(); i++) {
     stats.bytes_written += compact->outputs[i].file_size;
     write_size = compact->outputs[i].file_size;
     stats.max_bytes_written = std::max(stats.bytes_written, write_size);
     
+    // if  (write_size >= 100743680){
+    //   adgMod::sst_size--;
+    //   printf("sst_size = %d\n", adgMod::sst_size);
+    //   printf("bytes_written = %ld\n", write_size);
+    //   if (adgMod::sst_size <= 3) {
+    //     adgMod::sst_size++;
+    //     printf("sst_size = %d\n", adgMod::sst_size);
+    //   }
+    // }
   }
+
+    if (adgMod::sst_size != 4) {
+        adgMod::sst_size=4;
+            // printf("sst_size = %d\n", adgMod::sst_size);
+          }
+
   stats.compaction_count+=1;
   // stats_[compact->compaction->level()+1].compaction_count+=1;
   stats_[compact->compaction->level()].Add(stats);
@@ -1718,15 +1746,16 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
     float NumLevelBytes_total = 0;
     snprintf(buf, sizeof(buf),
              "                               Compactions\n"
-             "Level  Files Size(MB) Time(sec) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count \n"
-             "-------------------------------------------------------------------------------- \n");
+             "Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count \n"
+             "------------------------------------------------------------------------------------------------ \n");
     value->append(buf);
     for (int level = 0; level < config::kNumLevels; level++) {
       int files = versions_->NumLevelFiles(level);
       if (stats_[level].micros > 0 || files > 0) {
-          snprintf(buf, sizeof(buf), "%3d %8d %8.0f %9.0f %8.0f %9.0f %8.0f %9.0f %7ld\n", level,
+          snprintf(buf, sizeof(buf), "%3d  %8d %9.0f %8.0f %9ld    %8.0f  %9.0f   %8.0f  %9.0f  %7ld\n", level,
                   files, versions_->NumLevelBytes(level) / 1048576.0,
                   stats_[level].micros / 1e6,
+                  stats_[level].max_micros,
                   stats_[level].bytes_read / 1048576.0,
                   stats_[level].bytes_written / 1048576.0,
                   stats_[level].max_bytes_written / 1048576.0,
@@ -1755,7 +1784,7 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
     //       // for (int i = 1; i < config::kNumLevels; ++i) {
     //       //     current->learned_index_data_[i]->ReportStats();
     //       // }
-    //       // adgMod::learn_cb_model->Report();
+          // adgMod::learn_cb_model->Report();
     // }
     adgMod::Stats* instance = adgMod::Stats::GetInstance();
     instance->ReportTime();

@@ -169,7 +169,7 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
     learn_counter_mutex.Unlock();
   }
 
-         if (!fresh_write) {
+  if (!fresh_write) {
              self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
              to_string(mas->meta->number) + ".fmodel");
              self->string_keys.clear();
