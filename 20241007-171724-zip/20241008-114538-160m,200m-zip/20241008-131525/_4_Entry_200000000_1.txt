@@ -1,0 +1,1 @@
+Running db_bench with --num=200000000 --lac=4

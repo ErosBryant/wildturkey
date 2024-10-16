@@ -1,0 +1,60 @@
+Running db_bench with --num=160000000 --lac=4
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    160000000
+RawSize:    17700.2 MB (estimated)
+FileSize:   10070.8 MB (estimated)
+------------------------------------------------
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+fillrandom   :       3.525 micros/op;   31.4 MB/s;   564.004
+--------------------------------------------------
+memtable stall time: 12.2504 s
+L0 stall time: 0  s
+L0 slow stall time: 428.758  s
+waf:15.3814
+Timer 0: 0 : 0.000000000
+Timer 1: 0 : 0.000000000
+Timer 2: 0 : 0.000000000
+Timer 3: 0 : 0.000000000
+Timer 4: 0 : 0.000000000
+Timer 5: 0 : 0.000000000
+Timer 6: 0 : 0.000000000
+Timer 7: 560394928128 : 560.394928128
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 6134537728 : 6.134537728
+Timer 12: 0 : 0.000000000
+Timer 13: 0 : 0.000000000
+Timer 14: 0 : 0.000000000
+Timer 15: 0 : 0.000000000
+Timer 16: 69263212544 : 69.263212544
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files Size(MB) Time(sec) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+-------------------------------------------------------------------------------- 
+  0        2        5       156    10773     16795        0         0     276
+  1        9       41       184    26381     26226       31        12     946
+  2       28      193       180    29635     28411       51        44     355
+  3       48     1961         0        0         0        0         0       0
+  4       30     2444         0        0         0        0         0       0
+
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+-------------------------------------

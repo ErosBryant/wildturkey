@@ -1,0 +1,59 @@
+Running db_bench with --num=80000000 --lac=5
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    80000000
+RawSize:    8850.1 MB (estimated)
+FileSize:   5035.4 MB (estimated)
+------------------------------------------------
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+fillrandom   :       3.263 micros/op;   33.9 MB/s;   261.048
+--------------------------------------------------
+memtable stall time: 7.62672 s
+L0 stall time: 0  s
+L0 slow stall time: 194.647  s
+waf:17.0377
+Timer 0: 0 : 0.000000000
+Timer 1: 0 : 0.000000000
+Timer 2: 0 : 0.000000000
+Timer 3: 0 : 0.000000000
+Timer 4: 0 : 0.000000000
+Timer 5: 0 : 0.000000000
+Timer 6: 0 : 0.000000000
+Timer 7: 259421175808 : 259.421175808
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 10385524736 : 10.385524736
+Timer 12: 0 : 0.000000000
+Timer 13: 0 : 0.000000000
+Timer 14: 0 : 0.000000000
+Timer 15: 0 : 0.000000000
+Timer 16: 32183414784 : 32.183414784
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files Size(MB) Time(sec) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+-------------------------------------------------------------------------------- 
+  0        3        8        71     5161      8157        0         0     137
+  1        7       35        92    14509     14362       64        50     373
+  2       14      175        79    13438     12654      274       252      83
+  3       18     1846         0        0         0        0         0       0
+
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+-------------------------------------

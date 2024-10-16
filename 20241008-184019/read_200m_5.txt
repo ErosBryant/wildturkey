@@ -1,0 +1,124 @@
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    160000000
+RawSize:    17700.2 MB (estimated)
+FileSize:   10070.8 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+read_size = 189526925
+sst_size = 4
+fillrandom   :       3.692 micros/op;   30.0 MB/s;   590.717
+read_size = 270842368
+sst_size = 4
+read_size = 270842368
+sst_size = 4
+--------------------------------------------------
+memtable stall time: 8.51253 s
+L0 stall time: 0  s
+L0 slow stall time: 462.786  s
+waf:17.04
+Timer 0: 0 : 0.000000000
+Timer 1: 0 : 0.000000000
+Timer 2: 0 : 0.000000000
+Timer 3: 0 : 0.000000000
+Timer 4: 0 : 0.000000000
+Timer 5: 0 : 0.000000000
+Timer 6: 0 : 0.000000000
+Timer 7: 606478598144 : 606.478598144
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 0 : 0.000000000
+Timer 12: 0 : 0.000000000
+Timer 13: 0 : 0.000000000
+Timer 14: 0 : 0.000000000
+Timer 15: 0 : 0.000000000
+Timer 16: 63116111872 : 63.116111872
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+------------------------------------------------------------------------------------------------ 
+  0         0         0      161    399420       10762      16787         40         40      277
+  1         2         8      198    222613       26737      26580         29         29      967
+  2        21        88      197    929319       31471      30183        140        147      413
+  3        45       895        8   1446321        1396       1203        210        258       11
+  4        48      3396        0         0           0          0          0          0        0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 182384811008 389921495528 477762284960 216583610368 9421733888 0 0 0
+5707 2524 1246 1396 484 57 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter PutWait 439768 439491 277 0 0 0 0 0 0
+439768 439491 277 0 0 0 0 0 0
+Counter FileLearning 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0

@@ -1,0 +1,119 @@
+Running db_bench with --num=160000000 --lac=5
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    160000000
+RawSize:    17700.2 MB (estimated)
+FileSize:   10070.8 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+zipfian      :       2.881 micros/op;   38.4 MB/s;   461.037
+--------------------------------------------------
+memtable stall time: 87.0612 s
+L0 stall time: 0  s
+L0 slow stall time: 207.547  s
+waf:26.8746
+Timer 0: 0 : 0.000000000
+Timer 1: 0 : 0.000000000
+Timer 2: 0 : 0.000000000
+Timer 3: 0 : 0.000000000
+Timer 4: 0 : 0.000000000
+Timer 5: 0 : 0.000000000
+Timer 6: 0 : 0.000000000
+Timer 7: 451115483136 : 451.115483136
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 9269791744 : 9.269791744
+Timer 12: 0 : 0.000000000
+Timer 13: 0 : 0.000000000
+Timer 14: 0 : 0.000000000
+Timer 15: 0 : 0.000000000
+Timer 16: 136905728000 : 136.905728000
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files Size(MB) Time(sec) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+-------------------------------------------------------------------------------- 
+  0        6       16       182     8981     11540        0         0     291
+  1        5       20       151    15104     14307       28        10     369
+  2       11      171        61     6770      6200       34        22      43
+  3       10      985         0        0         0        0         0       0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 244089778560 381882268688 343896838200 69268002816 0 0 0 0
+3677 2538 666 424 49 0 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter PutWait 197408 196869 539 0 0 0 0 0 0
+197408 196869 539 0 0 0 0 0 0
+Counter FileLearning -2147483648 0 529811904 2126883840 6613110784 0 0 0 0
+65 0 24 23 18 0 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+-------------------------------------
