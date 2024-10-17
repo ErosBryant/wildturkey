@@ -3,7 +3,7 @@
 python3 ./test.py testing start 
 
 # Define the desired --num values in an array
-nums=(160000000)
+nums=(20000000 40000000)
 # nums=(200000)
 
 # Define error bounds
@@ -12,13 +12,15 @@ nums=(160000000)
 # Define various configurations
 # memtable_size=(4)
 # max_file_size=(4 8 16)
-lac=(4)
+
 number_of_runs=3
-mod=(8)
+bwise=(1)
+# mod=(7 8)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
-output_dir="/home/eros/workspace-lsm/wildturkey/$current_time/"
+# output_dir="/home/eros/workspace-lsm/wildturkey/$current_time/wt/"
+output_dir="/home/eros/workspace-lsm/wildturkey/20241016-182447/wt/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
@@ -37,7 +39,8 @@ fi
 
 # Execute the db_bench command for each configuration and save results
 for num in "${nums[@]}"; do
-   for sst_times in "${lac[@]}"; do
+   for wt in "${bwise[@]}"; do
+      # for mods in "${mod[@]}"; do
       # for error in "${error_bound[@]}"; do
          # for mem_size in "${memtable_size[@]}"; do
          #    for sst_size in "${max_file_size[@]}"; do
@@ -57,9 +60,9 @@ for num in "${nums[@]}"; do
                for i in $(seq 1 $number_of_runs); do
                   # output_file="${output_dir}SST_MEM_${mem_size}MB_${sst_size}MB_${sst_times}_Entry_${num}_error_${error}_${i}.txt" --lac=$sst_times
                   output_file="${output_dir}_${sst_times}_Entry_${num}_${i}.txt"
-                  echo "Running db_bench with --num=$num --lac=$sst_times" >> "$output_file"
+                  echo "Running db_bench with --num=$num --mod=$mods --bwise=$wt " >> "$output_file"
                   # ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --mod=7 --num=$num --write_buffer_size=$mem_size --max_file_size=$sst_size --file_error=$error --sst_times=$sst_times >> "$output_file"
-                  ${test_dir}/db_bench --benchmarks="fillrandom,stats" --mod=$mod --num=$num  >> "$output_file"
+                  ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --bwise=$wt --num=$num  >> "$output_file"
                   echo "-------------------------------------" >> "$output_file"
                
                   # Extract fillrandom and readrandom performance data
@@ -98,8 +101,6 @@ for num in "${nums[@]}"; do
                # echo "readrandom_avg_all: $read_avg_all" >> "${total_experiment}${current_time}_result.txt"
                # echo "segment_avg_all: $segment_avg_all" >>"${total_experiment}${current_time}_result.txt"
       
-      #       done
-      #    done
       # done
    done
 done

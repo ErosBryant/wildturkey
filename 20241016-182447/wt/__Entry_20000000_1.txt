@@ -1,0 +1,224 @@
+Running db_bench with --num=20000000 --mod= --bwise=1 
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    20000000
+RawSize:    2212.5 MB (estimated)
+FileSize:   1258.9 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+ | size: 71119 | inverse_density: 3 | build_time 3936 | load_time 2.99668 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.147152
+ | size: 71119 | inverse_density: 3 | build_time 3917 | load_time 2.74915 | loged_error 24 | error_bound: 28 | meta's_err 28 | Q_value 0.241846
+ | size: 71119 | inverse_density: 3 | build_time 3908 | load_time 2.49729 | loged_error 28 | error_bound: 32 | meta's_err 32 | Q_value 0.305317
+ | size: 71119 | inverse_density: 3 | build_time 3923 | load_time 2.56005 | loged_error 32 | error_bound: 32 | meta's_err 32 | Q_value 0.341536
+ | size: 71119 | inverse_density: 3 | build_time 3866 | load_time 2.63961 | loged_error 32 | error_bound: 32 | meta's_err 32 | Q_value 0.36199
+ | size: 71119 | inverse_density: 3 | build_time 3863 | load_time 2.5837 | loged_error 32 | error_bound: 32 | meta's_err 32 | Q_value 0.375763
+ | size: 71119 | inverse_density: 3 | build_time 3859 | load_time 2.56005 | loged_error 32 | error_bound: 32 | meta's_err 32 | Q_value 0.384704
+ | size: 71119 | inverse_density: 3 | build_time 3897 | load_time 2.48405 | loged_error 32 | error_bound: 36 | meta's_err 36 | Q_value 0.39154
+ | size: 213255 | inverse_density: 2 | build_time 11760 | load_time 3.7373 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.147152
+ | size: 71119 | inverse_density: 3 | build_time 4429 | load_time 2.47057 | loged_error 36 | error_bound: 36 | meta's_err 36 | Q_value 0.395444
+ | size: 71119 | inverse_density: 3 | build_time 3890 | load_time 2.48405 | loged_error 36 | error_bound: 36 | meta's_err 36 | Q_value 0.404354
+ | size: 139237 | inverse_density: 2 | build_time 7660 | load_time 3.65319 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.265717
+ | size: 71119 | inverse_density: 3 | build_time 3842 | load_time 2.47057 | loged_error 36 | error_bound: 36 | meta's_err 36 | Q_value 0.410706
+ | size: 71119 | inverse_density: 3 | build_time 3873 | load_time 2.23025 | loged_error 36 | error_bound: 40 | meta's_err 40 | Q_value 0.420903
+ | size: 71119 | inverse_density: 3 | build_time 3889 | load_time 2.21096 | loged_error 40 | error_bound: 40 | meta's_err 40 | Q_value 0.427358
+ | size: 422215 | inverse_density: 2 | build_time 23572 | load_time 4.4648 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.315274
+ | size: 71119 | inverse_density: 3 | build_time 6072 | load_time 2.48405 | loged_error 40 | error_bound: 36 | meta's_err 36 | Q_value 0.422091
+ | size: 71119 | inverse_density: 3 | build_time 3874 | load_time 2.42852 | loged_error 36 | error_bound: 36 | meta's_err 36 | Q_value 0.442747
+ | size: 213255 | inverse_density: 2 | build_time 12162 | load_time 3.74196 | loged_error 20 | error_bound: 24 | meta's_err 24 | Q_value 0.375135
+ | size: 213255 | inverse_density: 2 | build_time 11786 | load_time 3.73262 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.412234
+ | size: 134582 | inverse_density: 2 | build_time 7474 | load_time 3.38228 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.453315
+ | size: 852705 | inverse_density: 1 | build_time 47292 | load_time 4.94273 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.147152
+ | size: 118856 | inverse_density: 1 | build_time 6605 | load_time 3.54277 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.31009
+ | size: 213255 | inverse_density: 2 | build_time 12109 | load_time 3.96546 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.464944
+ | size: 213255 | inverse_density: 2 | build_time 12133 | load_time 3.97222 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.471731
+ | size: 66393 | inverse_density: 2 | build_time 3682 | load_time 3.11134 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.519522
+ | size: 68185 | inverse_density: 2 | build_time 3784 | load_time 3.16506 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.546642
+ | size: 852705 | inverse_density: 1 | build_time 47292 | load_time 4.92413 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.333435
+ | size: 202988 | inverse_density: 1 | build_time 11182 | load_time 3.93596 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.407718
+ | size: 213255 | inverse_density: 2 | build_time 11981 | load_time 3.97558 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.521113
+ | size: 213255 | inverse_density: 1 | build_time 11837 | load_time 3.98722 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.450425
+ | size: 107391 | inverse_density: 1 | build_time 7592 | load_time 3.49206 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.49142
+ | size: 213255 | inverse_density: 1 | build_time 11866 | load_time 3.95518 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.501156
+ | size: 152162 | inverse_density: 1 | build_time 8500 | load_time 3.71838 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.516293
+ | size: 852705 | inverse_density: 1 | build_time 47271 | load_time 4.92234 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.457201
+ | size: 197189 | inverse_density: 1 | build_time 11042 | load_time 3.86334 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.483455
+ | size: 852705 | inverse_density: 0 | build_time 47270 | load_time 4.6606 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.147152
+ | size: 400110 | inverse_density: 1 | build_time 22242 | load_time 4.35985 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.475141
+ | size: 213255 | inverse_density: 2 | build_time 11860 | load_time 3.74196 | loged_error 20 | error_bound: 24 | meta's_err 24 | Q_value 0.499453
+ | size: 22782 | inverse_density: 2 | build_time 1437 | load_time 2.08288 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.554085
+ | size: 213255 | inverse_density: 1 | build_time 11696 | load_time 3.96034 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.491553
+ | size: 213255 | inverse_density: 1 | build_time 12023 | load_time 4.25306 | loged_error 20 | error_bound: 16 | meta's_err 16 | Q_value 0.510389
+ | size: 158897 | inverse_density: 1 | build_time 9261 | load_time 4.03353 | loged_error 16 | error_bound: 16 | meta's_err 16 | Q_value 0.530096
+ | size: 199285 | inverse_density: 1 | build_time 11125 | load_time 4.18498 | loged_error 16 | error_bound: 16 | meta's_err 16 | Q_value 0.536153
+ | size: 598848 | inverse_density: 0 | build_time 33288 | load_time 4.39531 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.254985
+ | size: 852705 | inverse_density: 0 | build_time 46715 | load_time 4.6567 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.300785
+ | size: 303269 | inverse_density: 0 | build_time 16681 | load_time 3.8959 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.377015
+ | size: 213255 | inverse_density: 1 | build_time 12003 | load_time 4.24273 | loged_error 16 | error_bound: 16 | meta's_err 16 | Q_value 0.537366
+ | size: 213255 | inverse_density: 1 | build_time 11919 | load_time 4.25761 | loged_error 16 | error_bound: 16 | meta's_err 16 | Q_value 0.537956
+ | size: 38972 | inverse_density: 1 | build_time 3448 | load_time 2.70142 | loged_error 16 | error_bound: 20 | meta's_err 20 | Q_value 0.56623
+ | size: 189809 | inverse_density: 2 | build_time 11369 | load_time 3.89026 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.528888
+ | size: 213255 | inverse_density: 1 | build_time 12034 | load_time 4.2542 | loged_error 20 | error_bound: 16 | meta's_err 16 | Q_value 0.555157
+ | size: 730188 | inverse_density: 0 | build_time 40222 | load_time 4.52034 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.382999
+ | size: 852705 | inverse_density: 0 | build_time 47061 | load_time 4.62886 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.377596
+ | size: 418570 | inverse_density: 0 | build_time 22928 | load_time 4.12898 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.410541
+ | size: 852705 | inverse_density: 0 | build_time 46683 | load_time 4.38873 | loged_error 24 | error_bound: 28 | meta's_err 28 | Q_value 0.397767
+ | size: 603133 | inverse_density: 0 | build_time 32951 | load_time 4.17615 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.409094
+ | size: 852705 | inverse_density: 0 | build_time 46995 | load_time 4.35393 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.397033
+ | size: 79927 | inverse_density: 0 | build_time 4354 | load_time 2.96319 | loged_error 28 | error_bound: 24 | meta's_err 24 | Q_value 0.483576
+Running db_bench with --num=20000000 --mod= --bwise=1 
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    20000000
+RawSize:    2212.5 MB (estimated)
+FileSize:   1258.9 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+fillrandom   :       2.676 micros/op;   41.3 MB/s;    53.522
+readrandom   :       4.020 micros/op;   27.5 MB/s (19999839 of 20000000 found);    80.394
+--------------------------------------------------
+memtable stall time: 3.84001 s
+L0 stall time: 0  s
+L0 slow stall time: 35.0498  s
+waf:10.3987
+Timer 0: 2170367744 : 2.170367744
+Timer 1: 1083082368 : 1.083082368
+Timer 2: 8593606656 : 8.593606656
+Timer 3: 9157744640 : 9.157744640
+Timer 4: 0 : 0.000000000
+Timer 5: 4636374528 : 4.636374528
+Timer 6: 34365341696 : 34.365341696
+Timer 7: 56325550080 : 56.325550080
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 3411744768 : 3.411744768
+Timer 12: 8872235008 : 8.872235008
+Timer 13: 0 : 0.000000000
+Timer 14: 8687368192 : 8.687368192
+Timer 15: 269011168 : 0.269011168
+Timer 16: 10314745856 : 10.314745856
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+------------------------------------------------------------------------------------------------ 
+  0         1         3       22         0        1255       1981          0          0       34
+  1         3         8       25     30188        3193       3055          4          4       94
+  2         9        94        3    399254         570        517         58         70        9
+  3        11       429        0         0           0          0          0          0        0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 26075764752 52827610304 40532570536 3529945088 0 0 0 0
+581 313 129 117 22 0 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup 693407744 238903296 97615872 181411840 175476736 0 0 0 0
+56868356 19968413 7661214 14443810 14794919 0 0 0 0
+Counter PutWait 33323 33277 46 0 0 0 0 0 0
+33323 33277 46 0 0 0 0 0 0
+Counter FileLearning -2147483648 112376560 494899872 1375863464 1428590592 0 0 0 0
+73 13 26 25 9 0 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 54025889 0 19827723 19403086 14795080 0 0 0 0
+54025889 0 19827723 19403086 14795080 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+-------------------------------------

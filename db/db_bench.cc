@@ -1292,8 +1292,7 @@ int main(int argc, char** argv) {
     } else if (sscanf(argv[i], "--bwise=%d%c", &n, &junk) == 1) {
       adgMod::bwise = n;
       adgMod::MOD = 7;
-      adgMod::file_model_error  = 16;
-      adgMod::sst_size = 3;
+      adgMod::sst_size =4;
     }else if (sscanf(argv[i], "--file_error=%d%c", &n, &junk) == 1) {
       adgMod::file_model_error  = n;
     } else if (sscanf(argv[i], "--lac=%d%c", &n, &junk) == 1) {

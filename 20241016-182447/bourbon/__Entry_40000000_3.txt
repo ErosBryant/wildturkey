@@ -1,0 +1,559 @@
+Running db_bench with --num=40000000 --mod=7 --bwise=0 
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    40000000
+RawSize:    4425.0 MB (estimated)
+FileSize:   2517.7 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+fillrandom   :       4.211 micros/op;   26.3 MB/s;   168.432
+readrandom   :       5.145 micros/op;   21.5 MB/s (40000000 of 40000000 found);   205.797
+--------------------------------------------------
+memtable stall time: 0.967765 s
+L0 stall time: 0  s
+L0 slow stall time: 138.019  s
+waf:13.1587
+Timer 0: 6522313216 : 6.522313216
+Timer 1: 2245386496 : 2.245386496
+Timer 2: 9597159424 : 9.597159424
+Timer 3: 13806896128 : 13.806896128
+Timer 4: 0 : 0.000000000
+Timer 5: 9111479296 : 9.111479296
+Timer 6: 34720739328 : 34.720739328
+Timer 7: 173191561216 : 173.191561216
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 926248896 : 0.926248896
+Timer 12: 15721524224 : 15.721524224
+Timer 13: 0 : 0.000000000
+Timer 14: 17286078464 : 17.286078464
+Timer 15: 537109120 : 0.537109120
+Timer 16: 16112482304 : 16.112482304
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+------------------------------------------------------------------------------------------------ 
+  0         1         3       50         0        2810       4289          0          0       70
+  1         7        10       77     21103        6612       6457          1          1      728
+  2        77        99       31     87308        3060       2762          8          9      453
+  3       469       916        0         0           0          0          0          0        0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 55292522272 137141465632 133981978668 36079609856 0 0 0 0
+3474 630 831 1387 626 0 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup 1639628800 498696192 197509120 426622976 516800512 0 0 0 0
+120782531 39936873 15547554 31008885 34289219 0 0 0 0
+Counter PutWait 131080 131063 17 0 0 0 0 0 0
+131080 131063 17 0 0 0 0 0 0
+Counter FileLearning 926246000 101485744 269602560 327190720 227966976 0 0 0 0
+115 12 38 41 24 0 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 113380147 0 39797891 39293037 34289219 0 0 0 0
+113380147 0 39797891 39293037 34289219 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+-------------------------------------
+Running db_bench with --num=40000000 --mod=8 --bwise=0 
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    40000000
+RawSize:    4425.0 MB (estimated)
+FileSize:   2517.7 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+fillrandom   :       4.324 micros/op;   25.6 MB/s;   172.967
+readrandom   :       6.843 micros/op;   16.2 MB/s (40000000 of 40000000 found);   273.740
+--------------------------------------------------
+memtable stall time: 0.443241 s
+L0 stall time: 0  s
+L0 slow stall time: 143.153  s
+waf:13.0942
+Timer 0: 6404308480 : 6.404308480
+Timer 1: 2275063040 : 2.275063040
+Timer 2: 10494938112 : 10.494938112
+Timer 3: 16231931904 : 16.231931904
+Timer 4: 0 : 0.000000000
+Timer 5: 9348404224 : 9.348404224
+Timer 6: 34927177728 : 34.927177728
+Timer 7: 178424578048 : 178.424578048
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 0 : 0.000000000
+Timer 12: 16028194816 : 16.028194816
+Timer 13: 0 : 0.000000000
+Timer 14: 17295800320 : 17.295800320
+Timer 15: 537435136 : 0.537435136
+Timer 16: 15543012352 : 15.543012352
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+------------------------------------------------------------------------------------------------ 
+  0         3         8       49         0        2793       4273          0          0       70
+  1         7        10       81     18130        6646       6492          1          1      726
+  2        73        99       32     97842        3017       2722          9         10      447
+  3       465       913        0         0           0          0          0          0        0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 53610684480 141379004888 140334354456 37068609536 0 0 0 0
+3452 630 826 1376 620 0 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup -2147483648 1432682496 192659456 401604608 528990208 0 0 0 0
+199654192 119390065 15609565 30629466 34025096 0 0 0 0
+Counter PutWait 135933 135926 7 0 0 0 0 0 0
+135933 135926 7 0 0 0 0 0 0
+Counter FileLearning 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 112553211 0 39518141 39009974 34025096 0 0 0 0
+112553211 0 39518141 39009974 34025096 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+-------------------------------------
+Running db_bench with --num=40000000 --mod=7 --bwise=1 
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    40000000
+RawSize:    4425.0 MB (estimated)
+FileSize:   2517.7 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+ | size: 71119 | inverse_density: 3 | build_time 3965 | load_time 2.98347 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.147152
+ | size: 71119 | inverse_density: 3 | build_time 3944 | load_time 3.20532 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.244423
+ | size: 71119 | inverse_density: 3 | build_time 3921 | load_time 3.16506 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.304048
+ | size: 71119 | inverse_density: 3 | build_time 3903 | load_time 3.18042 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.33971
+ | size: 71119 | inverse_density: 3 | build_time 3928 | load_time 3.20041 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.360293
+ | size: 71119 | inverse_density: 3 | build_time 3911 | load_time 3.20041 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.372877
+ | size: 71119 | inverse_density: 3 | build_time 3920 | load_time 2.97002 | loged_error 20 | error_bound: 24 | meta's_err 24 | Q_value 0.376756
+ | size: 71119 | inverse_density: 3 | build_time 3935 | load_time 2.9901 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.378423
+ | size: 213255 | inverse_density: 3 | build_time 11814 | load_time 3.75118 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.374206
+ | size: 71119 | inverse_density: 3 | build_time 4219 | load_time 3.18042 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.43257
+ | size: 71119 | inverse_density: 3 | build_time 3919 | load_time 3.24344 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.467828
+ | size: 140810 | inverse_density: 3 | build_time 7783 | load_time 3.43394 | loged_error 20 | error_bound: 24 | meta's_err 24 | Q_value 0.452529
+ | size: 71119 | inverse_density: 3 | build_time 4033 | load_time 3.2341 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.479348
+ | size: 71119 | inverse_density: 3 | build_time 3896 | load_time 2.97002 | loged_error 20 | error_bound: 24 | meta's_err 24 | Q_value 0.49097
+ | size: 71119 | inverse_density: 3 | build_time 3905 | load_time 3.16506 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.504921
+ | size: 424455 | inverse_density: 3 | build_time 23667 | load_time 4.47659 | loged_error 20 | error_bound: 20 | meta's_err 20 | Q_value 0.458796
+ | size: 71119 | inverse_density: 3 | build_time 5364 | load_time 3.02238 | loged_error 20 | error_bound: 24 | meta's_err 24 | Q_value 0.495262
+ | size: 71119 | inverse_density: 3 | build_time 3897 | load_time 2.94233 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.523561
+ | size: 213255 | inverse_density: 3 | build_time 11804 | load_time 3.75801 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.501082
+ | size: 213255 | inverse_density: 3 | build_time 11734 | load_time 3.54277 | loged_error 24 | error_bound: 28 | meta's_err 28 | Q_value 0.491647
+ | size: 138537 | inverse_density: 3 | build_time 7598 | load_time 3.2341 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.503757
+ | size: 852705 | inverse_density: 2 | build_time 46909 | load_time 4.51719 | loged_error 24 | error_bound: 28 | meta's_err 28 | Q_value 0.147152
+ | size: 130894 | inverse_density: 2 | build_time 7094 | load_time 3.00319 | loged_error 28 | error_bound: 32 | meta's_err 32 | Q_value 0.314784
+ | size: 213255 | inverse_density: 3 | build_time 12236 | load_time 3.51149 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.492437
+ | size: 213255 | inverse_density: 3 | build_time 11799 | load_time 3.55791 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.486007
+ | size: 63822 | inverse_density: 3 | build_time 3498 | load_time 2.86017 | loged_error 28 | error_bound: 24 | meta's_err 24 | Q_value 0.532596
+ | size: 74767 | inverse_density: 3 | build_time 4111 | load_time 2.9901 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.555499
+ | size: 203893 | inverse_density: 1 | build_time 11331 | load_time 3.7014 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.147152
+ | size: 852705 | inverse_density: 2 | build_time 47114 | load_time 4.32358 | loged_error 32 | error_bound: 32 | meta's_err 32 | Q_value 0.33872
+ | size: 208111 | inverse_density: 2 | build_time 11237 | load_time 3.1387 | loged_error 32 | error_bound: 36 | meta's_err 36 | Q_value 0.42031
+ | size: 213255 | inverse_density: 2 | build_time 11919 | load_time 3.20532 | loged_error 36 | error_bound: 36 | meta's_err 36 | Q_value 0.466851
+ | size: 213255 | inverse_density: 2 | build_time 11534 | load_time 2.98347 | loged_error 36 | error_bound: 40 | meta's_err 40 | Q_value 0.499901
+ | size: 144099 | inverse_density: 2 | build_time 7792 | load_time 2.73985 | loged_error 40 | error_bound: 40 | meta's_err 40 | Q_value 0.530982
+ | size: 213255 | inverse_density: 2 | build_time 11651 | load_time 3.21504 | loged_error 40 | error_bound: 36 | meta's_err 36 | Q_value 0.540872
+ | size: 124103 | inverse_density: 2 | build_time 6731 | load_time 2.81105 | loged_error 36 | error_bound: 36 | meta's_err 36 | Q_value 0.563755
+ | size: 852705 | inverse_density: 1 | build_time 47176 | load_time 4.71478 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.235443
+ | size: 207651 | inverse_density: 2 | build_time 11356 | load_time 3.16506 | loged_error 36 | error_bound: 36 | meta's_err 36 | Q_value 0.562057
+ | size: 348198 | inverse_density: 1 | build_time 19087 | load_time 4.05786 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.332345
+ | size: 416253 | inverse_density: 1 | build_time 23078 | load_time 4.18498 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.382973
+ | size: 213255 | inverse_density: 2 | build_time 11677 | load_time 3.19049 | loged_error 36 | error_bound: 36 | meta's_err 36 | Q_value 0.559988
+ | size: 213255 | inverse_density: 2 | build_time 11617 | load_time 3.16506 | loged_error 36 | error_bound: 36 | meta's_err 36 | Q_value 0.559375
+ | size: 62001 | inverse_density: 3 | build_time 3471 | load_time 3.08867 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.581032
+ | size: 213255 | inverse_density: 2 | build_time 11556 | load_time 3.00965 | loged_error 36 | error_bound: 40 | meta's_err 40 | Q_value 0.554842
+ | size: 37356 | inverse_density: 1 | build_time 2026 | load_time 2.42852 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.479582
+ | size: 158541 | inverse_density: 2 | build_time 8579 | load_time 2.87582 | loged_error 40 | error_bound: 40 | meta's_err 40 | Q_value 0.559723
+ | size: 852705 | inverse_density: 1 | build_time 47306 | load_time 4.69223 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.435196
+ | size: 150805 | inverse_density: 1 | build_time 8245 | load_time 3.40858 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.480066
+ | size: 356654 | inverse_density: 1 | build_time 19598 | load_time 4.07412 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.478214
+ | size: 213255 | inverse_density: 1 | build_time 11763 | load_time 3.76254 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.493791
+ | size: 213255 | inverse_density: 1 | build_time 12228 | load_time 3.97726 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.510498
+ | size: 213255 | inverse_density: 1 | build_time 11739 | load_time 3.71357 | loged_error 20 | error_bound: 24 | meta's_err 24 | Q_value 0.514099
+ | size: 119962 | inverse_density: 2 | build_time 6514 | load_time 2.78517 | loged_error 40 | error_bound: 36 | meta's_err 36 | Q_value 0.576024
+ | size: 852705 | inverse_density: 1 | build_time 46962 | load_time 4.7039 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.456119
+ | size: 205070 | inverse_density: 1 | build_time 11264 | load_time 3.69894 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.482455
+ | size: 852705 | inverse_density: 1 | build_time 46597 | load_time 4.47659 | loged_error 24 | error_bound: 28 | meta's_err 28 | Q_value 0.440541
+ | size: 205019 | inverse_density: 1 | build_time 11420 | load_time 3.50507 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.476496
+ | size: 852705 | inverse_density: 1 | build_time 47096 | load_time 4.47324 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.436469
+ | size: 409405 | inverse_density: 1 | build_time 22431 | load_time 3.97054 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.449937
+ | size: 845850 | inverse_density: 1 | build_time 46596 | load_time 4.47408 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.421065
+ | size: 852705 | inverse_density: 1 | build_time 46675 | load_time 4.46987 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.403713
+ | size: 333328 | inverse_density: 1 | build_time 18192 | load_time 3.76479 | loged_error 28 | error_bound: 28 | meta's_err 28 | Q_value 0.43969
+ | size: 852705 | inverse_density: 0 | build_time 46974 | load_time 4.64092 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.147152
+ | size: 1584407 | inverse_density: 0 | build_time 87314 | load_time 4.94665 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.235443
+ | size: 2081986 | inverse_density: 0 | build_time 114668 | load_time 5.07091 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.288417
+ | size: 1573831 | inverse_density: 0 | build_time 87244 | load_time 4.91828 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.334666
+ | size: 2069887 | inverse_density: 0 | build_time 114252 | load_time 5.03645 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.348546
+ | size: 1381482 | inverse_density: 0 | build_time 76582 | load_time 4.76237 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.37806
+ | size: 1435725 | inverse_density: 0 | build_time 79329 | load_time 4.78176 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.394135
+ | size: 1544227 | inverse_density: 0 | build_time 85140 | load_time 4.84303 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.400104
+ | size: 1929493 | inverse_density: 0 | build_time 106874 | load_time 4.91828 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.392532
+ | size: 1513218 | inverse_density: 0 | build_time 83753 | load_time 4.79798 | loged_error 24 | error_bound: 24 | meta's_err 24 | Q_value 0.400419
+ | size: 1559777 | inverse_density: 0 | build_time 86861 | load_time 5.06171 | loged_error 24 | error_bound: 20 | meta's_err 20 | Q_value 0.409628
+ | size: 1678115 | inverse_density: 0 | build_time 94080 | load_time 5.41816 | loged_error 20 | error_bound: 16 | meta's_err 16 | Q_value 0.421225
+ | size: 1773406 | inverse_density: 0 | build_time 99339 | load_time 5.44628 | loged_error 16 | error_bound: 16 | meta's_err 16 | Q_value 0.425467
+ | size: 1967771 | inverse_density: 0 | build_time 110033 | load_time 5.49314 | loged_error 16 | error_bound: 16 | meta's_err 16 | Q_value 0.422616
+ | size: 1473724 | inverse_density: 0 | build_time 82628 | load_time 5.29455 | loged_error 16 | error_bound: 16 | meta's_err 16 | Q_value 0.43775
+ | size: 1528684 | inverse_density: 0 | build_time 85237 | load_time 5.2932 | loged_error 16 | error_bound: 16 | meta's_err 16 | Q_value 0.445428
+ | size: 1516652 | inverse_density: 0 | build_time 83618 | load_time 5.00907 | loged_error 16 | error_bound: 20 | meta's_err 20 | Q_value 0.444329
+ | size: 1579192 | inverse_density: 0 | build_time 86380 | load_time 4.75219 | loged_error 20 | error_bound: 24 | meta's_err 24 | Q_value 0.435586
+fillrandom   :       3.358 micros/op;   32.9 MB/s;   134.337
+readrandom   :       4.770 micros/op;   23.2 MB/s (40000000 of 40000000 found);   190.819
+--------------------------------------------------
+memtable stall time: 8.13702 s
+L0 stall time: 0  s
+L0 slow stall time: 96.9  s
+waf:13.8235
+Timer 0: 2233499648 : 2.233499648
+Timer 1: 1162054784 : 1.162054784
+Timer 2: 13433641984 : 13.433641984
+Timer 3: 13043730432 : 13.043730432
+Timer 4: 0 : 0.000000000
+Timer 5: 8918931456 : 8.918931456
+Timer 6: 34569351168 : 34.569351168
+Timer 7: 142903361536 : 142.903361536
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 4866445312 : 4.866445312
+Timer 12: 15619322880 : 15.619322880
+Timer 13: 0 : 0.000000000
+Timer 14: 17190264832 : 17.190264832
+Timer 15: 276967424 : 0.276967424
+Timer 16: 21568972800 : 21.568972800
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+------------------------------------------------------------------------------------------------ 
+  0         1         3       47         0        2595       4077          0          0       69
+  1         4         8       51    152554        6460       6312         17         17      200
+  2         9        97       33   1947414        4088       3779        130        132       46
+  3        12       917        0         0           0          0          0          0        0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 55484894832 108839776312 108960491492 34090535936 0 0 0 0
+1220 629 272 261 58 0 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup 1470447616 506765312 184958976 349052928 429670400 0 0 0 0
+118097404 39935910 15452753 28286875 34421866 0 0 0 0
+Counter PutWait 92097 91978 119 0 0 0 0 0 0
+92097 91978 119 0 0 0 0 0 0
+Counter FileLearning -2147483648 108229872 443597280 1305060032 3009560576 0 0 0 0
+79 13 25 24 17 0 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 113585275 0 39797891 39365518 34421866 0 0 0 0
+113585275 0 39797891 39365518 34421866 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+-------------------------------------
+Running db_bench with --num=40000000 --mod=8 --bwise=1 
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    40000000
+RawSize:    4425.0 MB (estimated)
+FileSize:   2517.7 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+fillrandom   :       3.316 micros/op;   33.4 MB/s;   132.635
+readrandom   :       3.654 micros/op;   30.3 MB/s (40000000 of 40000000 found);   146.154
+--------------------------------------------------
+memtable stall time: 8.92872 s
+L0 stall time: 0  s
+L0 slow stall time: 94.1125  s
+waf:14.1862
+Timer 0: 2156649728 : 2.156649728
+Timer 1: 1117891072 : 1.117891072
+Timer 2: 12444155904 : 12.444155904
+Timer 3: 12985973760 : 12.985973760
+Timer 4: 0 : 0.000000000
+Timer 5: 8886464512 : 8.886464512
+Timer 6: 34479407104 : 34.479407104
+Timer 7: 143344156672 : 143.344156672
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 0 : 0.000000000
+Timer 12: 15695794176 : 15.695794176
+Timer 13: 0 : 0.000000000
+Timer 14: 17150100480 : 17.150100480
+Timer 15: 301230560 : 0.301230560
+Timer 16: 22563350528 : 22.563350528
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+
+                               Compactions
+Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+------------------------------------------------------------------------------------------------ 
+  0         0         0       47    360332        2599       4081         35         35       69
+  1         1         8       55    249545        6741       6587         29         29      208
+  2        10        89       29   1288269        4079       3768        144        161       47
+  3        13       921        0         0           0          0          0          0        0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 55117983600 112685617008 110759599052 30688367616 0 0 0 0
+1238 629 280 270 59 0 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup 931381248 27713536 204152832 262111232 437403648 0 0 0 0
+75046920 2217617 17054858 20831239 34943206 0 0 0 0
+Counter PutWait 89441 89325 116 0 0 0 0 0 0
+89441 89325 116 0 0 0 0 0 0
+Counter FileLearning 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 114397834 0 39934554 39520074 34943206 0 0 0 0
+114397834 0 39934554 39520074 34943206 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+-------------------------------------

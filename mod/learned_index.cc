@@ -30,6 +30,10 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
   assert(string_segments.size() > 1);
   ++served;
 
+
+  uint64_t lower=0;
+  uint64_t upper=0;
+  if (bwise==1){
   // check if the key is within the model bounds
   uint64_t target_int = SliceToInteger(target_x);
   if (target_int > max_key) return std::make_pair(size, size);
@@ -55,9 +59,9 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
   //double error_bound = this->meta->error > 3 ? this->meta->error : 40;     // 调用对应SST的error_bound
   double error_bound = this->meta->error;
   //error_bound = 50;
-  uint64_t lower =
+  lower =
       result - error > 0 ? (uint64_t)std::floor(result - error_bound) : 0;
-  uint64_t upper = (uint64_t)std::ceil(result + error_bound);
+  upper = (uint64_t)std::ceil(result + error_bound);
   if (lower >= size) return std::make_pair(size, size);
   upper = upper < size ? upper : size - 1;
   //std::cout << error_bound << std::endl;
@@ -65,6 +69,33 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
   //                string(target_x.data(), target_x.size()).c_str(),
   //                string_keys[upper].c_str()); assert(target_x >=
   //                string_keys[lower] && target_x <= string_keys[upper]);
+
+  }  else{
+    uint64_t target_int = SliceToInteger(target_x);
+    if (target_int > max_key) return std::make_pair(size, size);
+    if (target_int < min_key) return std::make_pair(size, size);
+
+  // binary search between segments
+  uint32_t left = 0, right = (uint32_t)string_segments.size() - 1;
+  while (left != right - 1) {
+    uint32_t mid = (right + left) / 2;
+    if (target_int < string_segments[mid].x)
+      right = mid;
+    else
+      left = mid;
+  }
+
+  // calculate the interval according to the selected segment
+  double result =
+      target_int * string_segments[left].k + string_segments[left].b;
+  result = is_level ? result / 2 : result;
+ lower =
+      result - error > 0 ? (uint64_t)std::floor(result - error) : 0;
+   upper = (uint64_t)std::ceil(result + error);
+  if (lower >= size) return std::make_pair(size, size);
+  upper = upper < size ? upper : size - 1;
+  }
+
   return std::make_pair(lower, upper);
 }
 
@@ -129,6 +160,7 @@ bool LearnedIndexData::Learn() {
   // PLR plr = PLR(error);                           // error可调整为q-table对应的error
 
   // check if data if filled
+   if(bwise==1){
   if (string_keys.empty()) assert(false);
 
   // fill in some bounds for the model
@@ -179,7 +211,7 @@ bool LearnedIndexData::Learn() {
   double Q_value = adgMod::getQTableManagerInstance().compute_q_value(inverse_density, reward);
 
   //std::cout << "max_key: " << max_key << " | min_key: " << min_key << " | size: " << size << " | inverse_density: " << inverse_density << " | error_bound: " << temp_error << " | Q_value " << Q_value << std::endl;
-  std::cout << " | size: " << size << " | inverse_density: " << inverse_density << " | build_time " << build_time << " | load_time " << weighted_sum <<" | loged_error " << adgMod::getQTableManagerInstance().Q_table[inverse_density].error_bound << " | error_bound: " << temp_error << " | meta's_err " << this->meta->error << " | Q_value " << Q_value << std::endl;
+  // std::cout << " | size: " << size << " | inverse_density: " << inverse_density << " | build_time " << build_time << " | load_time " << weighted_sum <<" | loged_error " << adgMod::getQTableManagerInstance().Q_table[inverse_density].error_bound << " | error_bound: " << temp_error << " | meta's_err " << this->meta->error << " | Q_value " << Q_value << std::endl;
   adgMod::getQTableManagerInstance().Q_table[inverse_density].error_bound = temp_error;
   
 
@@ -191,6 +223,31 @@ bool LearnedIndexData::Learn() {
 
   for (auto& str : string_segments) {
     // printf("%s %f\n", str.first.c_str(), str.second);
+  }
+  }else{
+
+    PLR plr = PLR(error);
+
+  // check if data if filled
+  if (string_keys.empty()) assert(false);
+
+  // fill in some bounds for the model
+  uint64_t temp = atoll(string_keys.back().c_str());
+  min_key = atoll(string_keys.front().c_str());
+  max_key = atoll(string_keys.back().c_str());
+  size = string_keys.size();
+
+  // actual training
+  std::vector<Segment> segs = plr.train(string_keys, !is_level);
+  if (segs.empty()) return false;
+  // fill in a dummy last segment (used in segment binary search)
+  segs.push_back((Segment){temp, 0, 0});
+  string_segments = std::move(segs);
+
+  for (auto& str : string_segments) {
+    // printf("%s %f\n", str.first.c_str(), str.second);
+  }
+
   }
 
   learned.store(true);
