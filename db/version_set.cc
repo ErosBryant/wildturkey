@@ -1720,22 +1720,24 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
     }
 
 uint64_t Compaction::MaxOutputFileSizeineachlevel(int level) {
+
+
     if(level == 0){
-        return max_output_file_size_*pow(adgMod::sst_size,1);
+        return 2097152*pow(adgMod::sst_size,1);
     }else if (level == 1){
-        return max_output_file_size_*pow(adgMod::sst_size,2);
+        return 2097152*pow(adgMod::sst_size,2);
     } else if (level == 2){
-        return max_output_file_size_*pow(adgMod::sst_size,3);
+        return 2097152*pow(adgMod::sst_size,3);
     } else if (level == 3){
-        return max_output_file_size_*pow(adgMod::sst_size,4);
+        return 2097152*pow(adgMod::sst_size,4);
     } else if (level == 4){
-        return max_output_file_size_*pow(adgMod::sst_size,5);
+        return 2097152*pow(adgMod::sst_size,5);
     } else if (level == 5){
-        return max_output_file_size_*pow(adgMod::sst_size,6);
+        return 2097152*pow(adgMod::sst_size,6);
     }
 
+    printf("Error in MaxOutputFileSizeineachlevel");
     return 2097152*adgMod::sst_size;
-    // return 4 * 1024 * 1024;
 
     //int test = pow((max_output_file_size_/1024/1024),level+1)*1024*1024;
     //int test = (max_output_file_size_/1024/1024)*1024*1024;

@@ -486,10 +486,33 @@ class Benchmark {
       } else if (name == Slice("fillseq")) {
         fresh_db = true;
         method = &Benchmark::WriteSeq;
+      } else if (name == Slice("uni40")) {
+      uint64_t key;
+      fresh_db = true;
+      input_file = "/mnt/datasets/uniform/keys_40m.txt";
+      std::ifstream input; 
+      input.open(input_file); 
+      if (!input.is_open()) {
+          std::cerr << "Error opening file" << std::endl;
+          exit(1);
+      }
+      std::string line;
+      while (std::getline(input, line)) {
+          key = std::stoull(line);
+          data.push_back(key);
+      }
+
+      input.close();
+      method = &Benchmark::unirandom;
+      } else if (name == Slice("uniread")) {
+      
+      method = &Benchmark::unirandom_read;
+
       } else if (name == Slice("osm_w")) {
       uint64_t key;
       fresh_db = true;
-      input_file = "/mnt/1tb/data_set/data/osm_cellids_200M_uint64";
+  
+      input_file = "/mnt/datasets/data_set/data/osm_cellids_200M_uint64";
       std::ifstream input; 
       input.open(input_file, std::ios::binary); 
       if (!input.is_open()) {
@@ -500,13 +523,13 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      std::random_shuffle(data.begin(), data.end());
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       } else if (name == Slice("book_w")) {
       uint64_t key;
       fresh_db = true;
-      input_file = "/mnt/1tb/data_set/data/books_200M_uint64";
+      input_file = "/mnt/datasets/data_set/data/books_200M_uint64";
       std::ifstream input; 
       input.open(input_file, std::ios::binary); 
       if (!input.is_open()) {
@@ -524,7 +547,7 @@ class Benchmark {
        else if (name == Slice("fb_w")) {
       uint64_t key;
       fresh_db = true;
-      input_file = "/mnt/1tb/data_set/data/fb_200M_uint64";
+      input_file = "/mnt/datasets/data_set/data/fb_200M_uint64";
       std::ifstream input; 
       input.open(input_file, std::ios::binary); 
       if (!input.is_open()) {
@@ -542,7 +565,7 @@ class Benchmark {
        else if (name == Slice("wiki_w")) {
       uint64_t key;
       fresh_db = true;
-      input_file = "/mnt/1tb/data_set/data/wiki_ts_200M_uint64";
+      input_file = "/mnt/datasets/data_set/data/wiki_ts_200M_uint64";
       std::ifstream input; 
       input.open(input_file, std::ios::binary); 
       if (!input.is_open()) {
@@ -829,7 +852,7 @@ class Benchmark {
       snprintf(msg, sizeof(msg), "(%d ops)", num_);
       thread->stats.AddMessage(msg);
     }
-    if(!FLAGS_use_real_data){ 
+
       for (int i = 0; i < num_; i += entries_per_batch_) {
         batch.Clear();
         for (int j = 0; j < entries_per_batch_; j++) {
@@ -846,7 +869,7 @@ class Benchmark {
         }
       }
       thread->stats.AddBytes(bytes);
-    }
+
     }
     
   void DoWrite(ThreadState* thread, bool seq) { // here
@@ -854,7 +877,7 @@ class Benchmark {
     WriteBatch batch;
     Status s;
     int64_t bytes = 0;
-    // std::ofstream output_file("/home/eros/workspace-lsm/wildturkey/db/k_values.txt");
+    // std::ofstream output_file("/mnt/datasets/uniform/keys_64m.txt");
     if (num_ != FLAGS_num) {
       char msg[100];
       snprintf(msg, sizeof(msg), "(%d ops)", num_);
@@ -876,36 +899,103 @@ class Benchmark {
         }
       }
       thread->stats.AddBytes(bytes);
-    // } else if(FLAGS_use_real_data){
-    //   std::ifstream real_data_file(std::string(FLAGS_path_real_data) + "osm50m.txt");
-    //   std::string real_data_key;
+    } else if(FLAGS_use_real_data){
+      std::ifstream real_data_file(std::string(FLAGS_path_real_data) + "osm50m.txt");
+      std::string real_data_key;
 
-    //   if (!real_data_file.is_open()) {
-    //     fprintf(stderr, "Invalid real data file: %s\n", (std::string(FLAGS_path_real_data) + "osm50m.txt").c_str());
-    //     exit(1);
-    //   }
+      if (!real_data_file.is_open()) {
+        fprintf(stderr, "Invalid real data file: %s\n", (std::string(FLAGS_path_real_data) + "osm50m.txt").c_str());
+        exit(1);
+      }
 
-    //   for (int i = 0; i < num_; i += entries_per_batch_) {
-    //     batch.Clear();
-    //     for (int j = 0; j < entries_per_batch_; j++) {
-    //       char key[100];
-    //       int k;
-    //       if (!std::getline(real_data_file, real_data_key)) {
-    //         fprintf(stderr, "Not enough keys in the file. Generating key instead.\n"); // not engouh keys so we generate
-    //         k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
-    //         snprintf(key, sizeof(key), "%016d", k);
-    //       } else {
-    //         // fprintf(stderr, "written key: %s\n", real_data_key.c_str());
-    //         snprintf(key, sizeof(key), "%s", real_data_key.c_str());
-    //       }
-    //       db_->Put(write_options_, key, gen.Generate(value_size_));
-    //       bytes += value_size_ + strlen(key);
-    //       thread->stats.FinishedSingleOp();
-    //     }
-    //   }
+      for (int i = 0; i < num_; i += entries_per_batch_) {
+        batch.Clear();
+        for (int j = 0; j < entries_per_batch_; j++) {
+          char key[100];
+          int k;
+          if (!std::getline(real_data_file, real_data_key)) {
+            fprintf(stderr, "Not enough keys in the file. Generating key instead.\n"); // not engouh keys so we generate
+            k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
+            snprintf(key, sizeof(key), "%016d", k);
+          } else {
+            // printf("written key: %s\n", real_data_key.c_str());
+            // fprintf(stderr, "written key: %s\n", real_data_key.c_str());
+            snprintf(key, sizeof(key), "%s", real_data_key.c_str());
+          }
+          db_->Put(write_options_, key, gen.Generate(value_size_));
+          bytes += value_size_ + strlen(key);
+          thread->stats.FinishedSingleOp();
+        }
+      }
     }
+      if (adgMod::bwise==1 or adgMod::sst_size>=1){
+      static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
+      }
     //  output_file.close();
   }
+
+  void unirandom(ThreadState* thread) {
+
+    RandomGenerator gen;
+
+    Status s;
+    int64_t bytes = 0;
+    
+    if (num_ != FLAGS_num) {
+      char msg[100];
+      snprintf(msg, sizeof(msg), "(%d ops)", num_);
+      thread->stats.AddMessage(msg);
+    }
+
+      for (int i = 0; i < num_; i += entries_per_batch_) {
+          // const int k = thread->rand.Next() % FLAGS_num;
+          const int k = data[i];
+          // printf("key: %d\n", k);
+          char key[100];
+          snprintf(key, sizeof(key), "%016d", k);
+          // db_->Put(write_options_, key, Slice("11111111111111"));
+          db_->Put(write_options_, key, gen.Generate(value_size_));
+          bytes += value_size_ + strlen(key);
+          thread->stats.FinishedSingleOp();
+        
+      }
+      thread->stats.AddBytes(bytes);
+      // only for read performance test   只有测试读性能时才需要手动compaction
+      if (adgMod::bwise==1 or adgMod::sst_size>=1){
+      // db_->CompactRange(nullptr, nullptr);
+      static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
+      }
+  }
+
+
+  void unirandom_read(ThreadState* thread) {
+    
+    ReadOptions options;
+    std::string value;
+    int found = 0;
+    char key[100];
+    int64_t bytes = 0;
+    int k;
+
+      for (int i = 0; i < reads_ ; i++) {
+        // printf("key: %d\n", data[i]);
+          k = data[i];
+         snprintf(key, sizeof(key), "%016d", k);
+        //  printf("the_key: %s\n", the_key.c_str());
+        //  printf("key22: %s\n", key.c_str());
+        if (db_->Get(options, key, &value).ok()) {
+                found++;
+                bytes += value.size() + strlen(key);
+          }
+          thread->stats.FinishedSingleOp();
+    }
+    thread->stats.AddBytes(bytes);
+    char msg[100];
+    snprintf(msg, sizeof(msg), "(%d of %d found)", found, num_);
+    thread->stats.AddMessage(msg);
+  }
+
+
 
 
   void real_workload_w(ThreadState* thread) {
@@ -921,7 +1011,7 @@ class Benchmark {
       for (int i = 0; i < num_ ; i++) {
         // printf("key: %d\n", data[i]);
         the_key = adgMod::generate_key(std::to_string(data[i]));
-        db_->Put(write_options_, the_key, gen.Generate(value_size_));
+        db_->Put(write_options_, the_key, Slice("11111111111111"));
         thread->stats.FinishedSingleOp();
         bytes += value_size_ + the_key.length();
    }
@@ -943,25 +1033,8 @@ class Benchmark {
     string the_key;
     
     int found = 0;
-    // std::string input_file ="/mnt/1tb/real_workload/data/wiki_ts_200M_uint64";
-    // std::ifstream input(input_file,std::ios::binary);
-    // std::ifstream xinput(input_file);
+    int64_t bytes = 0;
 
-    // if (!input.is_open()) {
-    //     std::cerr << "Error opening file" << std::endl;
-    //     exit(1);
-    // }
-
-    // while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
-    //     data.push_back(key);
-    // }
-
-    // std::random_shuffle(data.begin(), data.end());
-
-  //  while(data.size()){
-    // printf("data size: %d\n", data.size());
-    // printf("num: %d\n", num_);
-    // for (int i = 0; i < data.size(); i++) {
       for (int i = 0; i < reads_ ; i++) {
         // printf("key: %d\n", data[i]);
         the_key = adgMod::generate_key(std::to_string(data[i]));
@@ -969,10 +1042,12 @@ class Benchmark {
         //  printf("key22: %s\n", key.c_str());
         if (db_->Get(options, the_key, &value).ok()) {
                 found++;
-              }
+              bytes += value.size() + the_key.length();
+          }
           thread->stats.FinishedSingleOp();
     }
-       char msg[100];
+    thread->stats.AddBytes(bytes);
+    char msg[100];
     snprintf(msg, sizeof(msg), "(%d of %d found)", found, num_);
     thread->stats.AddMessage(msg);
   }
@@ -1014,7 +1089,6 @@ class Benchmark {
     char key[100];
     int64_t bytes = 0;
     int k;
-    if(!FLAGS_use_real_data){ // kaloiii - diri ang original 
       for (int i = 0; i < reads_; i++) {
         int k =  thread->rand.Zipfian(FLAGS_num, 1.0);
         snprintf(key, sizeof(key), "%016d", k);
@@ -1024,35 +1098,7 @@ class Benchmark {
         }
         thread->stats.FinishedSingleOp();
       }
-    } else if(FLAGS_use_real_data){
-      std::ifstream real_data_file(std::string(FLAGS_path_real_data) + "osm50m.txt");
-      std::string real_data_key;
 
-      if (!real_data_file.is_open()) {
-        fprintf(stderr, "Invalid real data file: %s\n", (std::string(FLAGS_path_real_data) + "osm50m.txt").c_str());
-        exit(1);
-      }
-
-      for (int i = 0; i < reads_; i++) {
-
-        if (!std::getline(real_data_file, real_data_key)) {
-          fprintf(stderr, "Not enough keys in the file. Generating key instead.\n"); // not engouh keys so we generate
-          k = thread->rand.Next() % FLAGS_num;
-          snprintf(key, sizeof(key), "%016d", k);
-        } else {
-          // fprintf(stderr, "read key: %s\n", real_data_key.c_str());
-          snprintf(key, sizeof(key), "%s", real_data_key.c_str());
-        }
-        
-        if (db_->Get(options, key, &value).ok()) {
-          found++;
-        }
-        thread->stats.FinishedSingleOp();
-      }
-
-      // snprintf(key, sizeof(key), "%s", real_data_key.c_str());
-
-    }
     thread->stats.AddBytes(bytes);
     char msg[100];
     snprintf(msg, sizeof(msg), "(%d of %d found)", found, num_);
@@ -1292,15 +1338,14 @@ int main(int argc, char** argv) {
     } else if (sscanf(argv[i], "--bwise=%d%c", &n, &junk) == 1) {
       adgMod::bwise = n;
       adgMod::MOD = 7;
-      adgMod::sst_size =4;
+      adgMod::sst_size = 4;
     }else if (sscanf(argv[i], "--file_error=%d%c", &n, &junk) == 1) {
       adgMod::file_model_error  = n;
     } else if (sscanf(argv[i], "--lac=%d%c", &n, &junk) == 1) {
-      adgMod::bwise = 1;
+      adgMod::MOD = 7;
+      // printf("lac: %d\n", n);
       adgMod::sst_size = n;
-    } else if (sscanf(argv[i], "--file_input=",13) == 1) {
-     input_file = argv[i] + 13;
-    }else if (strncmp(argv[i], "--db=", 5) == 0) {
+    } else if (strncmp(argv[i], "--db=", 5) == 0) {
         FLAGS_db = argv[i] + 5;
     } else if (sscanf(argv[i], "--use_real_data=%d%c", &n, &junk) == 1 && (n == 0 || n == 1)) {
       FLAGS_use_real_data = n;

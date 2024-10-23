@@ -57,7 +57,7 @@ namespace adgMod {
     uint64_t block_size = 0;
     uint64_t entry_size = 0;
     
-    int sst_size = 1;
+    int sst_size = 0;
 
 
     vector<Counter> levelled_counters(15);

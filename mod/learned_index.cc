@@ -30,7 +30,7 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
   assert(string_segments.size() > 1);
   ++served;
 
-
+ 
   uint64_t lower=0;
   uint64_t upper=0;
   if (bwise==1){
@@ -60,7 +60,7 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
   double error_bound = this->meta->error;
   //error_bound = 50;
   lower =
-      result - error > 0 ? (uint64_t)std::floor(result - error_bound) : 0;
+      result - error_bound > 0 ? (uint64_t)std::floor(result - error_bound) : 0;
   upper = (uint64_t)std::ceil(result + error_bound);
   if (lower >= size) return std::make_pair(size, size);
   upper = upper < size ? upper : size - 1;
@@ -162,7 +162,7 @@ bool LearnedIndexData::Learn() {
   // check if data if filled
    if(bwise==1){
   if (string_keys.empty()) assert(false);
-
+  // printf("learned\n");
   // fill in some bounds for the model
   uint64_t temp = atoll(string_keys.back().c_str());
   min_key = atoll(string_keys.front().c_str());   // SST内最小Key, 为Uint64型
@@ -244,9 +244,9 @@ bool LearnedIndexData::Learn() {
   segs.push_back((Segment){temp, 0, 0});
   string_segments = std::move(segs);
 
-  for (auto& str : string_segments) {
-    // printf("%s %f\n", str.first.c_str(), str.second);
-  }
+  // for (auto& str : string_segments) {
+  //   // printf("%s %f\n", str.first.c_str(), str.second);
+  // }
 
   }
 
@@ -338,12 +338,12 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
     learn_counter_mutex.Unlock();
   }
 
-  if (!fresh_write) {
-             self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
-             to_string(mas->meta->number) + ".fmodel");
-             self->string_keys.clear();
-             self->num_entries_accumulated.array.clear();
-         }
+  // if (!fresh_write) {
+  //            self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
+  //            to_string(mas->meta->number) + ".fmodel");
+  //            self->string_keys.clear();
+  //           //  self->num_entries_accumulated.array.clear();
+  //        }
 
   if (!fresh_write) delete mas->meta;
   delete mas;
@@ -539,8 +539,9 @@ FileLearnedIndexData::~FileLearnedIndexData() {
 
 void FileLearnedIndexData::Report() {
   leveldb::MutexLock l(&mutex);
-
+  int64_t segement_size=0;
   std::set<uint64_t> live_files;
+  int count = 0;
   adgMod::db->versions_->AddLiveFiles(&live_files);
 
   for (size_t i = 0; i < file_learned_index_data.size(); ++i) {
@@ -548,8 +549,12 @@ void FileLearnedIndexData::Report() {
     if (pointer != nullptr && pointer->cost != 0) {
       printf("FileModel %lu %d ", i, i > watermark);
       pointer->ReportStats();
+      count++;
+      segement_size += pointer->string_segments.size();
     }
   }
+  segement_size = segement_size / count;
+  printf("Average Segement Size: %ld\n", segement_size);
 }
 
 void AccumulatedNumEntriesArray::Add(uint64_t num_entries, string&& key) {

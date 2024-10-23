@@ -3,24 +3,25 @@
 python3 ./test.py testing start 
 
 # Define the desired --num values in an array
-nums=(20000000 40000000)
-# nums=(200000)
+# nums=(64000000)
+nums=(20000000)
 
-# Define error bounds
-# error_bound=(2 4 8 16 32 64)
 
 # Define various configurations
 # memtable_size=(4)
-# max_file_size=(4 8 16)
+max_file_size=(2 4 8 16 32)
+number_of_runs=5
+# bwise=(1 0)
+lac=(1 2 3 4 5 6 7 8 9 10)
+file_error=(2 4 8 16 32)
 
-number_of_runs=3
-bwise=(1)
-# mod=(7 8)
+# lac=(5)
+# file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
-# output_dir="/home/eros/workspace-lsm/wildturkey/$current_time/wt/"
-output_dir="/home/eros/workspace-lsm/wildturkey/20241016-182447/wt/"
+output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
+# output_dir="/mnt/lac-sec/$current_time/20m_sst_err/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
@@ -31,6 +32,7 @@ total_experiment="/mnt/1tb/lac_experiment/"
 # Create output directories if they do not exist
 if [ ! -d "$output_dir" ]; then
    mkdir -p "$output_dir"
+   mkdir -p "${output_dir}summary_results/"
 fi
 
 # if [ ! -d "$total_experiment" ]; then
@@ -39,140 +41,75 @@ fi
 
 # Execute the db_bench command for each configuration and save results
 for num in "${nums[@]}"; do
-   for wt in "${bwise[@]}"; do
-      # for mods in "${mod[@]}"; do
-      # for error in "${error_bound[@]}"; do
-         # for mem_size in "${memtable_size[@]}"; do
-         #    for sst_size in "${max_file_size[@]}"; do
-               # declare -a fill_array=()
-               # declare -a fread_array=()
-               # declare -a segment_array=()
+   # for lacd in "${lac[@]}"; do
+   # for bw in "${bwise[@]}"; do
+   # for max in "${max_file_size[@]}"; do
+      # for err in "${file_error[@]}"; do
+         # Initialize summary output file
+         summary_output="${output_dir}summary_results/-blac=${lacd}-err=${err}_num=${num}.csv"
+         echo "  num,  run, write_micros/op, read_micros/op, write_MB/s, read_MB/s, max , err , waf, memtable_stall, L0_stall, L0_slow_stall, avg_segment_size" > "$summary_output"
 
-               # # Initialize average variables
-               # fill_avg=0
-               # read_avg=0
-               # segment_avg=0
 
-               # Initialize summary output file
-               # summary_output="${output_dir}summary_results_SST_${sst_times}.txt"
-               # echo "num, run, fillrandom, readrandom, sst_times" >> "$summary_output"
+         # 변수 리스트 초기화
+         write_micros_list=()
+         read_micros_list=()
+         write_mb_list=()
+         read_mb_list=()
+         for i in $(seq 1 $number_of_runs); do
+            # Define output file
+            # lac=${lacd}
+            # max_file_size=${max}
+            # error=${err}
+            # bwise=${bw}
+            output_file="${output_dir}max_file_size=${max}_error=${err}_num=${num}_${i}.csv"
+            echo "Running db_bench with --num=$num  max_file_size=${max}  --file_error=$err --mod=7 " > "$output_file"
 
-               for i in $(seq 1 $number_of_runs); do
-                  # output_file="${output_dir}SST_MEM_${mem_size}MB_${sst_size}MB_${sst_times}_Entry_${num}_error_${error}_${i}.txt" --lac=$sst_times
-                  output_file="${output_dir}_${sst_times}_Entry_${num}_${i}.txt"
-                  echo "Running db_bench with --num=$num --mod=$mods --bwise=$wt " >> "$output_file"
-                  # ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --mod=7 --num=$num --write_buffer_size=$mem_size --max_file_size=$sst_size --file_error=$error --sst_times=$sst_times >> "$output_file"
-                  ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --bwise=$wt --num=$num  >> "$output_file"
-                  echo "-------------------------------------" >> "$output_file"
-               
-                  # Extract fillrandom and readrandom performance data
-                  # fillrandom=$(grep "fillrandom" "$output_file" | tail -1 | awk '{print $3}')
-                  # readrandom=$(grep "readrandom" "$output_file" | tail -1 | awk '{print $3}')
-                  # segment_size=$(grep "segement_size" "$output_file" | awk '{print $2}')
+            # Run the benchmark
+            # uni40,uniread,stats
+            # osm_w,real_r,stats
+            # fillrandom,readrandom
+            # --lac=$lacd 
+            # --bwise=$bw
+            # --max_file_size=$max
+            # --file_error=$err
+            ${test_dir}/db_bench --benchmarks="uni40,uniread,stats" --mod=7 --num=$num >> "$output_file"
+            echo "-------------------------------------" >> "$output_file"
 
-                  # fill_array+=($fillrandom)
-                  # fread_array+=($readrandom)
-                  # segment_array+=($segment_size)
-               #  $segment_size
-                  # echo "$num,  $i, $fillrandom, $readrandom, $lac" >> "$summary_output"
+            # Extract performance data
+            write_micros_per_op=$(grep "uni40" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
+            read_micros_per_op=$(grep "uniread" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
+            write_mb_per_s=$(grep "uni40" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s;") print $(i-1)}')
+            read_mb_per_s=$(grep "uniread" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
+            waf=$(grep 'waf:' "$output_file" | awk -F':' '{print $2}')
+            memtable_stall=$(grep 'memtable stall time' "$output_file" | awk '{print $(NF-1)}')
+            l0_stall=$(grep 'L0 stall time' "$output_file" | awk '{print $(NF-1)}')
+            l0_slow_stall=$(grep 'L0 slow stall time' "$output_file" | awk '{print $(NF-1)}')
+            avg_segment_size=$(grep 'Average Segement Size' "$output_file" | awk '{print $NF}')
             
-                  sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-               done
-         
-               # fill_sum=$(IFS=+; echo "${fill_array[*]}" | bc)
-               # read_sum=$(IFS=+; echo "${fread_array[*]}" | bc)
-               # segment_sum=$(IFS=+; echo "${segment_array[*]}" | bc)
+                     # 리스트에 성능 데이터 추가
+            write_micros_list+=($write_micros_per_op)
+            read_micros_list+=($read_micros_per_op)
+            write_mb_list+=($write_mb_per_s)
+            read_mb_list+=($read_mb_per_s)
+            # Append data to summary output file
+            echo "$num, $i,     $write_micros_per_op,          $read_micros_per_op,         $write_mb_per_s,       $read_mb_per_s,   $lacd  ,$err  ,  $waf,     $memtable_stall,    $l0_stall,      $l0_slow_stall,          $avg_segment_size" >> "$summary_output"
 
-               # fill_avg=$(echo "scale=2; $fill_sum/$number_of_runs" | bc)
-               # read_avg=$(echo "scale=2; $read_sum/$number_of_runs" | bc)
-               # segment_avg=$(echo "scale=2; $segment_sum/$number_of_runs" | bc)
+            # Clear system cache
+            sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+         done
 
-            
-               # echo "fillrandom_avg: $fill_avg" >> "$summary_output"
-               # echo "readrandom_avg: $read_avg" >> "$summary_output"
-               # echo "segment_avg: $segment_avg" >> "$summary_output"
+       
+         avg_write_micros=$(echo "${write_micros_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
+         avg_read_micros=$(echo "${read_micros_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
+         avg_write_mb=$(echo "${write_mb_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
+         avg_read_mb=$(echo "${read_mb_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
 
-               # fill_avg_all=$(grep "fillrandom_avg" "$summary_output" | awk '{print $2}')
-               # read_avg_all=$(grep "readrandom_avg" "$summary_output" | awk '{print $2}')
-               # segment_avg_all=$(grep "segment_avg" "$summary_output" | awk '{print $2}')
-
-               # echo "SST: ${sst_times} _ error:${error}" >>  "${total_experiment}${current_time}_result.txt"
-               # echo "fillrandom_avg_all: $fill_avg_all" >> "${total_experiment}${current_time}_result.txt"
-               # echo "readrandom_avg_all: $read_avg_all" >> "${total_experiment}${current_time}_result.txt"
-               # echo "segment_avg_all: $segment_avg_all" >>"${total_experiment}${current_time}_result.txt"
-      
-      # done
+         # 평균값을 summary_output 파일에 추가
+         echo "Average, avg_write_micros, avg_read_micros, avg_write_mb, avg_read_mb" >> "$summary_output"
+         echo "Average, $avg_write_micros, $avg_read_micros, $avg_write_mb, $avg_read_mb" >> "$summary_output"
+      done
    done
 done
-
-
-# for num in "${nums[@]}"; do
-#    for sst_times in "${lac[@]}"; do
-#       # for error in "${error_bound[@]}"; do
-#          # for mem_size in "${memtable_size[@]}"; do
-#          #    for sst_size in "${max_file_size[@]}"; do
-#                # declare -a fill_array=()
-#                # declare -a fread_array=()
-#                # declare -a segment_array=()
-
-#                # # Initialize average variables
-#                # fill_avg=0
-#                # read_avg=0
-#                # segment_avg=0
-
-#                # Initialize summary output file
-#                # summary_output="${output_dir}summary_results_SST_${sst_times}.txt"
-#                # echo "num, run, fillrandom, readrandom, sst_times" >> "$summary_output"
-
-#                for i in $(seq 1 $number_of_runs); do
-#                   # output_file="${output_dir}SST_MEM_${mem_size}MB_${sst_size}MB_${sst_times}_Entry_${num}_error_${error}_${i}.txt" --lac=$sst_times
-#                   output_file="${output_dir}_${sst_times}_Entry_${num}_${i}_zip.txt"
-#                   echo "Running db_bench with --num=$num --lac=$sst_times" >> "$output_file"
-#                   # ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --mod=7 --num=$num --write_buffer_size=$mem_size --max_file_size=$sst_size --file_error=$error --sst_times=$sst_times >> "$output_file"
-#                   ${test_dir}/db_bench --benchmarks="zipfill,zipread,stats" --mod=$mod --num=$num  >> "$output_file"
-#                   echo "-------------------------------------" >> "$output_file"
-               
-#                   # Extract fillrandom and readrandom performance data
-#                   # fillrandom=$(grep "fillrandom" "$output_file" | tail -1 | awk '{print $3}')
-#                   # readrandom=$(grep "readrandom" "$output_file" | tail -1 | awk '{print $3}')
-#                   # segment_size=$(grep "segement_size" "$output_file" | awk '{print $2}')
-
-#                   # fill_array+=($fillrandom)
-#                   # fread_array+=($readrandom)
-#                   # segment_array+=($segment_size)
-#                #  $segment_size
-#                   # echo "$num,  $i, $fillrandom, $readrandom, $lac" >> "$summary_output"
-            
-#                   sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-#                done
-         
-#                # fill_sum=$(IFS=+; echo "${fill_array[*]}" | bc)
-#                # read_sum=$(IFS=+; echo "${fread_array[*]}" | bc)
-#                # segment_sum=$(IFS=+; echo "${segment_array[*]}" | bc)
-
-#                # fill_avg=$(echo "scale=2; $fill_sum/$number_of_runs" | bc)
-#                # read_avg=$(echo "scale=2; $read_sum/$number_of_runs" | bc)
-#                # segment_avg=$(echo "scale=2; $segment_sum/$number_of_runs" | bc)
-
-            
-#                # echo "fillrandom_avg: $fill_avg" >> "$summary_output"
-#                # echo "readrandom_avg: $read_avg" >> "$summary_output"
-#                # echo "segment_avg: $segment_avg" >> "$summary_output"
-
-#                # fill_avg_all=$(grep "fillrandom_avg" "$summary_output" | awk '{print $2}')
-#                # read_avg_all=$(grep "readrandom_avg" "$summary_output" | awk '{print $2}')
-#                # segment_avg_all=$(grep "segment_avg" "$summary_output" | awk '{print $2}')
-
-#                # echo "SST: ${sst_times} _ error:${error}" >>  "${total_experiment}${current_time}_result.txt"
-#                # echo "fillrandom_avg_all: $fill_avg_all" >> "${total_experiment}${current_time}_result.txt"
-#                # echo "readrandom_avg_all: $read_avg_all" >> "${total_experiment}${current_time}_result.txt"
-#                # echo "segment_avg_all: $segment_avg_all" >>"${total_experiment}${current_time}_result.txt"
-      
-#       #       done
-#       #    done
-#       # done
-#    done
-# done
 
 
 python3 ./test.py testing end

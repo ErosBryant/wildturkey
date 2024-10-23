@@ -650,13 +650,15 @@ int DBImpl::CompactMemTable() {
 
     auto time = instance->PauseTimer(16, true);
     int level = edit.new_files_[0].first;
+    // printf("level: %d\n", level);
+    
+    if (adgMod::bwise!=1){
     adgMod::compaction_counter_mutex.Lock();
     adgMod::events[0].push_back(new CompactionEvent(time, to_string(level)));
     adgMod::levelled_counters[5].Increment(edit.new_files_[0].first, time.second - time.first);
     adgMod::compaction_counter_mutex.Unlock();
-
     env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
-
+    }
 
 
   return level;
@@ -902,8 +904,9 @@ void DBImpl::BackgroundCompaction() {
         adgMod::compaction_counter_mutex.Lock();
         for (auto item: changed_level) {
             changed_level_string += to_string(item);
-            adgMod::levelled_counters[5].Increment(item, time.second - time.first);
+            // adgMod::levelled_counters[5].Increment(item, time.second - time.first);
         }
+        adgMod::levelled_counters[5].Increment(c->level(), time.second - time.first);
         adgMod::events[0].push_back(new CompactionEvent(time, std::move(changed_level_string)));
         adgMod::compaction_counter_mutex.Unlock();
 
@@ -1217,7 +1220,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       compact->current_output()->largest.DecodeFrom(key);
       compact->builder->Add(key, input->value());
 
-      if (adgMod::bwise==1){
+      if (adgMod::bwise==1 or adgMod::sst_size>=1){
           if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
           status = FinishCompactionOutputFile(compact, input);
           if (!status.ok()) {
@@ -1283,10 +1286,10 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
     // }
   }
 
-    if (adgMod::sst_size != 4) {
-        adgMod::sst_size=4;
-            // printf("sst_size = %d\n", adgMod::sst_size);
-          }
+    // if (adgMod::sst_size != 4) {
+    //     adgMod::sst_size=4;
+
+    //   }
 
   stats.compaction_count+=1;
   // stats_[compact->compaction->level()+1].compaction_count+=1;
@@ -1376,7 +1379,6 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
                    std::string* value) {
 
   adgMod::Stats* instance = adgMod::Stats::GetInstance();
-
 
 
   Status s;
@@ -1777,15 +1779,15 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   std::cout << "waf:" << bytes_written_total / NumLevelBytes_total << std::endl;
   //versions_->current()->PrintAll();
  
-    // if (adgMod::MOD >= 7) {
-    //       adgMod::file_data->Report();
-    //       // Version* current = adgMod::db->versions_->current();
-    //       // std::cout << "Level model stats:" << std::endl;
-    //       // for (int i = 1; i < config::kNumLevels; ++i) {
-    //       //     current->learned_index_data_[i]->ReportStats();
-    //       // }
+    if (adgMod::MOD >= 7) {
+          adgMod::file_data->Report();
+          // Version* current = adgMod::db->versions_->current();
+          // std::cout << "Level model stats:" << std::endl;
+          // for (int i = 1; i < config::kNumLevels; ++i) {
+          //     current->learned_index_data_[i]->ReportStats();
+          // }
           // adgMod::learn_cb_model->Report();
-    // }
+    }
     adgMod::Stats* instance = adgMod::Stats::GetInstance();
     instance->ReportTime();
     // adgMod::learn_cb_model->Report();
@@ -1913,6 +1915,28 @@ Status DB::Open(const Options& options, const std::string& dbname, DB** dbptr) {
 }
 
 Snapshot::~Snapshot() {}
+
+
+void DBImpl::CompactOrderdRange(const Slice* begin, const Slice* end, int max_level) {
+ int max_level_with_files = 1; {
+MutexLock l(&mutex_);
+Version* base = versions_->current();
+
+for (int level = 1; level < config::kNumLevels; level++) {
+if (base->OverlapInLevel(level, begin, end)) {
+ max_level_with_files = level;
+}
+}
+ }
+max_level_with_files = std::min(max_level_with_files, max_level);
+
+TEST_CompactMemTable(); 
+
+for (int level = 0; level <= max_level_with_files; level++) {
+TEST_CompactRange(level, begin, end);
+}
+}
+
 
 Status DestroyDB(const std::string& dbname, const Options& options) {
   Env* env = options.env;
