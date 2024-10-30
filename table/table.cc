@@ -293,6 +293,8 @@ uint64_t Table::ApproximateOffsetOf(const Slice& key) const {
   return result;
 }
 
+
+
 void Table::FillData(const ReadOptions& options, adgMod::LearnedIndexData* data) {
     if (data->filled) return;
     //data->string_keys.clear();

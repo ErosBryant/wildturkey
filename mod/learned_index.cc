@@ -338,12 +338,12 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
     learn_counter_mutex.Unlock();
   }
 
-  // if (!fresh_write) {
-  //            self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
-  //            to_string(mas->meta->number) + ".fmodel");
-  //            self->string_keys.clear();
-  //           //  self->num_entries_accumulated.array.clear();
-  //        }
+  if (!fresh_write) {
+             self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
+             to_string(mas->meta->number) + ".fmodel");
+             self->string_keys.clear();
+            //  self->num_entries_accumulated.array.clear();
+         }
 
   if (!fresh_write) delete mas->meta;
   delete mas;

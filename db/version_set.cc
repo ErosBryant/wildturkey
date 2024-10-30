@@ -47,7 +47,7 @@ namespace leveldb {
         // the level-0 compaction threshold based on number of files.
 
         // Result for both level-0 and level-1
-        double result = 10. * 1048576.0;
+        double result = 10. * 1048576.0* adgMod::level_size;
         while (level > 1) {
             result *= 10;
             level--;
@@ -717,11 +717,16 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                 AppendNumberTo(&r, files[i]->file_size);
                 r.append("[");
                 r.append(files[i]->smallest.DebugString());
+                r.append("-");
+                r.append(files[i]->);
+                r.append("-");
                 r.append(" .. ");
                 r.append(files[i]->largest.DebugString());
                 r.append("]\n");
             }
         }
+
+
         return r;
     }
 

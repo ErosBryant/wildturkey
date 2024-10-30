@@ -5,18 +5,19 @@ echo 3 > /proc/sys/vm/drop_caches
 ---
 - Timer 0: level read
 - Timer 1: file open (load ib+fb)
-- Timer 2: model lookup (precdition)
-- Timer 3: load datablock 
+- Timer 2: search index block
+- Timer 5: load datablock 
+- Timer 3: search datablock
+  
+- Timer 17: model lookup + precdition
+- Timer 18: load chunk
+- Timer 19: locate key
+
 <!-- - Timer 3: key search time in file - first search -->
 - Timer 15: FilteredLookup time
-- Timer 5: load chunk & locate key
 - TImer 12: Value reading time
 - Timer 14: value read from memtable or immtable
 ----
-- 还没设置
-- Timer 17: get model time 
-- Timer 18: search indexblock
-- Timer 19: search datablock 
 
 
 ---

@@ -17,6 +17,7 @@ namespace adgMod {
     uint64_t segement_size = 0;
     uint64_t key_multiple = 1;
     uint32_t file_model_error = 8;
+    double level_size = 1;
 
     uint32_t level_model_error = 1;
     int block_restart_interval = 16;

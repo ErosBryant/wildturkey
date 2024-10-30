@@ -519,9 +519,17 @@ class Benchmark {
           std::cerr << "Error opening file" << std::endl;
           exit(1);
       }
+      // std::string line;
+      // while (std::getline(input, line)) {
+      //   printf("line: %s\n", line.c_str());
+      //     key = std::stoull(line);
+      //     data.push_back(key);
+      // }
       while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+        // printf("key: %lu\n", key);
         data.push_back(key);
       }
+
       input.close();
       // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
@@ -558,7 +566,7 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      std::random_shuffle(data.begin(), data.end());
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       }
@@ -869,7 +877,8 @@ class Benchmark {
         }
       }
       thread->stats.AddBytes(bytes);
-
+      
+      static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
     }
     
   void DoWrite(ThreadState* thread, bool seq) { // here
@@ -928,9 +937,10 @@ class Benchmark {
         }
       }
     }
-      if (adgMod::bwise==1 or adgMod::sst_size>=1){
-      static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
-      }
+
+      // if (adgMod::bwise==1 or adgMod::sst_size>=1){
+      // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
+      // }
     //  output_file.close();
   }
 
@@ -961,10 +971,10 @@ class Benchmark {
       }
       thread->stats.AddBytes(bytes);
       // only for read performance test   只有测试读性能时才需要手动compaction
-      if (adgMod::bwise==1 or adgMod::sst_size>=1){
-      // db_->CompactRange(nullptr, nullptr);
+      // if (adgMod::bwise==1 or adgMod::sst_size>=1){
+      // // db_->CompactRange(nullptr, nullptr);
       static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
-      }
+      // }
   }
 
 
@@ -1009,9 +1019,11 @@ class Benchmark {
   //  while(data.size()){
     // for (int i = 0; i < data.size(); i++) {
       for (int i = 0; i < num_ ; i++) {
-        // printf("key: %d\n", data[i]);
+        // printf("key: %s\n",std::to_string(data[i]));
         the_key = adgMod::generate_key(std::to_string(data[i]));
-        db_->Put(write_options_, the_key, Slice("11111111111111"));
+        // the_key= std::to_string(data[i]);
+        // printf("the_key: %s\n", the_key.c_str());
+        db_->Put(write_options_, the_key, gen.Generate(value_size_));
         thread->stats.FinishedSingleOp();
         bytes += value_size_ + the_key.length();
    }
@@ -1019,6 +1031,7 @@ class Benchmark {
   thread->stats.AddBytes(bytes);
   printf("finish writing\n");
   // input.close();
+  static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
 }
 
 
@@ -1038,14 +1051,16 @@ class Benchmark {
       for (int i = 0; i < reads_ ; i++) {
         // printf("key: %d\n", data[i]);
         the_key = adgMod::generate_key(std::to_string(data[i]));
-        //  printf("the_key: %s\n", the_key.c_str());
+         
         //  printf("key22: %s\n", key.c_str());
         if (db_->Get(options, the_key, &value).ok()) {
-                found++;
+              found++;
               bytes += value.size() + the_key.length();
+              // printf("the_key: %s\n", the_key.c_str());
           }
           thread->stats.FinishedSingleOp();
     }
+    // printf("sssssssssssssthe_key: %s\n", the_key.c_str());
     thread->stats.AddBytes(bytes);
     char msg[100];
     snprintf(msg, sizeof(msg), "(%d of %d found)", found, num_);
@@ -1315,7 +1330,9 @@ int main(int argc, char** argv) {
       FLAGS_reuse_logs = n;
     } else if (sscanf(argv[i], "--num=%d%c", &n, &junk) == 1) {
       FLAGS_num = n;
-    } else if (sscanf(argv[i], "--reads=%d%c", &n, &junk) == 1) {
+    } else if (sscanf(argv[i], "--lsize=%d%c", &n, &junk) == 1) {
+      adgMod::level_size = n;
+    }else if (sscanf(argv[i], "--reads=%d%c", &n, &junk) == 1) {
       FLAGS_reads = n;
     } else if (sscanf(argv[i], "--threads=%d%c", &n, &junk) == 1) {
       FLAGS_threads = n;

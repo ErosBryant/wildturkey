@@ -179,7 +179,7 @@ DBImpl::~DBImpl() {
     background_work_finished_signal_.Wait();
   }
 
-  if (adgMod::MOD >= 7) {
+  if (adgMod::MOD == 7) {
         // adgMod::file_data->Report();
         // Version* current = adgMod::db->versions_->current();
         // std::cout << "Level model stats:" << std::endl;
@@ -652,13 +652,13 @@ int DBImpl::CompactMemTable() {
     int level = edit.new_files_[0].first;
     // printf("level: %d\n", level);
     
-    if (adgMod::bwise!=1){
+    // if (adgMod::bwise!=1){
     adgMod::compaction_counter_mutex.Lock();
     adgMod::events[0].push_back(new CompactionEvent(time, to_string(level)));
     adgMod::levelled_counters[5].Increment(edit.new_files_[0].first, time.second - time.first);
     adgMod::compaction_counter_mutex.Unlock();
     env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
-    }
+    // }
 
 
   return level;
@@ -681,7 +681,11 @@ void DBImpl::CompactMemTable(MemTable *table) {
         edit.SetLogNumber(logfile_number_);  // Earlier logs no longer needed
         s = versions_->LogAndApply(&edit, &mutex_);
     }
+
 }
+
+
+
 
 void DBImpl::CompactRange(const Slice* begin, const Slice* end) {
   int max_level_with_files = 1;
@@ -1779,8 +1783,10 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   std::cout << "waf:" << bytes_written_total / NumLevelBytes_total << std::endl;
   //versions_->current()->PrintAll();
  
-    if (adgMod::MOD >= 7) {
-          adgMod::file_data->Report();
+    if (adgMod::MOD == 7) {
+          CompactMemTable(imm_);
+    CompactMemTable(mem_);
+          // adgMod::file_data->Report();
           // Version* current = adgMod::db->versions_->current();
           // std::cout << "Level model stats:" << std::endl;
           // for (int i = 1; i < config::kNumLevels; ++i) {
