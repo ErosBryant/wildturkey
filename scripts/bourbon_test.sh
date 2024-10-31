@@ -9,7 +9,7 @@ nums=(10000000)
 
 # Define various configurations
 # memtable_size=(4)
-max_file_size=(2 4 8 16 32 64)
+max_file_size=(2 4 8 16)
 number_of_runs=1
 # bwise=(1 0)
 lac=(1 2 3 4 5 6 7 8 9 10)
@@ -18,7 +18,7 @@ file_error=(2 4 8 16 32)
 # fb_w wiki_w book_w
 workload=(osm_w)
 # lac=(5)
-mod=(7)
+mod=(8)
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
@@ -80,7 +80,7 @@ for num in "${nums[@]}"; do
                # --file_error=$err
                # f=$((max / 2)) 
                # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="${wkload},stats,real_r,stats" --mod=$md --max_file_size=$max --num=$num >> "$output_file"
+               ${test_dir}/db_bench --benchmarks="${wkload},stats" --mod=$md --max_file_size=$max --num=$num >> "$output_file"
                echo "-------------------------------------" >> "$output_file"
 
 

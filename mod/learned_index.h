@@ -74,7 +74,6 @@ namespace adgMod {
         friend class leveldb::VersionSet;
     private:
         // predefined model error
-        double error; 
         // some flags used in online learning to control the state of the model
         std::atomic<bool> learned;
         std::atomic<bool> aborted;
@@ -86,6 +85,7 @@ namespace adgMod {
     public:
 
         // is the data of this model filled (ready for learning)
+        double error; 
         bool filled;
         
         // check if the model is loaded
@@ -94,7 +94,9 @@ namespace adgMod {
         bool is_level;
 
         // Learned linear segments and some other data needed
+        std::vector<std::vector<Segment>> string_multi_layer_segments;
         std::vector<Segment> string_segments;
+        uint8_t index_layer_count;
         uint64_t min_key;
         uint64_t max_key;
         uint64_t size;
@@ -103,6 +105,8 @@ namespace adgMod {
         uint64_t load_model_time;
         uint64_t correct_time;
         uint64_t build_time;
+        double error_bound;
+        double recursive_error_bound;
 
 
         // // Q-table 由state-error_bound对以及model_load和correct_time还有build_time组成
@@ -117,6 +121,8 @@ namespace adgMod {
 
 
        double getRandomAction(double error_) const;
+       double getAction(int state) const;
+       double getEpsilon(int state, double action) const;
 
 
 

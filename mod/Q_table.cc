@@ -3,85 +3,120 @@
 namespace adgMod {
 
 QTableManager::QTableManager() {
-    Q_table.resize(4);
-    for (auto& entry : Q_table) {
-        entry.error_bound = 32;  // 初始化每个 entry 的 error_bound 为 32
-    }
 }
 
+
+double QTableManager::getLearningRate(int state, double action) {
+    int visit_count = Q_table[state].visit_counts[action];
+    double alpha_min = 0.01;
+    double alpha = 1.0 / (1 + visit_count);
+    return std::max(alpha, alpha_min);
+}
+
+
 double QTableManager::compute_reward(
-    int gear, // 当前档位
-    double new_load_model_cost, double new_correct_time, double new_build_time) {
-    
-    // 获取当前档位的最小值和最大值
-    double &min_load_time = Q_table[gear].min_load_model_cost;
-    double &max_load_time = Q_table[gear].max_load_model_cost;
-    double &min_correct_time = Q_table[gear].min_correct_time;
-    double &max_correct_time = Q_table[gear].max_correct_time;
-    double &min_build_time = Q_table[gear].min_build_time;
-    double &max_build_time = Q_table[gear].max_build_time;
+    int gear,
+    double action, // 当前动作（error_bound）
+    double new_load_model_cost,
+    int layer_count
+    //,double model_size
+    ) {
+    layer_count += 1;
+
+    double& min_load_time = Q_table[gear].min_load_model_cost[action];
+    double& max_load_time = Q_table[gear].max_load_model_cost[action];
+    int& min_layer_time = Q_table[gear].min_layer_cost[action];
+    int& max_layer_time = Q_table[gear].max_layer_cost[action];
+    double& min_error_bound = Q_table[gear].min_error_bound[action];
+    double& max_error_bound = Q_table[gear].max_error_bound[action];
+    // double& min_model_size = Q_table[gear].min_model_size[action];
+    // double& max_model_size = Q_table[gear].max_model_size[action];
 
     // 初始化最小值和最大值（如果需要）
     if (min_load_time == 0 || max_load_time == 0) {
         min_load_time = new_load_model_cost;
         max_load_time = new_load_model_cost;
-        // 对其他因素同理
     }
+    if (min_layer_time == 0 || max_layer_time == 0) {
+        min_layer_time = layer_count;
+        max_layer_time = layer_count;
+    }
+    if (min_error_bound == 0 || max_error_bound == 0) {
+        min_error_bound = action;
+        max_error_bound = action;
+    }
+    // if (min_model_size == 0 || max_model_size == 0) {
+    //     min_model_size = model_size;
+    //     max_model_size = model_size;
+    // }
 
     // 更新最小值和最大值
     min_load_time = std::min(min_load_time, new_load_model_cost);
     max_load_time = std::max(max_load_time, new_load_model_cost);
+    min_layer_time = std::min(min_layer_time, layer_count);
+    max_layer_time = std::max(max_layer_time, layer_count);
+    min_error_bound = std::min(min_error_bound, action);
+    max_error_bound = std::max(max_error_bound, action);
+    // min_model_size = std::min(min_model_size, model_size);
+    // max_model_size = std::max(max_model_size, model_size);
 
-    min_correct_time = std::min(min_correct_time, new_correct_time);
-    max_correct_time = std::max(max_correct_time, new_correct_time);
-
-    min_build_time = std::min(min_build_time, new_build_time);
-    max_build_time = std::max(max_build_time, new_build_time);
-
-    // 确保分母不为零
+    // 计算归一化 load 和层数成本
     double load_range = max_load_time - min_load_time;
-    double correct_range = max_correct_time - min_correct_time;
-    double build_range = max_build_time - min_build_time;
-
-    if (load_range == 0) load_range = 1e-6;
-    if (correct_range == 0) correct_range = 1e-6;
-    if (build_range == 0) build_range = 1e-6;
-
-    // 归一化
+    if (load_range == 0) load_range = 1e-3;
     double normalized_load_time = (new_load_model_cost - min_load_time) / load_range;
-    double normalized_correct_time = (new_correct_time - min_correct_time) / correct_range;
-    double normalized_build_time = (new_build_time - min_build_time) / build_range;
-
-    // 限制在 [0,1] 范围内
     normalized_load_time = std::min(std::max(normalized_load_time, 0.0), 1.0);
-    normalized_correct_time = std::min(std::max(normalized_correct_time, 0.0), 1.0);
-    normalized_build_time = std::min(std::max(normalized_build_time, 0.0), 1.0);
 
-    // 计算奖励
-    double w1 = 0.33, w2 = 0.33, w3 = 0.34;
-    double reward = exp(- (w1 * normalized_load_time + w2 * normalized_correct_time + w3 * normalized_build_time));
+    double layer_range = max_layer_time - min_layer_time;
+    if (layer_range == 0) layer_range = 1e-3;
+    double normalized_layer_time = (layer_count - min_layer_time) / layer_range;
+    normalized_layer_time = std::min(std::max(normalized_layer_time, 0.0), 1.0);
+
+    // 计算归一化 error_bound
+    double error_range = max_error_bound - min_error_bound;
+    if (error_range == 0) error_range = 1e-3;
+    double normalized_error_bound = (action - min_error_bound) / error_range;
+    normalized_error_bound = std::min(std::max(normalized_error_bound, 0.0), 1.0);
+
+    // // 计算归一化 model_size
+    // double model_size_range = max_model_size - min_model_size;
+    // if (model_size_range == 0) model_size_range = 1e-6;
+    // double normalized_model_size = (model_size - min_model_size) / model_size_range;
+    // normalized_model_size = std::min(std::max(normalized_model_size, 0.0), 1.0);
+
+    // 使用加权公式计算奖励
+    double w1 = 0.4; // load 成本的权重
+    double w2 = 0.2; // 层数成本的权重
+    double w3 = 0.4; // correction 的权重
+    // double w4 = 0.0; // model_size 的权重
+    double reward = exp(-(w1 * normalized_load_time + w2 * normalized_layer_time + w3 * normalized_error_bound));
     return reward;
 }
 
 
 
 
-double QTableManager::compute_q_value(int gear, double reward) {
+
+
+double QTableManager::compute_q_value(int gear, double action, double reward) {
     double alpha = 0.4; // 固定学习率
 
-    double &prev_q = Q_table[gear].q_value;
+    double& prev_q = Q_table[gear].q_values[action];
     double Q_value = (1 - alpha) * prev_q + alpha * reward;
     prev_q = Q_value; // 更新 Q 值
     return Q_value;
 }
 
-
-void QTableManager::updateQTable(int state, double new_error_bound) {
-    Q_table[state].error_bound = new_error_bound;
+// 更新 Q 值并增加访问计数
+void QTableManager::updateQValue(int state, double action, double Q_value) {
+    Q_table[state].q_values[action] = Q_value; // 记录state下，action 为error bound时的当前Q值
+    //Q_table[state].visit_counts[action] += 1;
 }
 
+
+
 double QTableManager::getErrorBound(int state) const {
-    return Q_table[state].error_bound;
+    // 返回std::unordered_map<double, double> q_values的第一个元素
+    return 0;
 }
 
 QTableManager& getQTableManagerInstance() {
@@ -91,15 +126,20 @@ QTableManager& getQTableManagerInstance() {
 
 void QTableManager::initQTable() {
     Q_table.resize(4);
+    std::vector<double> actions = {8,12,16,20,24,32,36}; // 可选的 error_bound 值
     for (auto& entry : Q_table) {
-        entry.error_bound = 24;  // 动态初始化每个 entry 的 error_bound
-        entry.q_value = 0.0;
-        entry.min_load_model_cost = 1;
-        entry.min_correct_time = 1;
-        entry.min_build_time = 100;
-        entry.max_load_model_cost = 2;
-        entry.max_correct_time = 2;
-        entry.max_build_time = 101;
+        // 初始化 min 和 max 值的映射
+        for (double action : actions) {
+            entry.q_values[action] = 0.0;
+            entry.min_load_model_cost[action] = std::numeric_limits<double>::max();
+            entry.max_load_model_cost[action] = std::numeric_limits<double>::lowest();
+            entry.min_layer_cost[action] = std::numeric_limits<double>::max();
+            entry.max_layer_cost[action] = std::numeric_limits<double>::lowest();
+            entry.min_error_bound[action] = std::numeric_limits<double>::max();
+            entry.max_error_bound[action] = std::numeric_limits<double>::lowest();
+            entry.visit_counts[action] = 0;
+            entry.last_action = 16.0;
+        }
     }
 }
 

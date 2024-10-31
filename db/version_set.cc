@@ -718,7 +718,7 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                 r.append("[");
                 r.append(files[i]->smallest.DebugString());
                 r.append("-");
-                r.append(files[i]->);
+                // r.append(files[i]->);
                 r.append("-");
                 r.append(" .. ");
                 r.append(files[i]->largest.DebugString());

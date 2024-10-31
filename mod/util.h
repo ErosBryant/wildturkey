@@ -38,6 +38,7 @@ namespace adgMod {
     extern int MOD;
     extern int sst_size;
     extern int bwise;
+    extern int adeb;
     // used in early testing
     extern uint64_t segement_size;
     extern bool string_mode;

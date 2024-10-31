@@ -652,13 +652,13 @@ int DBImpl::CompactMemTable() {
     int level = edit.new_files_[0].first;
     // printf("level: %d\n", level);
     
-    // if (adgMod::bwise!=1){
+    if (adgMod::bwise!=1 or adgMod::adeb!=1){
     adgMod::compaction_counter_mutex.Lock();
     adgMod::events[0].push_back(new CompactionEvent(time, to_string(level)));
     adgMod::levelled_counters[5].Increment(edit.new_files_[0].first, time.second - time.first);
     adgMod::compaction_counter_mutex.Unlock();
     env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
-    // }
+    }
 
 
   return level;
@@ -1784,8 +1784,6 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   //versions_->current()->PrintAll();
  
     if (adgMod::MOD == 7) {
-          CompactMemTable(imm_);
-    CompactMemTable(mem_);
           // adgMod::file_data->Report();
           // Version* current = adgMod::db->versions_->current();
           // std::cout << "Level model stats:" << std::endl;

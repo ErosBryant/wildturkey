@@ -47,7 +47,7 @@ struct point get_lower_bound(struct point pt, double gamma);
 class GreedyPLR {
 private:
     std::string state;
-    double gamma;
+    //double gamma;
     struct point last_pt;
     struct point s0;
     struct point s1;
@@ -57,22 +57,44 @@ private:
 
     bool setup();
     Segment current_segment();
+    Segment process__(struct point pt, bool file, std::vector<std::string>& seg_last);
     Segment process__(struct point pt, bool file);
 
+
 public:
+    double gamma;
     GreedyPLR(double gamma);
+    Segment process(const struct point& pt, bool file, std::vector<std::string>& seg_last);
     Segment process(const struct point& pt, bool file);
     Segment finish();
 };
 
 class PLR {
 private:
-    double gamma;
+    
     std::vector<Segment> segments;
 
 public:
+    double gamma;
     PLR(double gamma);
+    double get_gamma() const { 
+        return this->gamma; 
+    }
+    std::vector<Segment>& train(std::vector<std::string>& keys, bool file, std::vector<std::string>& seg_last);
     std::vector<Segment>& train(std::vector<std::string>& keys, bool file);
 //    std::vector<double> predict(std::vector<double> xx);
 //    double mae(std::vector<double> y_true, std::vector<double> y_pred);
+};
+
+class upper_PLR {
+    private:
+        std::vector<Segment> segments;
+    public:
+        double gamma;
+        upper_PLR(double gamma);
+        double get_gamma() const { 
+        return this->gamma; 
+    }
+        double get_recursive_bound() const { return this->gamma; }
+        std::vector<Segment>& train(std::vector<std::string>& keys, bool file, std::vector<std::string>& seg_last);
 };

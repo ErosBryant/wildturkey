@@ -61,6 +61,27 @@ GreedyPLR::GreedyPLR(double gamma) {
 int counter = 0;
 
 Segment
+GreedyPLR::process(const struct point& pt, bool file, std::vector<std::string>& seg_last) {
+    Segment s = {0, 0, 0};
+    if (this->state.compare("need2") == 0) {
+        this->s0 = pt;
+        this->state = "need1";
+    } else if (this->state.compare("need1") == 0) {
+        this->s1 = pt;
+        if (setup()) {
+            this->state = "ready";
+        }
+    } else if (this->state.compare("ready") == 0) {
+        s = process__(pt, file, seg_last);
+    } else {
+        // impossible
+        std::cout << "ERROR in process" << std::endl;
+    }
+    this->last_pt = pt;
+    return s;
+}
+
+Segment
 GreedyPLR::process(const struct point& pt, bool file) {
     Segment s = {0, 0, 0};
     if (this->state.compare("need2") == 0) {
@@ -107,14 +128,16 @@ GreedyPLR::current_segment() {
 }
 
 Segment
-GreedyPLR::process__(struct point pt, bool file) {
+GreedyPLR::process__(struct point pt, bool file, std::vector<std::string>& seg_last) {
     if (!(is_above(pt, this->rho_lower) && is_below(pt, this->rho_upper))) {
+        // 在此处可记录段的结束点
+        seg_last.push_back(std::to_string(static_cast<uint64_t>(this->s0.x)));
       // new point out of error bounds
-        Segment prev_segment = current_segment();
+        Segment prev_segment = current_segment(); //拟合prev_segment此段
         if (!file && (u_int32_t) pt.y % 2 == 1) {
           // current point is the largest point in the segments
-            this->s0 = last_pt;
-            this->s1 = pt;
+            this->s0 = last_pt; //prev_segment 段的结束作为此段的开始
+            this->s1 = pt;         //当前点作为此段的临时结束
             setup();
             this->state = "ready";
             return prev_segment;
@@ -136,6 +159,39 @@ GreedyPLR::process__(struct point pt, bool file) {
     Segment s = {0, 0, 0};
     return s;
 }
+
+Segment
+GreedyPLR::process__(struct point pt, bool file) {
+    if (!(is_above(pt, this->rho_lower) && is_below(pt, this->rho_upper))) {
+      // new point out of error bounds
+        Segment prev_segment = current_segment(); //拟合prev_segment此段
+        if (!file && (u_int32_t) pt.y % 2 == 1) {
+          // current point is the largest point in the segments
+            this->s0 = last_pt; //prev_segment 段的结束作为此段的开始
+            this->s1 = pt;         //当前点作为此段的临时结束
+            setup();
+            this->state = "ready";
+            return prev_segment;
+        } else {
+            this->s0 = pt;
+            this->state = "need1";
+        }
+        return prev_segment;
+    }
+
+    struct point s_upper = get_upper_bound(pt, this->gamma);
+    struct point s_lower = get_lower_bound(pt, this->gamma);
+    if (is_below(s_upper, this->rho_upper)) {
+        this->rho_upper = get_line(this->sint, s_upper);
+    }
+    if (is_above(s_lower, this->rho_lower)) {
+        this->rho_lower = get_line(this->sint, s_lower);
+    }
+    Segment s = {0, 0, 0};
+    return s;
+}
+
+
 
 Segment
 GreedyPLR::finish() {
@@ -163,10 +219,44 @@ PLR::PLR(double gamma) {
 }
 
 std::vector<Segment>&
+PLR::train(std::vector<string>& keys, bool file, std::vector<std::string>& seg_last) {
+    GreedyPLR plr(this->gamma);
+    int count = 0;
+    size_t size = keys.size();
+    
+
+    for (int i = 0; i < size; ++i) {
+        Segment seg = plr.process(point((double) stoull(keys[i]), i), file, seg_last);
+        if (seg.x != 0 ||
+            seg.k != 0 ||
+            seg.b != 0) {
+            this->segments.push_back(seg);
+        }
+
+        if (!file && ++count % 10 == 0 && adgMod::env->compaction_awaiting.load() != 0) {
+            segments.clear();
+            return segments;
+        }
+    }
+
+    Segment last = plr.finish();
+    if (last.x != 0 ||
+        last.k != 0 ||
+        last.b != 0) {
+        this->segments.push_back(last);
+    }
+    seg_last.push_back(keys[size - 1]);
+
+    return this->segments;
+}
+
+std::vector<Segment>&
 PLR::train(std::vector<string>& keys, bool file) {
     GreedyPLR plr(this->gamma);
     int count = 0;
     size_t size = keys.size();
+    
+
     for (int i = 0; i < size; ++i) {
         Segment seg = plr.process(point((double) stoull(keys[i]), i), file);
         if (seg.x != 0 ||
@@ -187,6 +277,41 @@ PLR::train(std::vector<string>& keys, bool file) {
         last.b != 0) {
         this->segments.push_back(last);
     }
+    return this->segments;
+}
+
+upper_PLR::upper_PLR(double gamma) {
+    this->gamma = gamma;
+}
+
+std::vector<Segment>&
+upper_PLR::train(std::vector<string>& keys, bool file, std::vector<std::string>& seg_last) {
+    GreedyPLR plr(this->gamma);
+    int count = 0;
+    size_t size = keys.size();
+    
+
+    for (int i = 0; i < size; ++i) {
+        Segment seg = plr.process(point((double) stoull(keys[i]), i), file, seg_last);
+        if (seg.x != 0 ||
+            seg.k != 0 ||
+            seg.b != 0) {
+            this->segments.push_back(seg);
+        }
+
+        if (!file && ++count % 10 == 0 && adgMod::env->compaction_awaiting.load() != 0) {
+            segments.clear();
+            return segments;
+        }
+    }
+
+    Segment last = plr.finish();
+    if (last.x != 0 ||
+        last.k != 0 ||
+        last.b != 0) {
+        this->segments.push_back(last);
+    }
+    seg_last.push_back(keys[size - 1]);
 
     return this->segments;
 }

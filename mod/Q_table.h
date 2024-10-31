@@ -5,21 +5,24 @@
 #include <cstdlib>
 #include <ctime>
 #include <cmath>
+#include <unordered_map>
 
 namespace adgMod {
 
     struct QTableEntry {
-        double first_q_value;               // 初次density学习产生的Q 值， 由于会给后续学习带来非常大的影响，所以单独存储
-        double prev_q_value;               // 上一次的Q 值
-        double q_value;               // Q 值
-        double error_bound;           // 误差界限
-        double min_load_model_cost;        
-        double min_correct_time;      
-        double min_build_time;       
-        double max_load_model_cost;        
-        double max_correct_time;      
-        double max_build_time;
+        std::unordered_map<double, double> q_values;                // 动作到 Q 值的映射
+        std::unordered_map<double, double> min_load_model_cost;     // 每个 action 的最小 load 成本
+        std::unordered_map<double, double> max_load_model_cost;     // 每个 action 的最大 load 成本
+        std::unordered_map<double, int> min_layer_cost;          // 每个 action 的最小层数成本
+        std::unordered_map<double, int> max_layer_cost;          // 每个 action 的最大层数成本
+        std::unordered_map<double, double> min_error_bound;         // 最小误差界限
+        std::unordered_map<double, double> max_error_bound;         // 最大误差界限
+        // std::unordered_map<double, double> min_model_size;
+        // std::unordered_map<double, double> max_model_size;
+        std::unordered_map<double, int> visit_counts;               // 访问次数
+        double last_action = 16.0;
     };
+
 
     class QTableManager {
     public:
@@ -31,13 +34,18 @@ namespace adgMod {
         // 计算 reward
         double compute_reward(
             int gear, // 当前档位
-            double new_load_model_cost, double new_correct_time, double new_build_time);
+            double action,
+            double new_load_model_cost,
+            int layer_count
+            //,double model_size
+            );
+        
+        double getLearningRate(int state, double action);
 
         // 计算Q_value
-        double compute_q_value(int gear, double reward);
+        double compute_q_value(int gear, double action, double reward);
 
-        // 更新 Q-table
-        void updateQTable(int state, double new_error_bound);
+        void updateQValue(int state, double action, double reward);
 
         // 获取 error_bound
         double getErrorBound(int state) const;

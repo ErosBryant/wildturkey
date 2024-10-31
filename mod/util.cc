@@ -12,6 +12,7 @@ using std::to_string;
 namespace adgMod {
 
     int MOD = 5;
+    int adeb = 0;
     int bwise = 0;
     bool string_mode = true;
     uint64_t segement_size = 0;
