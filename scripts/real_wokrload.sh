@@ -24,7 +24,7 @@ mod=(10)
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/wildturkey/real_workload2/"
+output_dir="/mnt/wildturkey/real_workload_final/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
