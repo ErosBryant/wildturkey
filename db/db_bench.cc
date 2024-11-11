@@ -532,7 +532,7 @@ class Benchmark {
       //     data.push_back(key);
       // }
       while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
-        // printf("key: %lu\n", key);
+
         data.push_back(key);
       }
 
@@ -925,6 +925,7 @@ class Benchmark {
         batch.Clear();
         for (int j = 0; j < entries_per_batch_; j++) {
           const int k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
+          // printf("key: %d\n", k);
           // printf("key: %d\n", k);
           // output_file << k << std::endl;
 
@@ -1519,7 +1520,7 @@ class Benchmark {
         // printf("key: %d\n", data[i]);
         the_key = adgMod::generate_key(std::to_string(data[i]));
          
-        //  printf("key22: %s\n", key.c_str());
+        //  printf("key22: %s\n", the_key.c_str());
         if (db_->Get(options, the_key, &value).ok()) {
               found++;
               bytes += value.size() + the_key.length();

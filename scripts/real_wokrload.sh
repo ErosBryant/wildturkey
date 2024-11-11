@@ -16,7 +16,7 @@ lacd=(1 2 3 4 5 6 7 8 9 10 15)
 file_error=(2 4 8 16 32)
 
 # fb_w wiki_w book_w
-workload=(osm_w fb_w wiki_w book_w)
+workload=(osm_w)
 # lac=(5)
 mod=(10)
 # file_error=(22)
@@ -64,7 +64,7 @@ for num in "${nums[@]}"; do
                # --file_error=$err
                # f=$((max / 2)) 
                # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="${wkload},real_r,stats" --mod=$md --num=$num >> "$output_file"
+               ${test_dir}/db_bench --benchmarks="${wkload},stats,real_r,stats" --mod=$md --num=$num >> "$output_file"
                echo "-------------------------------------" >> "$output_file"
 
 

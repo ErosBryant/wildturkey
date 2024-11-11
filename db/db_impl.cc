@@ -1723,7 +1723,7 @@ Status DBImpl::MakeRoomForWrite(bool force) {
 
 bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   value->clear();
-  // WaitForBackground();
+  WaitForBackground();
   MutexLock l(&mutex_);
   Slice in = property;
   Slice prefix("leveldb.");

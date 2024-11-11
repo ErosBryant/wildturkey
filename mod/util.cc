@@ -94,21 +94,20 @@ namespace adgMod {
 //    }
 
 
-    string generate_key(const string& key) {
-         string result ;
-        if (key.length() > key_size) {
-            // printf("generate_key: %s\n", key.c_str());
-            result = string(key.substr(0, key_size));
-            //  result = string(key.substr(0, 10));
-            result = string(key_size - result.length(), '0') + result;
-            // printf("generate_key: %s\n",  result.c_str());
-            return std::move(result);  // 截断超长的 key
-        }
-        // printf("key_length: %d\n", key.length());
-        result = string(key_size - key.length(), '0') + key;
-
-        return std::move(result);
+string generate_key(const string& key) {
+    const int key_size = 16;  // 确保定义在函数或全局范围
+    string result;
+    // printf("key_size: %d\n", key.length());
+    if (key.length() > key_size) {
+        result = string(key.substr(0, key_size));
+        result = string(key_size - result.length(), '0') + result;
+        // printf("result : %d\n", result.length());    
+        return result;  // 无需 std::move
     }
+    // result = string(key_size - key.length(), '0') + key;
+    // printf("result : %d\n", result.length());
+    return result;  // 无需 std::move
+}
 
 
 

@@ -39,6 +39,7 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
   ++served;
   if (adgMod::adeb == 1) {
     // check if the key is within the model bounds
+    // printf("min_key: %lu, max_key: %lu\n", min_key, max_key);
     uint64_t target_int = SliceToInteger(target_x);
     if (target_int > max_key) return std::make_pair(size, size);
     if (target_int < min_key) return std::make_pair(size, size);
