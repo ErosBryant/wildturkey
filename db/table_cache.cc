@@ -130,7 +130,7 @@ Status TableCache::Get(const ReadOptions& options, uint64_t file_number,
 
       // if level model is used or file model is available, go Bourbon path
       if (learned || *file_learned) {
-          // printf("LevelRead\n");
+          
           LevelRead(options, file_number, file_size, k, arg, handle_result, level, meta, lower, upper, learned, version);
           return Status::OK();
       }
@@ -138,6 +138,7 @@ Status TableCache::Get(const ReadOptions& options, uint64_t file_number,
 
 
   // else, go baseline path
+
 
 
 #ifdef INTERNAL_TIMER
@@ -148,9 +149,14 @@ Status TableCache::Get(const ReadOptions& options, uint64_t file_number,
   instance->PauseTimer(1);
 #endif
   if (s.ok()) {
+      
       Table* t = reinterpret_cast<TableAndFile*>(cache_->Value(handle))->table;
       s = t->InternalGet(options, k, arg, handle_result, level, meta, lower, upper, learned, version);
       cache_->Release(handle);
+  }
+  if (s.ok()) {
+      adgMod::counte_read_base += 1;
+      return s;
   }
 #ifdef RECORD_LEVEL_INFO
   adgMod::levelled_counters[2].Increment(level);
@@ -272,28 +278,39 @@ void TableCache::LevelRead(const ReadOptions &options, uint64_t file_number,
     instance->PauseTimer(1);
 #endif
 
+    
 
     if (!learned) {
       // if level model is not used, consult file model for predicted position
 #ifdef INTERNAL_TIMER
-      instance->StartTimer(17);
+      instance->StartTimer(8);
 #endif
+      adgMod::counte_read += 1;
       ParsedInternalKey parsed_key;
       ParseInternalKey(k, &parsed_key);
     
+    // if (!adgMod::file_data->check_loaded_file) {
+    //     adgMod::file_data->GetModel(meta->number)->ReadModel(dbname_ + "/" + to_string(meta->number) + ".fmodel");
+    //     adgMod::file_data->check_loaded_file=true;
+    //   }
 
       // if (!adgMod::file_data->GetModel(meta->number)->check_loaded) {
       //   adgMod::file_data->GetModel(meta->number)->check_loaded=true;
       //   adgMod::file_data->GetModel(meta->number)->ReadModel(dbname_ + "/" + to_string(meta->number) + ".fmodel");
       // }
+#ifdef INTERNAL_TIMER
+      instance->PauseTimer(8);
+#endif      
+
+#ifdef INTERNAL_TIMER
+      instance->StartTimer(17);
+#endif
 
       adgMod::LearnedIndexData* model = adgMod::file_data->GetModel(meta->number);
       auto bounds = model->GetPosition(parsed_key.user_key);
       lower = bounds.first;
       upper = bounds.second;
-#ifdef INTERNAL_TIMER
-      instance->PauseTimer(17);
-#endif
+
       if (lower > model->MaxPosition()) return;
 #ifdef RECORD_LEVEL_INFO
         adgMod::levelled_counters[1].Increment(level);
@@ -324,6 +341,9 @@ void TableCache::LevelRead(const ReadOptions &options, uint64_t file_number,
       i = comp < 0 ? index_upper : index_lower;
     }
 
+#ifdef INTERNAL_TIMER
+      instance->PauseTimer(17);
+#endif
 
     // Check Filter Block
     uint64_t block_offset = i * adgMod::block_size;
@@ -399,6 +419,8 @@ void TableCache::LevelRead(const ReadOptions &options, uint64_t file_number,
       instance->PauseTimer(18);
     }
 #endif
+
+    
     Slice key(key_ptr, non_shared), value(key_ptr + non_shared, value_length);
     handle_result(arg, key, value);
 

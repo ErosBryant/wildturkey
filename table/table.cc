@@ -159,30 +159,30 @@ Iterator* Table::BlockReader(void* arg, const ReadOptions& options,
 
   if (s.ok()) {
     BlockContents contents;
-    if (block_cache != nullptr) {
-      char cache_key_buffer[16];
-      EncodeFixed64(cache_key_buffer, table->rep_->cache_id);
-      EncodeFixed64(cache_key_buffer + 8, handle.offset());
-      Slice key(cache_key_buffer, sizeof(cache_key_buffer));
-      cache_handle = block_cache->Lookup(key);
-      if (cache_handle != nullptr) {
-        block = reinterpret_cast<Block*>(block_cache->Value(cache_handle));
-      } else {
-        s = ReadBlock(table->rep_->file, options, handle, &contents);
-        if (s.ok()) {
-          block = new Block(contents);
-          if (contents.cachable && options.fill_cache) {
-            cache_handle = block_cache->Insert(key, block, block->size(),
-                                               &DeleteCachedBlock);
-          }
-        }
-      }
-    } else {
+    // if (block_cache != nullptr) {
+    //   char cache_key_buffer[16];
+    //   EncodeFixed64(cache_key_buffer, table->rep_->cache_id);
+    //   EncodeFixed64(cache_key_buffer + 8, handle.offset());
+    //   Slice key(cache_key_buffer, sizeof(cache_key_buffer));
+    //   cache_handle = block_cache->Lookup(key);
+    //   if (cache_handle != nullptr) {
+    //     block = reinterpret_cast<Block*>(block_cache->Value(cache_handle));
+    //   } else {
+    //     s = ReadBlock(table->rep_->file, options, handle, &contents);
+    //     if (s.ok()) {
+    //       block = new Block(contents);
+    //       if (contents.cachable && options.fill_cache) {
+    //         cache_handle = block_cache->Insert(key, block, block->size(),
+    //                                            &DeleteCachedBlock);
+    //       }
+    //     }
+    //   }
+    // } else {
       s = ReadBlock(table->rep_->file, options, handle, &contents);
       if (s.ok()) {
         block = new Block(contents);
       }
-    }
+    // }
   }
 
   Iterator* iter;
@@ -260,6 +260,7 @@ Status Table::InternalGet(const ReadOptions& options, const Slice& k, void* arg,
       }
     }
     if (s.ok()) {
+      
       s = iiter->status();
     }
     delete iiter;

@@ -301,122 +301,129 @@ double LearnedIndexData::getAction(int state) const {
 bool LearnedIndexData::Learn() {
 
 
-  int muti_layer_err = 16;
-  if (adgMod::adeb == 1) {
+  int muti_layer_err = 4;
+   if (adgMod::adeb == 1) {
 
-    srand(static_cast<unsigned>(time(0)));  // 设置随机数种子
-    // check if data if filled
-    if (string_keys.empty()) assert(false);
+      // 初始化随机种子
+      srand(static_cast<unsigned>(time(0)));
 
-    // fill in some bounds for the model
-    uint64_t temp = atoll(string_keys.back().c_str());
-    min_key = atoll(string_keys.front().c_str());   // SST内最小Key, 为Uint64型
-    max_key = atoll(string_keys.back().c_str());    // SST内最大Key, 为Uint64型
-    size = string_keys.size();                      // SST内Key的数量, 为Uint64型   以上三变量均可用于计算SST内key分布的模拟密度
-    inverse_density = static_cast<uint64_t>((max_key - min_key) / size);            // SST内key分布的模拟密度
-    // 预定将inverse_density < 40 为一档， < 70为二档， < 100为3档， >100为4档， 档位越大，密度越小
-    // 为了方便计算，将inverse_density的值设定为档位的值，即inverse_density = 1, 2, 3, 4
-    if(inverse_density < 10) inverse_density = 0;
-    else if(inverse_density < 30) inverse_density = 1;
-    else if(inverse_density < 50) inverse_density = 2;
-    else inverse_density = 3;
-    int state = inverse_density; 
-    //auto& q_values = adgMod::getQTableManagerInstance().Q_table[state].q_values;
-    double temp_error = getAction(state);  // 根据档位选择对应的error_bound
-    PLR plr = PLR(temp_error);                           // error可调整为q-table对应的error
-    // 记录训练时间
-    std::vector<std::vector<Segment>> multi_layer_models;
-    std::vector<std::string> seg_last;  
-    size_t prev_model_size = 0;
-
-    std::vector<Segment> segs = plr.train(string_keys, !is_level, seg_last);
-    int segment_count = segs.size();
-
-    
-
-    
-    if (segs.empty()) return false;
-    prev_model_size = segment_count;
-    // fill in a dummy last segment (used in segment binary search)
-    segs.push_back((Segment){temp, 0, 0});
-    multi_layer_models.push_back(std::move(segs));
-    std::vector<std::string> seg_last_buffer;
-    uint8_t layer_count = 0;
-    this->error_bound = temp_error; 
-    uint64_t total_segment_count = segment_count;
-
-    while (prev_model_size > 1) {
-      upper_PLR upper_PLR(muti_layer_err);
-      if (seg_last_buffer.size() > 0) {
-        seg_last.clear();
-        seg_last = std::move(seg_last_buffer);
+      // 检查数据是否已填充
+      if (string_keys.empty()) {
+          std::cerr << "Error: string_keys is empty!" << std::endl;
+          assert(false);
       }
-      segs = upper_PLR.train(seg_last, !is_level, seg_last_buffer);
-      prev_model_size = segs.size();
 
-      segs.push_back((Segment){temp, 0, 0});
-      if (prev_model_size !=1 ) {prev_model_size += 1;}
-      total_segment_count += prev_model_size;
-      
-      this->recursive_error_bound = muti_layer_err;
-      multi_layer_models.push_back(std::move(segs));
-      layer_count++;
-    }
-    index_layer_count = layer_count;  //可用在reward中模型层数cost的计算
-    uint64_t model_size = total_segment_count * 24;
+      // 填充模型的边界
+      uint64_t temp = atoll(string_keys.back().c_str());
+      min_key = atoll(string_keys.front().c_str());   // SST内最小Key, 为Uint64型
+      max_key = atoll(string_keys.back().c_str());    // SST内最大Key, 为Uint64型
+      size = string_keys.size();                      // SST内Key的数量, 为Uint64型
+      inverse_density = static_cast<uint64_t>((max_key - min_key) / size); // SST内key分布的模拟密度
 
-    // 计算平均模型加载时间、平均校正时间， 参照zipf's law
-    double sum_prob = 0.0;
-    for (int i = 1; i <= segment_count; ++i) {
-      sum_prob += 1.0 / i;  // 计算 Zipf 总和; i等同于pow(i, 1)
-    }
-    double weighted_sum = 0.0;
-    for (int i = 1; i <= segment_count; ++i) {
-      double P_i = (1.0 / i) / sum_prob;  // 段 i 的访问概率
-      double S_i = log2(i);  // 段 i 的查找步数
-      weighted_sum += P_i * S_i;  // 加权累加
-    }
-    // todo : 加入多层layer,以及底层layer模型个数的prediction cost以及correction cost
-    
+      // 预定将inverse_density < 10 为一档， < 30为二档， < 50为3档， >=50为4档
+      if (inverse_density < 10) inverse_density = 0;
+      else if (inverse_density < 30) inverse_density = 1;
+      else if (inverse_density < 50) inverse_density = 2;
+      else inverse_density = 3;
+      int state = inverse_density;
 
-    double reward = adgMod::getQTableManagerInstance().compute_reward(
-          state,
-          temp_error,       // 当前动作, 同样是error_bound
-          weighted_sum,     // 底层模型加载cost
-          layer_count);
+      double temp_error = getAction(state);  // 根据档位选择对应的error_bound
+      PLR plr = PLR(temp_error);             // error_bound可调整为q-table对应的error
 
-    double Q_value = adgMod::getQTableManagerInstance().compute_q_value(
-          state, temp_error, reward);
-    // 更新 Q 值
-    adgMod::getQTableManagerInstance().updateQValue(state, temp_error, Q_value);
+      // 记录训练时间
+      std::vector<std::vector<Segment>> multi_layer_models;
+      std::vector<std::string> seg_last;
+      size_t prev_model_size = 0;
 
+      std::vector<Segment> segs = plr.train(string_keys, !is_level, seg_last);
+      int segment_count = segs.size();
 
-    std::cout << " | level " << LearnedIndexData::level 
-              << " | keys_num: " << size 
-              << " | inverse_density: " << inverse_density 
-              << " | segment_num " <<  segment_count 
-              << " | Layer_of_Index " << layer_count+1 
-              << " | Models_size " << model_size 
-              << " | load_cost " << weighted_sum 
-              << " | meta's_err " << this->error_bound 
-              << " | Q_value " << Q_value << std::endl;
+      if (segs.empty()) return false;
+      prev_model_size = segment_count;
 
-    // // print top model info
-    // for (int i = layer_count; i > 0; --i) {
-    //   std::cout << "The layer " << i << " has " << multi_layer_models[i].size() << " segments." << std::endl;
-    //   for (int j = 0; j < multi_layer_models[i].size(); ++j) {
-    //     std::cout << "Segment " << j << " : " << multi_layer_models[i][j].k << " " << multi_layer_models[i][j].b << std::endl;
-    //   }
-    // }
-    string_multi_layer_segments = std::move(multi_layer_models);
-    for (auto& str : string_multi_layer_segments) {
-      // printf("%s %f\n", str.first.c_str(), str.second);
-    }
-    learned.store(true);
-    // string_keys.clear();
-    return true;
+      // 填充一个虚拟的最后一个段（用于段的二分查找）
+      segs.emplace_back(Segment{temp, 0, 0});
+      multi_layer_models.emplace_back(std::move(segs));
+
+      std::vector<std::string> seg_last_buffer;
+      uint8_t layer_count = 0;
+      this->error_bound = temp_error;
+      uint64_t total_segment_count = segment_count;
+
+      while (prev_model_size > 1) {
+          PLR upper_PLR(muti_layer_err); // 假设 upper_PLR 是已定义的类
+          if (!seg_last_buffer.empty()) {
+              seg_last = std::move(seg_last_buffer);
+          }
+          segs = upper_PLR.train(seg_last, !is_level, seg_last_buffer);
+          prev_model_size = segs.size();
+
+          segs.emplace_back(Segment{temp, 0, 0});
+          if (prev_model_size != 1) { prev_model_size += 1; }
+          total_segment_count += prev_model_size;
+
+          this->recursive_error_bound = muti_layer_err;
+          multi_layer_models.emplace_back(std::move(segs));
+          layer_count++;
+      }
+      index_layer_count = layer_count;  // 可用在reward中模型层数cost的计算
+      uint64_t model_size = total_segment_count * 24;
+
+      // 计算平均模型加载时间、平均校正时间， 参照zipf's law
+      double sum_prob = 0.0;
+      for (int i = 1; i <= segment_count; ++i) {
+          sum_prob += 1.0 / i;  // 计算 Zipf 总和; i等同于pow(i, 1)
+      }
+      double weighted_sum = 0.0;
+      for (int i = 1; i <= segment_count; ++i) {
+          double P_i = (1.0 / i) / sum_prob;  // 段 i 的访问概率
+          double S_i = log2(i);               // 段 i 的查找步数
+          weighted_sum += P_i * S_i;          // 加权累加
+      }
+
+      // 计算reward，假设smtable_size为segment_count
+      double reward = adgMod::getQTableManagerInstance().compute_reward(
+            state,
+            temp_error,       // 当前动作, 同样是error_bound
+            weighted_sum,     // 底层模型加载cost
+            layer_count,
+            size     // sstable_size
+      );
+
+      // 获取 next_state
+      int next_state = adgMod::getQTableManagerInstance().getNextState(string_keys);
+
+      // 添加经验到回放缓冲区
+      adgMod::getQTableManagerInstance().addExperience(state, temp_error, reward, next_state);
+
+      // 从回放缓冲区学习
+      adgMod::getQTableManagerInstance().learnFromReplay();
+
+      // 计算 Q 值，包含最优未来价值估计
+      double Q_value = adgMod::getQTableManagerInstance().compute_q_value(
+            state, temp_error, reward, next_state);
+
+      // 更新 Q 值
+      adgMod::getQTableManagerInstance().updateQValue(state, temp_error, Q_value);
+
+      // std::cout << " | level " << LearnedIndexData::level
+      //           << " | keys_num: " << size 
+      //           << " | inverse_density: " << inverse_density 
+      //           << " | segment_num " <<  segment_count 
+      //           << " | Layer_of_Index " << (layer_count+1) 
+      //           << " | Models_size " << model_size 
+      //           << " | load_cost " << weighted_sum 
+      //           << " | meta's_err " << this->error_bound 
+      //           << " | Q_value " << Q_value << std::endl;
+
+      string_multi_layer_segments = std::move(multi_layer_models);
+      for (auto& str : string_multi_layer_segments) {
+          // printf("%s %f\n", str.first.c_str(), str.second);
+      }
+      learned.store(true);
+      // string_keys.clear();
+      return true;
   }
-
 
 
 else { // FILL IN GAMMA (error)
@@ -455,14 +462,14 @@ else { // FILL IN GAMMA (error)
   string_segments = std::move(segs);
   uint64_t model_size =  (segment_count + 1) * 24;
 
-  std::cout << " | level " << LearnedIndexData::level 
-            << " | keys_num: " << size 
-            << " | inverse_density: " << inverse_density 
-            << " | segment_num " << segment_count 
-            << " | Models_size " << model_size 
-            << " | load_cost " << weighted_sum 
-            << " | meta's_err " << error 
-            << " | Q_value " << "null" << std::endl;
+  // std::cout << " | level " << LearnedIndexData::level 
+  //           << " | keys_num: " << size 
+  //           << " | inverse_density: " << inverse_density 
+  //           << " | segment_num " << segment_count 
+  //           << " | Models_size " << model_size 
+  //           << " | load_cost " << weighted_sum 
+  //           << " | meta's_err " << error 
+  //           << " | Q_value " << "null" << std::endl;
 
   for (auto& str : string_segments) {
     // printf("%s %f\n", str.first.c_str(), str.second);
@@ -481,7 +488,7 @@ void LearnedIndexData::LevelLearn(void* arg, bool nolock) {
   Stats* instance = Stats::GetInstance();
   bool success = false;
   bool entered = false;
-  instance->StartTimer(8);
+
 
   VersionAndSelf* vas = reinterpret_cast<VersionAndSelf*>(arg);
   LearnedIndexData* self = vas->self;
@@ -508,7 +515,7 @@ void LearnedIndexData::LevelLearn(void* arg, bool nolock) {
     adgMod::db->ReturnCurrentVersion(c);
   }
 
-  auto time = instance->PauseTimer(8, true);
+  auto time = instance->PauseTimer(13, true);
 
   if (entered) {
     self->cost = time.second - time.first;
@@ -820,13 +827,25 @@ void FileLearnedIndexData::Report() {
   std::set<uint64_t> live_files;
   adgMod::db->versions_->AddLiveFiles(&live_files);
 
+  int total = 0;
+  int64_t segments = 0;
   for (size_t i = 0; i < file_learned_index_data.size(); ++i) {
     auto pointer = file_learned_index_data[i];
     if (pointer != nullptr && pointer->cost != 0) {
-      printf("FileModel %lu %d ", i, i > watermark);
-      pointer->ReportStats();
+      // printf("FileModel %lu %d ", i, i > watermark);
+      // pointer->ReportStats();
+      segments+=pointer->string_segments.size();
+      total++;
     }
   }
+      segments =  segments/total;
+    printf("------About File Model------\n");
+    printf("avege segments: %d\n", segments);
+    printf("final models : %d\n", total);
+    printf("total models : %d\n", file_learned_index_data.size());
+    printf("admog::coune_Read: %d\n", adgMod::counte_read);
+    printf("admog::coune_Write: %d\n", adgMod::counte_read_base);
+    printf("------About File Model------\n");
 }
 
 void AccumulatedNumEntriesArray::Add(uint64_t num_entries, string&& key) {

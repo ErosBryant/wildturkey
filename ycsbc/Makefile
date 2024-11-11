@@ -1,11 +1,12 @@
 CC=/usr/bin/g++
 # CFLAGS=-std=c++11 -g -Wall -pthread -I./
-CFLAGS=-std=c++11 -g -Wall -pthread -I./ -I/home/eros/workspace-lsm/Bourbon/include/
+CFLAGS=-std=c++11 -g -Wall -pthread -I./ -I/home/eros/workspace-lsm/wildturkey/include/  -I/home/eros/workspace-lsm/wildturkey/mod/
 
 # -lleveldb
 # LDFLAGS= -lpthread  -lz -lsnappy
 # LDFLAGS= -lpthread -L/home/eros/workspace-lsm/Bourbon/build -lz -lsnappy
-LDFLAGS= -lpthread /home/eros/workspace-lsm/Bourbon/build/libleveldb.a -lz -lsnappy
+LDFLAGS= -lpthread /home/eros/workspace-lsm/wildturkey/build/libleveldb.a -lz -lsnappy
+
 
 SUBDIRS= core db 
 SUBSRCS=$(wildcard core/*.cc) $(wildcard db/*.cc)

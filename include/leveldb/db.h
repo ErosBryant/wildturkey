@@ -8,9 +8,9 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "leveldb/export.h"
-#include "leveldb/iterator.h"
-#include "leveldb/options.h"
+#include "/home/eros/workspace-lsm/wildturkey/include/leveldb/export.h"
+#include "/home/eros/workspace-lsm/wildturkey/include/leveldb/iterator.h"
+#include "/home/eros/workspace-lsm/wildturkey/include/leveldb/options.h"
 
 namespace leveldb {
 

@@ -20,7 +20,7 @@
 #include "util/random.h"
 #include "util/testutil.h"
 #include <iostream>
-// using key_type = uint64_t;
+
 
 // Comma-separated list of operations to run in the specified order
 //   Actual benchmarks:
@@ -112,6 +112,7 @@ static bool FLAGS_use_existing_db = false;
 // If true, reuse existing log/MANIFEST files when re-opening a database.
 static bool FLAGS_reuse_logs = false;
 
+static int FLAGS_ycsb_uniform = 1;
 // Use the db with the following name.
 static const char* FLAGS_db = nullptr;
 
@@ -341,6 +342,7 @@ class Benchmark {
   std::ifstream input;
   using key_type = uint64_t;
   std::vector<key_type> data;
+  std::vector<string> data_ycsb;
 
   int value_size_;
   int entries_per_batch_;
@@ -508,6 +510,10 @@ class Benchmark {
       
       method = &Benchmark::unirandom_read;
 
+      }else if (name == Slice("uniwrite")) {
+      
+      method = &Benchmark::unirandom;
+
       } else if (name == Slice("osm_w")) {
       uint64_t key;
       fresh_db = true;
@@ -548,7 +554,7 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      // std::random_shuffle(data.begin(), data.end());
+      std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       }
@@ -566,7 +572,7 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      // std::random_shuffle(data.begin(), data.end());
+      std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       }
@@ -584,16 +590,36 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      // std::random_shuffle(data.begin(), data.end());
+      std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
       }
       else if (name == Slice("real_r")) {
-      
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_r;
 
-      }else if (name == Slice("read_write")) {
+      }else if (name == Slice("ycsba")) {
       
-      method = &Benchmark::read_write;
+      method = &Benchmark::YCSBA;
+
+      }else if (name == Slice("ycsbb")) {
+      
+      method = &Benchmark::YCSBB;
+
+      }else if (name == Slice("ycsbc")) {
+      
+      method = &Benchmark::YCSBC;
+
+      }else if (name == Slice("ycsbd")) {
+      
+      method = &Benchmark::YCSBD;
+
+      }else if (name == Slice("ycsbe")) {
+      
+      method = &Benchmark::YCSBE;
+
+      }else if (name == Slice("ycsbf")) {
+      
+      method = &Benchmark::YCSBF;
 
       }else if (name == Slice("fillbatch")) {
         fresh_db = true;
@@ -881,7 +907,7 @@ class Benchmark {
       }
       thread->stats.AddBytes(bytes);
       
-      static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
+      // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
     }
     
   void DoWrite(ThreadState* thread, bool seq) { // here
@@ -909,29 +935,115 @@ class Benchmark {
           thread->stats.FinishedSingleOp();
         }
       }
-            // if (adgMod::bwise==1 or adgMod::sst_size>=1){
-      // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
-      // }
+      thread->stats.AddBytes(bytes);
+      if (adgMod::MOD==9 or adgMod::sst_size>=1 ){
+      static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
+      }
     //  output_file.close();
 
-      thread->stats.AddBytes(bytes);
+      
       
     }
 
 
 
-  void read_write(ThreadState* thread) { // here
+  void YCSBA(ThreadState* thread) { // here
     RandomGenerator gen;
     ReadOptions options;
     WriteBatch batch;
     Status s;
     std::string value;
     int64_t bytes = 0;
-    int found = 0;
-    int k;
-    double get_weight = 0.7;
-    double put_weight = 0.3;
+    int64_t found = 0;
+    int64_t reads_done = 0;
+    int64_t not_found = 0;
+    int64_t writes_done = 0;
+    int kkkk=0;
+    batch.Clear();
+    char key[100];
+    if (num_ != FLAGS_num) {
+      char msg[100];
+      snprintf(msg, sizeof(msg), "(%d ops)", num_);
+      thread->stats.AddMessage(msg);
+    }
+
+
+    // int write=0;
+    // for (int i = 0; i < num_; i++) {
+    //   if (FLAGS_ycsb_uniform==1){
+    //    write= thread->rand.Next() % FLAGS_num;
+    //   }else{
+    //     write =  thread->rand.Zipfian(FLAGS_num, 1.0);
+    //   }
+    //   snprintf(key, sizeof(key), "%016d", write);
+    //   db_->Put(write_options_, key, gen.Generate(value_size_));
+    // }
+
+    int k2=0;
+    for (int i = 0; i < num_; i++) {
+          
+      if (FLAGS_ycsb_uniform==1){
+      k2 = thread->rand.Next() % FLAGS_num;
+      }else{
+      k2 =  thread->rand.Zipfian(FLAGS_num, 1.0);
+      }
+      snprintf(key, sizeof(key), "%016d", k2);
+
+
+      int next_op = thread->rand.Next() % 100;
+      
+      if (next_op < 50){
+        // printf("123123123\n");
+        kkkk++;
+        
+         if (db_->Get(options, key, &value).ok()) {
+          found++;
+          bytes += value.size() + strlen(key);
+         
+        }else{
+          not_found++;
+        }
+          thread->stats.FinishedSingleOp();
+          reads_done++;
+      }else{
+        kkkk++;
+          db_->Put(write_options_,  key, gen.Generate(value_size_));
+          bytes += value_size_ + strlen(key);
+          writes_done++;
+      // if (adgMod::MOD==10 && next_op == 50){
+      //   printf("1111\n");
+      // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
+      // }
+        thread->stats.FinishedSingleOp();
+      }
+
     
+    }
+
+    // printf("%d ------------------",kkkk);
+    thread->stats.AddBytes(bytes);
+    char msg[100];
+        snprintf(msg, sizeof(msg), "( reads:%d"  " writes:%d" \
+             " total:%d"  " found:%d"  " not found:%d"  ")",
+             reads_done, writes_done, num_, found , not_found);
+    thread->stats.AddMessage(msg);   
+
+    
+  }
+
+ void YCSBB(ThreadState* thread) { // here
+    RandomGenerator gen;
+    ReadOptions options;
+    WriteBatch batch;
+    Status s;
+    std::string value;
+    int64_t bytes = 0;
+    int64_t found = 0;
+    int64_t reads_done = 0;
+    int64_t not_found = 0;
+    int64_t writes_done = 0;
+    int k;
+    batch.Clear();
     char key[100];
     if (num_ != FLAGS_num) {
       char msg[100];
@@ -941,39 +1053,359 @@ class Benchmark {
 
 
 
-       for (int i = 0; i < num_*put_weight; i += entries_per_batch_) {
-        batch.Clear();
-          const int k = thread->rand.Next() % FLAGS_num;
-          data.push_back(k);
-        
-          snprintf(key, sizeof(key), "%016d", k);
-          db_->Put(write_options_, key, gen.Generate(value_size_));
-          bytes += value_size_ + strlen(key);
-          thread->stats.FinishedSingleOp();
+    // int write=0;
+    // for (int i = 0; i < num_; i++) {
+    //   if (FLAGS_ycsb_uniform==1){
+    //    write= thread->rand.Next() % FLAGS_num;
+    //   }else{
+    //     write =  thread->rand.Zipfian(FLAGS_num, 1.0);
+    //   }
+    //   snprintf(key, sizeof(key), "%016d", write);
+    //   db_->Put(write_options_, key, gen.Generate(value_size_));
+    // }
+
+    int k2=0;
+    for (int i = 0; i < num_; i++) {
+          
+      if (FLAGS_ycsb_uniform==1){
+      k2 = thread->rand.Next() % FLAGS_num;
+      }else{
+      k2 =  thread->rand.Zipfian(FLAGS_num, 1.0);
       }
-      thread->stats.AddBytes(bytes);
+      snprintf(key, sizeof(key), "%016d", k2);
 
 
-        for (int i = 0; i < num_*get_weight; i++) {
-        // k = thread->rand.Next() % FLAGS_num;
-        
-        snprintf(key, sizeof(key), "%016d", data[i]);
-        if (db_->Get(options, key, &value).ok()) {
+
+      int next_op = thread->rand.Next() % 100;
+      
+      if (next_op < 95){
+
+         if (db_->Get(options, key, &value).ok()) {
           found++;
           bytes += value.size() + strlen(key);
+          thread->stats.FinishedSingleOp();
+        }else{
+          not_found++;
         }
-        
-        thread->stats.FinishedSingleOp();
+      
+          reads_done++;
+      }else{
+          db_->Get(options, key, &value);
+          db_->Put(write_options_, key, gen.Generate(value_size_));
+          bytes += value_size_ + strlen(key);
+          writes_done++;
+          thread->stats.FinishedSingleOp();
+
       }
+
+    
+    }
     thread->stats.AddBytes(bytes);
     char msg[100];
-    snprintf(msg, sizeof(msg), "(%d of %d found)", found, int(num_*get_weight));
+        snprintf(msg, sizeof(msg), "( reads:%d"  " writes:%d" \
+             " total:%d"  " found:%d"  " not found:%d"  ")",
+             reads_done, writes_done, num_, found , not_found);
     thread->stats.AddMessage(msg);   
 
     
-    // printf("put_weight: %d, get_weight: %d\n", put_weight, get_weight);
+  }
+
+   void YCSBC(ThreadState* thread) { // here
+    RandomGenerator gen;
+    ReadOptions options;
+    WriteBatch batch;
+    Status s;
+    std::string value;
+    int64_t bytes = 0;
+    int64_t found = 0;
+    int64_t reads_done = 0;
+    int64_t not_found = 0;
+    int64_t writes_done = 0;
+    int k;
+    batch.Clear();
+    char key[100];
+    if (num_ != FLAGS_num) {
+      char msg[100];
+      snprintf(msg, sizeof(msg), "(%d ops)", num_);
+      thread->stats.AddMessage(msg);
     }
 
+    // int write=0;
+    // for (int i = 0; i < num_; i++) {
+    //   if (FLAGS_ycsb_uniform==1){
+    //   write = thread->rand.Next() % FLAGS_num;
+    //   }else{
+    //     write =  thread->rand.Zipfian(FLAGS_num, 1.0);
+    //   }
+    //   snprintf(key, sizeof(key), "%016d", write);
+    //   db_->Put(write_options_, key, gen.Generate(value_size_));
+    //   thread->stats.FinishedSingleOp();
+    // }
+
+    int k2=0;
+    for (int i = 0; i < reads_; i++) {
+          
+      if (FLAGS_ycsb_uniform==1){
+       k2 = thread->rand.Next() % FLAGS_num;
+      }else{
+        k2 = thread->rand.Zipfian(FLAGS_num, 1.0);
+      }
+      snprintf(key, sizeof(key), "%016d", k2);
+
+      if (db_->Get(options, key, &value).ok()) {
+          found++;
+          bytes += value.size() + strlen(key);
+          
+        }else{
+          not_found++;
+        }
+        thread->stats.FinishedSingleOp();
+        reads_done++;
+
+    }
+    thread->stats.AddBytes(bytes);
+    char msg[100];
+        snprintf(msg, sizeof(msg), "( reads:%d"  " writes:%d" \
+             " total:%d"  " found:%d"  " not found:%d"  ")",
+             reads_done, writes_done, num_, found , not_found);
+    thread->stats.AddMessage(msg);   
+
+    
+  }
+   void YCSBD(ThreadState* thread) { // here
+    RandomGenerator gen;
+    ReadOptions options;
+    WriteBatch batch;
+    Status s;
+    std::string value;
+    int64_t bytes = 0;
+    int64_t found = 0;
+    int64_t reads_done = 0;
+    int64_t not_found = 0;
+    int64_t writes_done = 0;
+    int k;
+    batch.Clear();
+    char key[100];
+    if (num_ != FLAGS_num) {
+      char msg[100];
+      snprintf(msg, sizeof(msg), "(%d ops)", num_);
+      thread->stats.AddMessage(msg);
+    }
+
+
+
+    // int write=0;
+    // for (int i = 0; i < num_; i++) {
+    //   if (FLAGS_ycsb_uniform==1){
+    //    write= thread->rand.Next() % FLAGS_num;
+    //   }else{
+    //     write =  thread->rand.Zipfian(FLAGS_num, 1.0);
+    //   }
+    //   snprintf(key, sizeof(key), "%016d", write);
+    //   db_->Put(write_options_, key, gen.Generate(value_size_));
+    // }
+
+    int k2=0;
+    for (int i = 0; i < num_; i++) {
+          
+      if (FLAGS_ycsb_uniform==1){
+      k2 = thread->rand.Next() % FLAGS_num;
+      }else{
+      k2 =  thread->rand.Zipfian(FLAGS_num, 1.0);
+      }
+      snprintf(key, sizeof(key), "%016d", k2);
+
+
+
+      int next_op = thread->rand.Next() % 100;
+      
+      if (next_op < 95){
+
+         if (db_->Get(options, key, &value).ok()) {
+          found++;
+          bytes += value.size() + strlen(key);
+          thread->stats.FinishedSingleOp();
+        }else{
+          not_found++;
+        }
+      
+          reads_done++;
+      }else{
+          db_->Put(write_options_, key, gen.Generate(value_size_));
+          bytes += value_size_ + strlen(key);
+          writes_done++;
+          thread->stats.FinishedSingleOp();
+
+      }
+
+    
+    }
+    thread->stats.AddBytes(bytes);
+    char msg[100];
+        snprintf(msg, sizeof(msg), "( reads:%d"  " writes:%d" \
+             " total:%d"  " found:%d"  " not found:%d"  ")",
+             reads_done, writes_done, num_, found , not_found);
+    thread->stats.AddMessage(msg);   
+
+    
+  }
+   void YCSBE(ThreadState* thread) { // here
+    RandomGenerator gen;
+    ReadOptions options;
+    WriteBatch batch;
+    Status s;
+    std::string value;
+    int64_t bytes = 0;
+    int64_t found = 0;
+    int64_t reads_done = 0;
+    int64_t not_found = 0;
+    int64_t writes_done = 0;
+    int k;
+    batch.Clear();
+    char key[100];
+    if (num_ != FLAGS_num) {
+      char msg[100];
+      snprintf(msg, sizeof(msg), "(%d ops)", num_);
+      thread->stats.AddMessage(msg);
+    }
+
+
+    // int write=0;
+    // for (int i = 0; i < num_; i++) {
+    //   if (FLAGS_ycsb_uniform==1){
+    //    write= thread->rand.Next() % FLAGS_num;
+    //   }else{
+    //     write =  thread->rand.Zipfian(FLAGS_num, 1.0);
+    //   }
+    //   snprintf(key, sizeof(key), "%016d", write);
+    //   db_->Put(write_options_, key, gen.Generate(value_size_));
+    // }
+
+    int k2=0;
+    for (int i = 0; i < num_; i++) {
+          
+      if (FLAGS_ycsb_uniform==1){
+      k2 = thread->rand.Next() % FLAGS_num;
+      }else{
+      k2 =  thread->rand.Zipfian(FLAGS_num, 1.0);
+      }
+      snprintf(key, sizeof(key), "%016d", k2);
+
+
+      int next_op = thread->rand.Next() % 100;
+      
+      if (next_op < 95){
+
+        Iterator* iter = db_->NewIterator(ReadOptions());
+        int i = 0;
+        for (iter->SeekToFirst(); i < 100 && iter->Valid(); iter->Next()) {
+          bytes += iter->key().size() + iter->value().size();
+          
+          ++i;
+        }
+        delete iter;
+        thread->stats.FinishedSingleOp();
+       
+        reads_done++;
+      }else{
+          db_->Put(write_options_, key, gen.Generate(value_size_));
+          bytes += value_size_ + strlen(key);
+          writes_done++;
+          thread->stats.FinishedSingleOp();
+          
+
+      }
+    
+    
+    }
+    thread->stats.AddBytes(bytes);
+    
+    char msg[100];
+        snprintf(msg, sizeof(msg), "( reads:%d"  " writes:%d" \
+             " total:%d"  " found:%d"  " not found:%d"  ")",
+             reads_done, writes_done, num_, found , not_found);
+    thread->stats.AddMessage(msg);   
+
+    
+  }
+   void YCSBF(ThreadState* thread) { // here
+    RandomGenerator gen;
+    ReadOptions options;
+    WriteBatch batch;
+    Status s;
+    std::string value;
+    int64_t bytes = 0;
+    int64_t found = 0;
+    int64_t reads_done = 0;
+    int64_t not_found = 0;
+    int64_t writes_done = 0;
+    int k;
+    batch.Clear();
+    char key[100];
+    if (num_ != FLAGS_num) {
+      char msg[100];
+      snprintf(msg, sizeof(msg), "(%d ops)", num_);
+      thread->stats.AddMessage(msg);
+    }
+
+
+
+    // int write=0;
+    // for (int i = 0; i < num_; i++) {
+    //   if (FLAGS_ycsb_uniform==1){
+    //    write= thread->rand.Next() % FLAGS_num;
+    //   }else{
+    //     write =  thread->rand.Zipfian(FLAGS_num, 1.0);
+    //   }
+    //   snprintf(key, sizeof(key), "%016d", write);
+    //   db_->Put(write_options_, key, gen.Generate(value_size_));
+    // }
+
+    int k2=0;
+    for (int i = 0; i < num_; i++) {
+          
+      if (FLAGS_ycsb_uniform==1){
+      k2 = thread->rand.Next() % FLAGS_num;
+      }else{
+      k2 =  thread->rand.Zipfian(FLAGS_num, 1.0);
+      }
+      snprintf(key, sizeof(key), "%016d", k2);
+
+
+
+      int next_op = thread->rand.Next() % 100;
+      
+      if (next_op < 50){
+
+         if (db_->Get(options, key, &value).ok()) {
+          found++;
+          bytes += value.size() + strlen(key);
+          thread->stats.FinishedSingleOp();
+        }else{
+          not_found++;
+        }
+      
+          reads_done++;
+      }else{
+          db_->Get(options, key, &value);
+          db_->Put(write_options_, key, gen.Generate(value_size_));
+          bytes += value_size_ + strlen(key);
+          writes_done++;
+          thread->stats.FinishedSingleOp();
+
+      }
+
+    
+    }
+    thread->stats.AddBytes(bytes);
+    char msg[100];
+        snprintf(msg, sizeof(msg), "( reads:%d"  " writes:%d" \
+             " total:%d"  " found:%d"  " not found:%d"  ")",
+             reads_done, writes_done, num_, found , not_found);
+    thread->stats.AddMessage(msg);   
+
+    
+  }
 
 
 
@@ -991,8 +1423,8 @@ class Benchmark {
     }
 
       for (int i = 0; i < num_; i += entries_per_batch_) {
-          // const int k = thread->rand.Next() % FLAGS_num;
-          const int k = data[i];
+          const int k = thread->rand.Next() % FLAGS_num;
+          // const int k = data[i];
           // printf("key: %d\n", k);
           char key[100];
           snprintf(key, sizeof(key), "%016d", k);
@@ -1006,7 +1438,7 @@ class Benchmark {
       // only for read performance test   只有测试读性能时才需要手动compaction
       // if (adgMod::bwise==1 or adgMod::sst_size>=1){
       // // db_->CompactRange(nullptr, nullptr);
-      static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
+      // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
       // }
   }
 
@@ -1344,7 +1776,9 @@ int main(int argc, char** argv) {
       adgMod::adeb = n;
     } else if (sscanf(argv[i], "--threads=%d%c", &n, &junk) == 1) {
       FLAGS_threads = n;
-    } else if (sscanf(argv[i], "--value_size=%d%c", &n, &junk) == 1) {
+    } else if (sscanf(argv[i], "--uni=%d%c", &n, &junk) == 1) {
+      FLAGS_ycsb_uniform = n;
+    }else if (sscanf(argv[i], "--value_size=%d%c", &n, &junk) == 1) {
       FLAGS_value_size = n;
     } else if (sscanf(argv[i], "--write_buffer_size=%d%c", &n, &junk) == 1) {
       FLAGS_write_buffer_size = n*1024*1024;
@@ -1359,11 +1793,21 @@ int main(int argc, char** argv) {
     } else if (sscanf(argv[i], "--open_files=%d%c", &n, &junk) == 1) {
       FLAGS_open_files = n;
     } else if (sscanf(argv[i], "--mod=%d%c", &n, &junk) == 1) {
+      if (n==9){
+      adgMod::MOD = n;  
+      adgMod::sst_size = 4;
+      adgMod::adeb = 1;
+      printf("mod: %d\n", n);
+      }else{    
       adgMod::MOD = n;
+      printf("mod: %d\n", n);
+      }
+      
     } else if (sscanf(argv[i], "--bwise=%d%c", &n, &junk) == 1) {
       adgMod::bwise = n;
       adgMod::MOD = 7;
       adgMod::sst_size = 4;
+      adgMod::file_model_error=16;
     }else if (sscanf(argv[i], "--file_error=%d%c", &n, &junk) == 1) {
       adgMod::file_model_error  = n;
     } else if (sscanf(argv[i], "--lac=%d%c", &n, &junk) == 1) {

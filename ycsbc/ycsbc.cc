@@ -120,6 +120,7 @@ int main(const int argc, const char *argv[]) {
     PrintInfo(props);
 
     if( load ) {
+
       // Loads data
       ycsbc::CoreWorkload wl;
       wl.Init(props);
@@ -143,8 +144,12 @@ int main(const int argc, const char *argv[]) {
       printf("loading records:%d  use time:%.3f s  IOPS:%.2f iops\n", sum, 1.0 * use_time*1e-6, 1.0 * sum * 1e6 / use_time );
       printf("*********************************\n");
     } 
+
+    printf("********** run **********?????????1\n");
+
     if( run ) {
       // Peforms transactions
+ 
       ycsbc::CoreWorkload wl;
       wl.Init(props);
 
@@ -163,6 +168,7 @@ int main(const int argc, const char *argv[]) {
       }
       uint64_t run_end = get_now_micros();
       uint64_t use_time = run_end - run_start;
+      printf("********** run **********?????????2\n");
 
       printf("********** run result **********\n");
       printf("all opeartion records:%d  workload:%s  use time:%.3f s  IOPS:%.2f iops\n\n", sum, props["run"].c_str(), 1.0 * use_time*1e-6, 1.0 * sum * 1e6 / use_time );
@@ -180,24 +186,24 @@ int main(const int argc, const char *argv[]) {
       db->noResult_init();
       printf("-------------------------------------------\n");
     }
-    if ( wait_for_balance ) {
-      uint64_t sleep_time = 0;
-      while(!db->HaveBalancedDistribution()){
-        sleep(10);
-        sleep_time += 10;
-      }
-      printf("Wait balance:%lu s\n",sleep_time);
+    // if ( wait_for_balance ) {
+    //   uint64_t sleep_time = 0;
+    //   while(!db->HaveBalancedDistribution()){
+    //     sleep(10);
+    //     sleep_time += 10;
+    //   }
+    //   printf("Wait balance:%lu s\n",sleep_time);
 
-      printf("-------------- db statistics --------------\n");
-      db->PrintStats();
-      printf("-------------------------------------------\n");
-    }
+    //   printf("-------------- db statistics --------------\n");
+    //   db->PrintStats();
+    //   printf("-------------------------------------------\n");
+    // }
     // end
     for (int i = 0; i < nargc; i++) {
       delete nargv[i];
     }
     delete nargv;
-    cout << "--------------------------------------------------------------" << endl;
+    cout << "----?----------------------------------------------------------" << endl;
     ifs >> nargc;
   }
   

@@ -179,7 +179,7 @@ DBImpl::~DBImpl() {
     background_work_finished_signal_.Wait();
   }
 
-  if (adgMod::MOD == 7) {
+  if (adgMod::MOD == 7 || adgMod::MOD == 9) {
         // adgMod::file_data->Report();
         // Version* current = adgMod::db->versions_->current();
         // std::cout << "Level model stats:" << std::endl;
@@ -338,8 +338,6 @@ void DBImpl::DeleteObsoleteFiles() {
             static_cast<unsigned long long>(number));
         env_->DeleteFile(dbname_ + "/" + filenames[i]);
         env_->DeleteFile(dbname_ + "/" + to_string(number) + ".fmodel");
-
-        
       }
     }
   }
@@ -652,11 +650,11 @@ int DBImpl::CompactMemTable() {
     int level = edit.new_files_[0].first;
     // printf("level: %d\n", level);
     
-    if (adgMod::bwise!=1 or adgMod::adeb!=1){
-    adgMod::compaction_counter_mutex.Lock();
-    adgMod::events[0].push_back(new CompactionEvent(time, to_string(level)));
-    adgMod::levelled_counters[5].Increment(edit.new_files_[0].first, time.second - time.first);
-    adgMod::compaction_counter_mutex.Unlock();
+    if (adgMod::MOD!=10 or adgMod::adeb!=1){
+    // adgMod::compaction_counter_mutex.Lock();
+    // adgMod::events[0].push_back(new CompactionEvent(time, to_string(level)));
+    // adgMod::levelled_counters[5].Increment(edit.new_files_[0].first, time.second - time.first);
+    // adgMod::compaction_counter_mutex.Unlock();
     env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
     }
 
@@ -1051,6 +1049,7 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
 
   // When a new file is generated, it's put into learning_prepare queue.
   //  file learing
+  // printf("PrepareLearning\n");
   env_->PrepareLearning((__rdtscp(&dummy) - instance->initial_time) / adgMod::reference_frequency, level, meta);
 
   if (s.ok() && current_entries > 0) {
@@ -1224,7 +1223,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       compact->current_output()->largest.DecodeFrom(key);
       compact->builder->Add(key, input->value());
 
-      if (adgMod::bwise==1 or adgMod::sst_size>=1){
+      if (adgMod::MOD==9 or adgMod::sst_size>=1){
           if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
           status = FinishCompactionOutputFile(compact, input);
           if (!status.ok()) {
@@ -1725,7 +1724,7 @@ Status DBImpl::MakeRoomForWrite(bool force) {
 
 bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   value->clear();
-  WaitForBackground();
+  // WaitForBackground();
   MutexLock l(&mutex_);
   Slice in = property;
   Slice prefix("leveldb.");
@@ -1784,7 +1783,7 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   //versions_->current()->PrintAll();
  
     if (adgMod::MOD == 7) {
-          // adgMod::file_data->Report();
+          adgMod::file_data->Report();
           // Version* current = adgMod::db->versions_->current();
           // std::cout << "Level model stats:" << std::endl;
           // for (int i = 1; i < config::kNumLevels; ++i) {
@@ -1868,7 +1867,10 @@ Status DB::Open(const Options& options, const std::string& dbname, DB** dbptr) {
   // printf("DBImpl::Open----------------------\n");
   // std::cout << "DBImpl::Open----------------------" << std::endl;
   // adgMod::MOD = 7;
-  // adgMod::sst_size = 1;
+  // adgMod::sst_size = 4;
+  // adgMod::bwise = 1;
+  // adgMod::adeb =1;
+
   // adgMod::file_model_error =8;
   
   adgMod::env = options.env;

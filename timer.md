@@ -9,6 +9,8 @@ echo 3 > /proc/sys/vm/drop_caches
 - Timer 5: load datablock 
 - Timer 3: search datablock
   
+
+- Timer 8: load model
 - Timer 17: model lookup + precdition
 - Timer 18: load chunk
 - Timer 19: locate key
@@ -28,7 +30,7 @@ echo 3 > /proc/sys/vm/drop_caches
 - Timer 7 is the total compaction time.
 - 
 - Timer 11 is the total file model learning time.
-- Timer 8 is the total level learning time
+
 - timer 9: Total fresh write time (db load)
 - timer 16: time to compact memtable
 

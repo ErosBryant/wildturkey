@@ -814,8 +814,11 @@ class PosixEnv : public Env {
         learning_prepare.pop();
         double score = adgMod::learn_cb_model->CalculateCB(level, front.second.second->file_size);
         // printf("score: %f\n", score);
-        // if (score > 1) 
-        learn_pq.push(std::make_pair(score, front));
+        // printf("adgMod::MOD: %d\n", adgMod::MOD);
+        if (adgMod::MOD==9) {
+          // printf("score: %f\n", score);
+          learn_pq.push(std::make_pair(score, front));
+        }else{ if (score > CBModel_Learn::const_size_to_cost) learn_pq.push(std::make_pair(score, front));}
       }
       // CBModel_Learn::const_size_to_cost
 

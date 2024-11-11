@@ -8,7 +8,7 @@
 #include <string>
 
 #include "core/db.h"
-#include "/home/eros/workspace-lsm/Bourbon/include/leveldb/db.h"
+#include "leveldb/db.h"
 #include "core/properties.h"
 
 using std::string;

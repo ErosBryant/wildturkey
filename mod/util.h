@@ -49,6 +49,8 @@ namespace adgMod {
     extern uint32_t test_num_level_segments;
     extern uint32_t test_num_file_segments;
     extern double level_size;
+    extern int counte_read;
+    extern int counte_read_base;
 
     // some variables and pointers made global
     extern int key_size;

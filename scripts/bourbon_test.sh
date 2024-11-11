@@ -9,22 +9,22 @@ nums=(10000000)
 
 # Define various configurations
 # memtable_size=(4)
-max_file_size=(2 4 8 16)
+max_file_size=(2 8 16)
 number_of_runs=1
 # bwise=(1 0)
-lac=(1 2 3 4 5 6 7 8 9 10)
+lacd=(1 2 3 4 5 6 7 8 9 10 15)
 file_error=(2 4 8 16 32)
 
 # fb_w wiki_w book_w
 workload=(osm_w)
 # lac=(5)
-mod=(8)
+mod=(7)
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/motivation/$current_time/mod8_mod7/"
+output_dir="/mnt/motivation/$current_time/lac-sec/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
@@ -46,12 +46,13 @@ fi
 for num in "${nums[@]}"; do
    for wkload in "${workload[@]}"; do
    # for bw in "${bwise[@]}"; do
-      for max in "${max_file_size[@]}"; do
-      # for err in "${file_error[@]}"; do
+   # for lac in "${lacd[@]}"; do
+      # for max in "${max_file_size[@]}"; do
+      for err in "${file_error[@]}"; do
          for md in "${mod[@]}"; do
          # Initialize summary output file
-            summary_output="${output_dir}summary_results/max=${max}workload=${wkload}-mod=${md}-num=${num}.csv"
-            echo "  num,  run, write_micros/op, read_micros/op, write_MB/s, read_MB/s, wkload , max,  mod , waf, memtable_stall, L0_stall, L0_slow_stall, avg_segment_size" > "$summary_output"
+            summary_output="${output_dir}summary_results/err=${err}lac=${lac}-mod=${md}-num=${num}.csv"
+            echo "  num,  run, write_micros/op, read_micros/op, write_MB/s, read_MB/s, lac , err,  mod , waf, memtable_stall, L0_stall, L0_slow_stall, avg_segment_size" > "$summary_output"
 
 
             # 변수 리스트 초기화
@@ -65,9 +66,9 @@ for num in "${nums[@]}"; do
                # max_file_size=${max}
                # error=${err}
                # bwise=${bw}
-               output_file="${output_dir}mod=${md}max_file_size=${max}_wokdload=${wkload}-num=${num}_${i}.csv"
+               output_file="${output_dir}mod=${md}ERR=${err}_lac=${lac}-num=${num}_${i}.csv"
                
-               echo "Running db_bench with --num=$num  workload=$wkload max=$max --mod=${md} " > "$output_file"
+               echo "Running db_bench with --num=$num  lac=$lac max=$max --mod=${md} " > "$output_file"
 
                # Run the benchmark
                # uni40,uniread,stats
@@ -80,7 +81,7 @@ for num in "${nums[@]}"; do
                # --file_error=$err
                # f=$((max / 2)) 
                # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="${wkload},stats" --mod=$md --max_file_size=$max --num=$num >> "$output_file"
+               ${test_dir}/db_bench --benchmarks="osm_w,real_r,stats" --mod=$md --file_error=$err --num=$num >> "$output_file"
                echo "-------------------------------------" >> "$output_file"
 
 
@@ -101,7 +102,7 @@ for num in "${nums[@]}"; do
                write_mb_list+=($write_mb_per_s)
                read_mb_list+=($read_mb_per_s)
                # Append data to summary output file
-               echo "$num, $i,     $write_micros_per_op,          $read_micros_per_op,         $write_mb_per_s,       $read_mb_per_s,  $wkload , $max,  $mod   ,  $waf,     $memtable_stall,    $l0_stall,      $l0_slow_stall,          $avg_segment_size" >> "$summary_output"
+               echo "$num, $i,     $write_micros_per_op,          $read_micros_per_op,         $write_mb_per_s,       $read_mb_per_s,  $lac , $err,  $mod   ,  $waf,     $memtable_stall,    $l0_stall,      $l0_slow_stall,          $avg_segment_size" >> "$summary_output"
 
                # Clear system cache
                sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'

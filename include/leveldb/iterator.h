@@ -15,9 +15,9 @@
 #ifndef STORAGE_LEVELDB_INCLUDE_ITERATOR_H_
 #define STORAGE_LEVELDB_INCLUDE_ITERATOR_H_
 
-#include "leveldb/export.h"
-#include "leveldb/slice.h"
-#include "leveldb/status.h"
+#include "/home/eros/workspace-lsm/wildturkey/include/leveldb/export.h"
+#include "/home/eros/workspace-lsm/wildturkey/include/leveldb/slice.h"
+#include "/home/eros/workspace-lsm/wildturkey/include/leveldb/status.h"
 
 namespace leveldb {
 

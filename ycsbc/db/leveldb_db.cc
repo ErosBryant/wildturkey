@@ -13,7 +13,7 @@ namespace ycsbc {
         leveldb::Options options;
         SetOptions(&options, props);
 
-        // printf("open db:111111111111111111%s\n",dbfilename);
+        printf("open db:111111111111111111%s\n",dbfilename);
         leveldb::Status s = leveldb::DB::Open(options, dbfilename, &db_);
 
         if (!s.ok()) {

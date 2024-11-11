@@ -58,6 +58,8 @@ namespace adgMod {
     uint64_t block_num_entries = 0;
     uint64_t block_size = 0;
     uint64_t entry_size = 0;
+    int counte_read = 0;
+    int counte_read_base = 0;
     
     int sst_size = 0;
 
