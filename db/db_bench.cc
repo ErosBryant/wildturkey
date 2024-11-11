@@ -936,7 +936,7 @@ class Benchmark {
         }
       }
       thread->stats.AddBytes(bytes);
-      if (adgMod::MOD==9 or adgMod::sst_size>=1 ){
+      if (adgMod::MOD==10 or adgMod::sst_size>=1 ){
       static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
       }
     //  output_file.close();
@@ -1793,7 +1793,7 @@ int main(int argc, char** argv) {
     } else if (sscanf(argv[i], "--open_files=%d%c", &n, &junk) == 1) {
       FLAGS_open_files = n;
     } else if (sscanf(argv[i], "--mod=%d%c", &n, &junk) == 1) {
-      if (n==9){
+      if (n==10){
       adgMod::MOD = n;  
       adgMod::sst_size = 4;
       adgMod::adeb = 1;

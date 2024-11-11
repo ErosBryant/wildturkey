@@ -815,7 +815,7 @@ class PosixEnv : public Env {
         double score = adgMod::learn_cb_model->CalculateCB(level, front.second.second->file_size);
         // printf("score: %f\n", score);
         // printf("adgMod::MOD: %d\n", adgMod::MOD);
-        if (adgMod::MOD==9) {
+        if (adgMod::MOD==10) {
           // printf("score: %f\n", score);
           learn_pq.push(std::make_pair(score, front));
         }else{ if (score > CBModel_Learn::const_size_to_cost) learn_pq.push(std::make_pair(score, front));}
@@ -851,7 +851,7 @@ class PosixEnv : public Env {
   }
 
   void PrepareLearning(uint64_t time_start, int level, FileMetaData* meta) {
-    if (adgMod::fresh_write || (adgMod::MOD != 6 && adgMod::MOD != 7 && adgMod::MOD != 9)) return;
+    if (adgMod::fresh_write || (adgMod::MOD != 6 && adgMod::MOD != 7 && adgMod::MOD != 10)) return;
     MutexLock guard(&prepare_queue_mutex);
     if (!preparing_thread_started) {
         preparing_thread_started = true;

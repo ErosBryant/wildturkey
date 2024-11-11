@@ -178,8 +178,7 @@ DBImpl::~DBImpl() {
   while (background_compaction_scheduled_) {
     background_work_finished_signal_.Wait();
   }
-
-  if (adgMod::MOD == 7 || adgMod::MOD == 9) {
+  if (adgMod::MOD == 7 ) {
         // adgMod::file_data->Report();
         // Version* current = adgMod::db->versions_->current();
         // std::cout << "Level model stats:" << std::endl;
@@ -1223,7 +1222,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       compact->current_output()->largest.DecodeFrom(key);
       compact->builder->Add(key, input->value());
 
-      if (adgMod::MOD==9 or adgMod::sst_size>=1){
+      if (adgMod::MOD==10 or adgMod::sst_size>=1){
           if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
           status = FinishCompactionOutputFile(compact, input);
           if (!status.ok()) {
@@ -1782,7 +1781,7 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   std::cout << "waf:" << bytes_written_total / NumLevelBytes_total << std::endl;
   //versions_->current()->PrintAll();
  
-    if (adgMod::MOD == 7) {
+    if (adgMod::MOD == 7|| adgMod::MOD == 10) {
           adgMod::file_data->Report();
           // Version* current = adgMod::db->versions_->current();
           // std::cout << "Level model stats:" << std::endl;

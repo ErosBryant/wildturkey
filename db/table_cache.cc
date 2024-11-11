@@ -117,7 +117,7 @@ Status TableCache::Get(const ReadOptions& options, uint64_t file_number,
   Cache::Handle* handle = nullptr;
   adgMod::Stats* instance = adgMod::Stats::GetInstance();
 
-  if ((adgMod::MOD == 6 || adgMod::MOD == 7 || adgMod::MOD == 9)) {
+  if ((adgMod::MOD == 6 || adgMod::MOD == 7 || adgMod::MOD == 10)) {
       // check if file model is ready
       // if (!adgMod::file_data->GetModel(meta->number)->check_loaded) {
       //   adgMod::file_data->GetModel(meta->number)->check_loaded=true;
