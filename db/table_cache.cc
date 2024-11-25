@@ -294,10 +294,10 @@ void TableCache::LevelRead(const ReadOptions &options, uint64_t file_number,
     //     adgMod::file_data->check_loaded_file=true;
     //   }
 
-      // if (!adgMod::file_data->GetModel(meta->number)->check_loaded) {
-      //   adgMod::file_data->GetModel(meta->number)->check_loaded=true;
-      //   adgMod::file_data->GetModel(meta->number)->ReadModel(dbname_ + "/" + to_string(meta->number) + ".fmodel");
-      // }
+      if (!adgMod::file_data->GetModel(meta->number)->check_loaded) {
+        adgMod::file_data->GetModel(meta->number)->check_loaded=true;
+        adgMod::file_data->GetModel(meta->number)->ReadModel(dbname_ + "/" + to_string(meta->number) + ".fmodel");
+      }
 #ifdef INTERNAL_TIMER
       instance->PauseTimer(8);
 #endif      

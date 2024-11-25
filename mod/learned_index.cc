@@ -35,11 +35,12 @@ namespace adgMod {
 
 std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
     const Slice& target_x) const {
-  assert(string_multi_layer_segments.size() > 1);
+  assert(this->string_multi_layer_segments.size() > 1);
   ++served;
   if (adgMod::adeb == 1) {
     // check if the key is within the model bounds
     // printf("min_key: %lu, max_key: %lu\n", min_key, max_key);
+// check if the key is within the model bounds
     uint64_t target_int = SliceToInteger(target_x);
     if (target_int > max_key) return std::make_pair(size, size);
     if (target_int < min_key) return std::make_pair(size, size);
@@ -48,15 +49,21 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
     double recursive_error_bound = this->recursive_error_bound;
 
     // top model prediction
-    if (recursive_error_bound > 5) {
+    if (recursive_error_bound > 3) {
       // binary search
-      for (int i = index_layer_count; i > 0; --i ){
-        segment = target_int * string_multi_layer_segments[i][segment].k + string_multi_layer_segments[i][segment].b;
+      for (int i = this->index_layer_count; i > 0; --i ){
+        segment = target_int * this->string_multi_layer_segments[i][segment].k + this->string_multi_layer_segments[i][segment].b;
+
+        // std::cout << "The top layer is : " << this->index_layer_count << "| Have " << string_multi_layer_segments[i].size() << " segments in layer " << i << 
+        // " and this key : " << target_int << " is in segment num " << segment << " next layer has segments " << string_multi_layer_segments[i-1].size() <<std::endl;
+        segment > this->string_multi_layer_segments[i-1].size() ? segment = this->string_multi_layer_segments[i-1].size() - 1 : segment;
         uint64_t lower = segment - recursive_error_bound > 0 ? (uint64_t)std::floor(segment - recursive_error_bound) : 0;
-        uint64_t upper = (uint64_t)std::ceil(segment + recursive_error_bound) < string_multi_layer_segments[i-1].size() ? (uint64_t)std::ceil(segment + recursive_error_bound) : (string_multi_layer_segments[i-1].size() - 1);
+        //std::cerr << "Lower is : " << lower << std::endl;
+        uint64_t upper = (uint64_t)std::ceil(segment + recursive_error_bound) < this->string_multi_layer_segments[i-1].size() ? (uint64_t)std::ceil(segment + recursive_error_bound) : (this->string_multi_layer_segments[i-1].size() - 1);
+        //std::cerr << "Upper is : " << upper << std::endl;
         while (lower != upper - 1) {
           uint64_t mid = (upper + lower) / 2;
-          if (target_int < string_multi_layer_segments[i-1][mid].x)
+          if (target_int < this->string_multi_layer_segments[i-1][mid].x)
             upper = mid;
           else
             lower = mid;
@@ -64,20 +71,21 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
         segment = std::move(lower);
       }
     }
+
     else {
     // Linear search
       for (int i = index_layer_count; i > 0; --i) {
-          segment = target_int * string_multi_layer_segments[i][segment].k + string_multi_layer_segments[i][segment].b;
+          segment = target_int * this->string_multi_layer_segments[i][segment].k + this->string_multi_layer_segments[i][segment].b;
           uint64_t lower = segment - recursive_error_bound > 0 ? (uint64_t)std::floor(segment - recursive_error_bound) : 0;
-          uint64_t upper = (uint64_t)std::ceil(segment + recursive_error_bound) < string_multi_layer_segments[i - 1].size() 
+          uint64_t upper = (uint64_t)std::ceil(segment + recursive_error_bound) < this->string_multi_layer_segments[i - 1].size() 
                           ? (uint64_t)std::ceil(segment + recursive_error_bound) 
-                          : (string_multi_layer_segments[i - 1].size() - 1);
+                          : (this->string_multi_layer_segments[i - 1].size() - 1);
 
           // Linear search within the bounds
           for (uint64_t j = lower; j <= upper; ++j) {
-              if (target_int < string_multi_layer_segments[i - 1][j].x) {
+              if (target_int < this->string_multi_layer_segments[i - 1][j].x) {
                   // 检查是否确实在当前 segment 范围内
-                  if (j > 0 && target_int >= string_multi_layer_segments[i - 1][j - 1].x) {
+                  if (j > 0 && target_int >= this->string_multi_layer_segments[i - 1][j - 1].x) {
                       segment = j - 1;
                   } else {
                       segment = j;
@@ -94,7 +102,7 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
     // calculate the interval according to the selected segment
     // predicted position
     double result =
-        target_int * string_multi_layer_segments[0][segment].k + string_multi_layer_segments[0][segment].b;
+        target_int * this->string_multi_layer_segments[0][segment].k + this->string_multi_layer_segments[0][segment].b;
     result = is_level ? result / 2 : result;
     //double error_bound = this->meta->error;
     double error_bound = this->error_bound;  // 使用模型记录的 error bound
@@ -302,7 +310,7 @@ double LearnedIndexData::getAction(int state) const {
 bool LearnedIndexData::Learn() {
 
 
-  int muti_layer_err = 4;
+  int muti_layer_err = 8;
    if (adgMod::adeb == 1) {
 
       // 初始化随机种子
@@ -367,7 +375,7 @@ bool LearnedIndexData::Learn() {
           multi_layer_models.emplace_back(std::move(segs));
           layer_count++;
       }
-      index_layer_count = layer_count;  // 可用在reward中模型层数cost的计算
+      this->index_layer_count = layer_count;  // 可用在reward中模型层数cost的计算
       uint64_t model_size = total_segment_count * 24;
 
       // 计算平均模型加载时间、平均校正时间， 参照zipf's law
@@ -835,17 +843,25 @@ void FileLearnedIndexData::Report() {
     if (pointer != nullptr && pointer->cost != 0) {
       // printf("FileModel %lu %d ", i, i > watermark);
       // pointer->ReportStats();
-      segments+=pointer->string_segments.size();
+      if (adgMod::adeb==1){
+        
+        for (int i=0; i < pointer->index_layer_count; i++) {
+            segments += pointer->string_multi_layer_segments[i].size();
+        }
+      }else{
+      segments += pointer->string_segments.size();
+      }
+      // printf("pointer->string_segments.size() %d\n", pointer->string_multi_layer_segments.size());
       total++;
     }
   }
-      segments =  segments/total;
+    int64_t  avgsegments =  segments/total;
     printf("------About File Model------\n");
-    printf("avege segments: %d\n", segments);
+    printf("total segments: %d\n", segments);
     printf("final models : %d\n", total);
-    printf("total models : %d\n", file_learned_index_data.size());
-    printf("admog::coune_Read: %d\n", adgMod::counte_read);
-    printf("admog::coune_Write: %d\n", adgMod::counte_read_base);
+    printf("avg segments: %d\n", avgsegments);
+    // printf("admog::coune_Read: %d\n", adgMod::counte_read);
+    // printf("admog::coune_Write: %d\n", adgMod::counte_read_base);
     printf("------About File Model------\n");
 }
 

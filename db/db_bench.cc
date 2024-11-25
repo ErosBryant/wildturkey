@@ -52,6 +52,7 @@ static const char* FLAGS_benchmarks =
     "readrandom,"
     "readrandom,"  // Extra run to allow previous compactions to quiesce
     "readseq,"
+    "99p,"
     "readreverse,"
     "compact,"
     "readrandom,"
@@ -74,6 +75,8 @@ static int FLAGS_threads = 1;
 // Size of each value
 static int FLAGS_value_size = 100;
 
+std::vector<long long> latencies; // for 99 precent latency 
+std::vector<long long> latencies_w; // for 99 precent latency 
 // Arrange to generate values that shrink to this fraction of
 // their original size after compression
 static double FLAGS_compression_ratio = 0.5;
@@ -525,12 +528,7 @@ class Benchmark {
           std::cerr << "Error opening file" << std::endl;
           exit(1);
       }
-      // std::string line;
-      // while (std::getline(input, line)) {
-      //   printf("line: %s\n", line.c_str());
-      //     key = std::stoull(line);
-      //     data.push_back(key);
-      // }
+
       while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
 
         data.push_back(key);
@@ -557,8 +555,7 @@ class Benchmark {
       std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
-      }
-       else if (name == Slice("fb_w")) {
+      }else if (name == Slice("fb_w")) {
       uint64_t key;
       fresh_db = true;
       input_file = "/mnt/datasets/data_set/data/fb_200M_uint64";
@@ -592,6 +589,111 @@ class Benchmark {
       input.close();
       std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
+      } else if (name == Slice("osm_blanced")) {
+      uint64_t key;
+      fresh_db = true;
+  
+      input_file = "/mnt/datasets/data_set/data/osm_cellids_200M_uint64";
+      std::ifstream input; 
+      input.open(input_file, std::ios::binary); 
+      if (!input.is_open()) {
+          std::cerr << "Error opening file" << std::endl;
+          exit(1);
+      }
+
+      while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+
+        data.push_back(key);
+      }
+
+      input.close();
+      std::random_shuffle(data.begin(), data.end());
+      
+      RandomGenerator gen;
+      string the_key;
+
+      for (int i = 0; i < num_; i++) {
+      the_key = adgMod::generate_key(std::to_string(data[i]));
+      db_->Put(write_options_,  the_key, gen.Generate(value_size_));
+      // method = &Benchmark::real_workload_w;
+      }
+
+      method = &Benchmark::real_blanced;
+      } else if (name == Slice("book_blanced")) {
+      uint64_t key;
+      fresh_db = true;
+      input_file = "/mnt/datasets/data_set/data/books_200M_uint64";
+      std::ifstream input; 
+      input.open(input_file, std::ios::binary); 
+      if (!input.is_open()) {
+          std::cerr << "Error opening file" << std::endl;
+          exit(1);
+      }
+      while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+        data.push_back(key);
+      }
+      input.close();
+            RandomGenerator gen;
+      string the_key;
+
+      for (int i = 0; i < num_; i++) {
+      the_key = adgMod::generate_key(std::to_string(data[i]));
+      db_->Put(write_options_,  the_key, gen.Generate(value_size_));
+      // method = &Benchmark::real_workload_w;
+      }
+      std::random_shuffle(data.begin(), data.end());
+      method = &Benchmark::real_blanced;
+
+      }else if (name == Slice("fb_blanced")) {
+      uint64_t key;
+      fresh_db = true;
+      input_file = "/mnt/datasets/data_set/data/fb_200M_uint64";
+      std::ifstream input; 
+      input.open(input_file, std::ios::binary); 
+      if (!input.is_open()) {
+          std::cerr << "Error opening file" << std::endl;
+          exit(1);
+      }
+      while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+        data.push_back(key);
+      }
+      input.close();
+            RandomGenerator gen;
+      string the_key;
+
+      for (int i = 0; i < num_; i++) {
+      the_key = adgMod::generate_key(std::to_string(data[i]));
+      db_->Put(write_options_,  the_key, gen.Generate(value_size_));
+      // method = &Benchmark::real_workload_w;
+      }
+      std::random_shuffle(data.begin(), data.end());
+      method = &Benchmark::real_blanced;
+
+      }
+       else if (name == Slice("wiki_blanced")) {
+      uint64_t key;
+      fresh_db = true;
+      input_file = "/mnt/datasets/data_set/data/wiki_ts_200M_uint64";
+      std::ifstream input; 
+      input.open(input_file, std::ios::binary); 
+      if (!input.is_open()) {
+          std::cerr << "Error opening file" << std::endl;
+          exit(1);
+      }
+      while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+        data.push_back(key);
+      }
+      input.close();
+            RandomGenerator gen;
+      string the_key;
+
+      for (int i = 0; i < num_; i++) {
+      the_key = adgMod::generate_key(std::to_string(data[i]));
+      db_->Put(write_options_,  the_key, gen.Generate(value_size_));
+      // method = &Benchmark::real_workload_w;
+      }
+      std::random_shuffle(data.begin(), data.end());
+      method = &Benchmark::real_blanced;
       }
       else if (name == Slice("real_r")) {
       // std::random_shuffle(data.begin(), data.end());
@@ -650,7 +752,9 @@ class Benchmark {
         method = &Benchmark::ReadReverse;
       } else if (name == Slice("readrandom")) {
         method = &Benchmark::ReadRandom;
-      } else if (name == Slice("zipread")) {
+      }else if (name == Slice("99p")) {
+        method = &Benchmark::Get99PercentileLatency;
+      }  else if (name == Slice("zipread")) {
         method = &Benchmark::zipfianread;
       }else if (name == Slice("readmissing")) {
         method = &Benchmark::ReadMissing;
@@ -924,6 +1028,7 @@ class Benchmark {
       for (int i = 0; i < num_; i += entries_per_batch_) {
         batch.Clear();
         for (int j = 0; j < entries_per_batch_; j++) {
+          auto start = std::chrono::high_resolution_clock::now(); // start time
           const int k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
           // printf("key: %d\n", k);
           // printf("key: %d\n", k);
@@ -933,13 +1038,20 @@ class Benchmark {
           snprintf(key, sizeof(key), "%016d", k);
           db_->Put(write_options_, key, gen.Generate(value_size_));
           bytes += value_size_ + strlen(key);
-          thread->stats.FinishedSingleOp();
+
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+        latencies_w.push_back(latency); // store latency in vector
+
+        thread->stats.FinishedSingleOp();
         }
       }
+      
       thread->stats.AddBytes(bytes);
-      if (adgMod::MOD==10 or adgMod::sst_size>=1 ){
-      static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
-      }
+
+      // if (adgMod::MOD==10 or adgMod::sst_size>=1 ){
+      // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
+      // }
     //  output_file.close();
 
       
@@ -947,6 +1059,85 @@ class Benchmark {
     }
 
 
+
+  void real_blanced(ThreadState* thread) { // here
+    RandomGenerator gen;
+    //  string the_key;
+    ReadOptions options;
+    WriteBatch batch;
+    Status s;
+    string the_key;
+    std::string value;
+    int64_t bytes = 0;
+    int64_t found = 0;
+    int64_t reads_done = 0;
+    int64_t not_found = 0;
+    int64_t writes_done = 0;
+
+    batch.Clear();
+    char key[100];
+    if (num_ != FLAGS_num) {
+      char msg[100];
+      snprintf(msg, sizeof(msg), "(%d ops)", num_);
+      thread->stats.AddMessage(msg);
+    }
+
+
+    int k2=0;
+    for (int i = 0; i < num_; i++) {
+          
+       the_key = adgMod::generate_key(std::to_string(data[i]));
+
+      int next_op = thread->rand.Next() % 100;
+      
+      if (next_op < 50){
+        auto start = std::chrono::high_resolution_clock::now();
+         if (db_->Get(options, the_key, &value).ok()) {
+          found++;
+          bytes += value.size() + strlen(key);
+         
+        }else{
+          not_found++;
+        }
+        
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+        latencies.push_back(latency); // store latency in vector
+          thread->stats.FinishedSingleOp();
+          reads_done++;
+      }else{
+        auto start = std::chrono::high_resolution_clock::now();
+          db_->Put(write_options_,  the_key, gen.Generate(value_size_));
+          bytes += value_size_ + strlen(key);
+          writes_done++;
+
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+        latencies.push_back(latency); // store latency in vector
+        thread->stats.FinishedSingleOp();
+      }
+
+    
+    }
+
+    thread->stats.AddBytes(bytes);
+    char msg[100];
+        snprintf(msg, sizeof(msg), "( reads:%d"  " writes:%d" \
+             " total:%d"  " found:%d"  " not found:%d"  ")",
+             reads_done, writes_done, num_, found , not_found);
+    thread->stats.AddMessage(msg);   
+
+  std::sort(latencies.begin(), latencies.end());
+  int index = 0.99 * latencies.size();
+
+  // thread->stats.AddMessage("\nRead 99 percentile latency: " + std::to_string(latencies[index]) + " ns\n");
+  printf("\nblanced 99 percentile latency: %ld ns\n", latencies[index]);
+ 
+  // thread->stats.AddMessage("Write 99 percentile latency: " + std::to_string(latencies_w[index_w]) + " ns\n");
+  
+
+    
+  }
 
   void YCSBA(ThreadState* thread) { // here
     RandomGenerator gen;
@@ -980,6 +1171,7 @@ class Benchmark {
     //   db_->Put(write_options_, key, gen.Generate(value_size_));
     // }
 
+
     int k2=0;
     for (int i = 0; i < num_; i++) {
           
@@ -994,9 +1186,7 @@ class Benchmark {
       int next_op = thread->rand.Next() % 100;
       
       if (next_op < 50){
-        // printf("123123123\n");
-        kkkk++;
-        
+        auto start = std::chrono::high_resolution_clock::now();
          if (db_->Get(options, key, &value).ok()) {
           found++;
           bytes += value.size() + strlen(key);
@@ -1004,10 +1194,14 @@ class Benchmark {
         }else{
           not_found++;
         }
+        
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+        latencies.push_back(latency); // store latency in vector
           thread->stats.FinishedSingleOp();
           reads_done++;
       }else{
-        kkkk++;
+        auto start = std::chrono::high_resolution_clock::now();
           db_->Put(write_options_,  key, gen.Generate(value_size_));
           bytes += value_size_ + strlen(key);
           writes_done++;
@@ -1015,6 +1209,9 @@ class Benchmark {
       //   printf("1111\n");
       // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
       // }
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+        latencies.push_back(latency); // store latency in vector
         thread->stats.FinishedSingleOp();
       }
 
@@ -1081,20 +1278,28 @@ class Benchmark {
       
       if (next_op < 95){
 
+          auto start = std::chrono::high_resolution_clock::now();
          if (db_->Get(options, key, &value).ok()) {
           found++;
           bytes += value.size() + strlen(key);
-          thread->stats.FinishedSingleOp();
+         
         }else{
           not_found++;
         }
-      
+        
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+         latencies.push_back(latency); // store latency in vector
           reads_done++;
       }else{
+          auto start = std::chrono::high_resolution_clock::now();
           db_->Get(options, key, &value);
           db_->Put(write_options_, key, gen.Generate(value_size_));
           bytes += value_size_ + strlen(key);
           writes_done++;
+          auto end = std::chrono::high_resolution_clock::now(); // end time
+          auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+          latencies.push_back(latency); // store latency in vector
           thread->stats.FinishedSingleOp();
 
       }
@@ -1487,11 +1692,17 @@ class Benchmark {
   //  while(data.size()){
     // for (int i = 0; i < data.size(); i++) {
       for (int i = 0; i < num_ ; i++) {
+         auto start = std::chrono::high_resolution_clock::now(); // start time
         // printf("key: %s\n",std::to_string(data[i]));
         the_key = adgMod::generate_key(std::to_string(data[i]));
         // the_key= std::to_string(data[i]);
         // printf("the_key: %s\n", the_key.c_str());
         db_->Put(write_options_, the_key, gen.Generate(value_size_));
+
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+        latencies_w.push_back(latency); // store latency in vector
+
         thread->stats.FinishedSingleOp();
         bytes += value_size_ + the_key.length();
    }
@@ -1499,11 +1710,12 @@ class Benchmark {
   thread->stats.AddBytes(bytes);
   printf("finish writing\n");
   // input.close();
-  static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
+  // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
 }
 
 
   void real_workload_r(ThreadState* thread) {
+    static_cast<leveldb::DBImpl*>(db_)->WaitForBackground();
     RandomGenerator gen;
     ReadOptions options;
     std::string value;  
@@ -1518,6 +1730,7 @@ class Benchmark {
 
       for (int i = 0; i < reads_ ; i++) {
         // printf("key: %d\n", data[i]);
+         auto start = std::chrono::high_resolution_clock::now(); // start time
         the_key = adgMod::generate_key(std::to_string(data[i]));
          
         //  printf("key22: %s\n", the_key.c_str());
@@ -1526,7 +1739,11 @@ class Benchmark {
               bytes += value.size() + the_key.length();
               // printf("the_key: %s\n", the_key.c_str());
           }
-          thread->stats.FinishedSingleOp();
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+        latencies.push_back(latency); // store latency in vector
+
+        thread->stats.FinishedSingleOp();
     }
     // printf("sssssssssssssthe_key: %s\n", the_key.c_str());
     thread->stats.AddBytes(bytes);
@@ -1589,6 +1806,7 @@ class Benchmark {
   }
   
  void ReadRandom(ThreadState* thread) {
+    static_cast<leveldb::DBImpl*>(db_)->WaitForBackground();
     ReadOptions options;
     std::string value;
     int found = 0;
@@ -1596,12 +1814,17 @@ class Benchmark {
     int64_t bytes = 0;
     int k;
       for (int i = 0; i < reads_; i++) {
+        auto start = std::chrono::high_resolution_clock::now(); // start time
         k = thread->rand.Next() % FLAGS_num;
         snprintf(key, sizeof(key), "%016d", k);
         if (db_->Get(options, key, &value).ok()) {
           found++;
           bytes += value.size() + strlen(key);
         }
+        
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+        latencies.push_back(latency); // store latency in vector
         thread->stats.FinishedSingleOp();
       }
 
@@ -1610,6 +1833,21 @@ class Benchmark {
     snprintf(msg, sizeof(msg), "(%d of %d found)", found, num_);
     thread->stats.AddMessage(msg);
   }
+
+void Get99PercentileLatency(ThreadState* thread) {
+
+  std::sort(latencies.begin(), latencies.end());
+  std::sort(latencies_w.begin(), latencies_w.end());
+  int index = 0.99 * latencies.size();
+  int index_w = 0.99 * latencies_w.size();
+
+  // thread->stats.AddMessage("\nRead 99 percentile latency: " + std::to_string(latencies[index]) + " ns\n");
+  printf("Read 99 percentile latency: %ld ns\n", latencies[index]);
+  printf("Write 99 percentile latency: %ld ns\n", latencies_w[index_w]);
+  // thread->stats.AddMessage("Write 99 percentile latency: " + std::to_string(latencies_w[index_w]) + " ns\n");
+  
+}
+
 
   void ReadMissing(ThreadState* thread) {
     ReadOptions options;

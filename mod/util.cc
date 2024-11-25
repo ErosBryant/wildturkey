@@ -36,11 +36,12 @@ namespace adgMod {
     bool use_filter = false;
     bool restart_read = false;
     bool fresh_write = false;
-    bool reopen = false;
+    bool reopen = true;
 
     // the time we wait before learning (as the file may die within this short time and
     // if we learn, we waste the learning)
-    uint64_t learn_trigger_time = 50000000;
+    uint64_t learn_trigger_time = 100000000000;
+    // 100000000000
     // uint64_t learn_trigger_time = 0;
     int policy = 0;
     std::atomic<int> num_read(0);
@@ -104,7 +105,7 @@ string generate_key(const string& key) {
         // printf("result : %d\n", result.length());    
         return result;  // 无需 std::move
     }
-    // result = string(key_size - key.length(), '0') + key;
+    result = string(key_size - key.length(), '0') + key;
     // printf("result : %d\n", result.length());
     return result;  // 无需 std::move
 }

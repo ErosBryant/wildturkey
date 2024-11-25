@@ -10,13 +10,14 @@ nums=(64000000)
 # Define various configurations
 # memtable_size=(4)
 # max_file_size=(16 32 64)
-number_of_runs=2
+number_of_runs=1
 # bwise=(1 0)
 # lacd=(1 2 3 4 5 6 7 8 9 10 15)
 # file_error=(2 4 8 16 32)
 
 # fb_w wiki_w book_w
-# workload=(osm_w)
+# osm_w fb_w 
+workload=(book_blanced osm_blanced wiki_blanced fb_blanced)  
 # lac=(5)
 mod=(5 7 8 10)
 # file_error=(22)
@@ -24,7 +25,7 @@ mod=(5 7 8 10)
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/wildturkey/experiment/db_bench-w-r-99/"
+output_dir="/mnt/wildturkey/experiment/real_word_blanced2/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
@@ -44,15 +45,17 @@ fi
 
 # Execute the db_bench command for each configuration and save results
 for num in "${nums[@]}"; do
-   # for wkload in "${workload[@]}"; do
+   for wkload in "${workload[@]}"; do
    # for bw in "${bwise[@]}"; do
    # for lac in "${lacd[@]}"; do
       # for max in "${max_file_size[@]}"; do
       # for err in "${file_error[@]}"; do
-         for md in "${mod[@]}"; do
+      for md in "${mod[@]}"; do
          # Initialize summary output file
-            summary_output="${output_dir}summary_results/lac=${lac}-mod=${md}-num=${num}.csv"
-            echo "  num,  run, write_micros/op, read_micros/op, write_MB/s, read_MB/s, mod , waf, memtable_stall, L0_stall, L0_slow_stall, avg_segment_size" > "$summary_output"
+            summary_output="${output_dir}summary_results/workload=${wkload}-mod=${md}-num=${num}.csv"
+
+            echo "$num, $i, $write_micros_per_op, $read_micros_per_op, $write_mb_per_s, $read_mb_per_s, $mod , $waf, $memtable_stall, $l0_stall, $l0_slow_stall, $avg_segment_size" >> "$summary_output"
+
 
 
             # 변수 리스트 초기화
@@ -60,15 +63,17 @@ for num in "${nums[@]}"; do
             read_micros_list=()
             write_mb_list=()
             read_mb_list=()
-            for i in $(seq 1 $number_of_runs); do
+         for i in $(seq 1 $number_of_runs); do
                # Define output file
                # lac=${lacd}
                # max_file_size=${max}
                # error=${err}
                # bwise=${bw}
-               output_file="${output_dir}mod=${md}_alwaysruning_num=${num}_${i}.csv"
                
-               echo "Running db_bench with --num=$num --mod=${md} " > "$output_file"
+               output_file="${output_dir}mod=${md}_workload=${wkload}_num=${num}_${i}.csv"
+
+               
+               echo "Running db_bench with --num=$num worklopad=${wkload} --mod=${md} " > "$output_file"
 
                # Run the benchmark
                # uni40,uniread,stats
@@ -81,15 +86,15 @@ for num in "${nums[@]}"; do
                # --file_error=$err
                # f=$((max / 2)) 
                # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,99p,stats" --mod=$md --num=$num >> "$output_file"
+               ${test_dir}/db_bench --benchmarks="${wkload}" --mod=$md --num=$num >> "$output_file"
                echo "-------------------------------------" >> "$output_file"
 
 
                # Extract performance data
-               write_micros_per_op=$(grep "fillrandom" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
-               read_micros_per_op=$(grep "readrandom" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
-               write_mb_per_s=$(grep "fillrandom" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s;") print $(i-1)}')
-               read_mb_per_s=$(grep "readrandom" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
+               write_micros_per_op=$(grep "${wkload}" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
+               # read_micros_per_op=$(grep "real_r" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
+               write_mb_per_s=$(grep "${wkload}" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s;") print $(i-1)}')
+               # read_mb_per_s=$(grep "real_r" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
                # 99p=$(grep "99p" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
                waf=$(grep 'waf:' "$output_file" | awk -F':' '{print $2}')
                memtable_stall=$(grep 'memtable stall time' "$output_file" | awk '{print $(NF-1)}')
@@ -107,7 +112,7 @@ for num in "${nums[@]}"; do
 
                # Clear system cache
                sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
-            done
+         done
 
          
             avg_write_micros=$(echo "${write_micros_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
@@ -118,9 +123,9 @@ for num in "${nums[@]}"; do
             # 평균값을 summary_output 파일에 추가
             echo "Average, avg_write_micros, avg_read_micros, avg_write_mb, avg_read_mb" >> "$summary_output"
             echo "Average, $avg_write_micros, $avg_read_micros, $avg_write_mb, $avg_read_mb" >> "$summary_output"
-         done
-   #    done
-   # done
+         # done
+      done
+   done
 done
 
 
