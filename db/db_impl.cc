@@ -1390,13 +1390,14 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
 
   adgMod::Stats* instance = adgMod::Stats::GetInstance();
   
-  if (adgMod::MOD==10){ //&& versions_->NumLevelFiles(0)>0) {
-      // WaitForBackground();
-      
-      
+  if (adgMod::MOD==10 && versions_->NumLevelFiles(0)>0 && adgMod::reopen==1) {
+      WaitForBackground();
+      adgMod::reopen=0;
+      // printf("Get\n");
       // mutex_.Unlock();
       CompactOrderdRange(nullptr, nullptr, 0);
       // mutex_.Lock();
+      // printf("Get2\n");
       }
 
   Status s;

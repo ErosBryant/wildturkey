@@ -9,19 +9,19 @@ nums=(20000000)
 
 
 # fb_w wiki_w book_w
-workload=(ycsba ycsnb ycsbc ycscd ycsce ycsbf)
+workload=(fillrandom ycsba ycsnb ycsbc ycscd ycsce ycsbf)
 # zipfill
 # uniwrite
 
 # lac=(5)
-mod=(10)
+mod=(7 8 5)
 number_of_runs=2
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/wildturkey/fig13_ycsb_final/"
+output_dir="/mnt/wildturkey/experiment/fig13_ycsb_final/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 

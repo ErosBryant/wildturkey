@@ -17,15 +17,16 @@ number_of_runs=1
 
 # fb_w wiki_w book_w
 # osm_w fb_w 
-workload=(book_blanced osm_blanced wiki_blanced fb_blanced)  
+# workload=(book_blanced wiki_blanced osm_blanced fb_blanced)  
+workload=(book wiki osm fb)  
 # lac=(5)
-mod=(5 7 8 10)
+mod=(7 8 5 10)
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/wildturkey/experiment/real_word_blanced2/"
+output_dir="/mnt/wildturkey/experiment/final_real_world/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
@@ -52,9 +53,9 @@ for num in "${nums[@]}"; do
       # for err in "${file_error[@]}"; do
       for md in "${mod[@]}"; do
          # Initialize summary output file
-            summary_output="${output_dir}summary_results/workload=${wkload}-mod=${md}-num=${num}.csv"
+            # summary_output="${output_dir}summary_results/workload=${wkload}-mod=${md}-num=${num}.csv"
 
-            echo "$num, $i, $write_micros_per_op, $read_micros_per_op, $write_mb_per_s, $read_mb_per_s, $mod , $waf, $memtable_stall, $l0_stall, $l0_slow_stall, $avg_segment_size" >> "$summary_output"
+            # echo "$num, $i, $write_micros_per_op, $read_micros_per_op, $write_mb_per_s, $read_mb_per_s, $mod , $waf, $memtable_stall, $l0_stall, $l0_slow_stall, $avg_segment_size" >> "$summary_output"
 
 
 
@@ -86,44 +87,44 @@ for num in "${nums[@]}"; do
                # --file_error=$err
                # f=$((max / 2)) 
                # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="${wkload}" --mod=$md --num=$num >> "$output_file"
+               ${test_dir}/db_bench --benchmarks="${wkload}_w,${wkload}_blanced,${wkload}_readheavy" --mod=$md --num=$num >> "$output_file"
                echo "-------------------------------------" >> "$output_file"
 
 
-               # Extract performance data
-               write_micros_per_op=$(grep "${wkload}" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
-               # read_micros_per_op=$(grep "real_r" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
-               write_mb_per_s=$(grep "${wkload}" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s;") print $(i-1)}')
-               # read_mb_per_s=$(grep "real_r" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
-               # 99p=$(grep "99p" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
-               waf=$(grep 'waf:' "$output_file" | awk -F':' '{print $2}')
-               memtable_stall=$(grep 'memtable stall time' "$output_file" | awk '{print $(NF-1)}')
-               l0_stall=$(grep 'L0 stall time' "$output_file" | awk '{print $(NF-1)}')
-               l0_slow_stall=$(grep 'L0 slow stall time' "$output_file" | awk '{print $(NF-1)}')
-               avg_segment_size=$(grep 'Average Segement Size' "$output_file" | awk '{print $NF}')
+               # # Extract performance data
+               # write_micros_per_op=$(grep "${wkload}" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
+               # # read_micros_per_op=$(grep "real_r" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
+               # write_mb_per_s=$(grep "${wkload}" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s;") print $(i-1)}')
+               # # read_mb_per_s=$(grep "real_r" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
+               # # 99p=$(grep "99p" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
+               # waf=$(grep 'waf:' "$output_file" | awk -F':' '{print $2}')
+               # memtable_stall=$(grep 'memtable stall time' "$output_file" | awk '{print $(NF-1)}')
+               # l0_stall=$(grep 'L0 stall time' "$output_file" | awk '{print $(NF-1)}')
+               # l0_slow_stall=$(grep 'L0 slow stall time' "$output_file" | awk '{print $(NF-1)}')
+               # avg_segment_size=$(grep 'Average Segement Size' "$output_file" | awk '{print $NF}')
                
-                        # 리스트에 성능 데이터 추가
-               write_micros_list+=($write_micros_per_op)
-               read_micros_list+=($read_micros_per_op)
-               write_mb_list+=($write_mb_per_s)
-               read_mb_list+=($read_mb_per_s)
-               # Append data to summary output file
-               echo "$num, $i,     $write_micros_per_op,          $read_micros_per_op,         $write_mb_per_s,       $read_mb_per_s,  $lac , $err,  $mod   ,  $waf,     $memtable_stall,    $l0_stall,      $l0_slow_stall,          $avg_segment_size" >> "$summary_output"
+               #          # 리스트에 성능 데이터 추가
+               # write_micros_list+=($write_micros_per_op)
+               # read_micros_list+=($read_micros_per_op)
+               # write_mb_list+=($write_mb_per_s)
+               # read_mb_list+=($read_mb_per_s)
+               # # Append data to summary output file
+               # echo "$num, $i,     $write_micros_per_op,          $read_micros_per_op,         $write_mb_per_s,       $read_mb_per_s,  $lac , $err,  $mod   ,  $waf,     $memtable_stall,    $l0_stall,      $l0_slow_stall,          $avg_segment_size" >> "$summary_output"
 
                # Clear system cache
                sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
          done
 
          
-            avg_write_micros=$(echo "${write_micros_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
-            avg_read_micros=$(echo "${read_micros_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
-            avg_write_mb=$(echo "${write_mb_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
-            avg_read_mb=$(echo "${read_mb_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
+         #    avg_write_micros=$(echo "${write_micros_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
+         #    avg_read_micros=$(echo "${read_micros_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
+         #    avg_write_mb=$(echo "${write_mb_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
+         #    avg_read_mb=$(echo "${read_mb_list[@]}" | awk '{sum=0; for(i=1;i<=NF;i++) sum+=$i; print sum/NF}')
 
-            # 평균값을 summary_output 파일에 추가
-            echo "Average, avg_write_micros, avg_read_micros, avg_write_mb, avg_read_mb" >> "$summary_output"
-            echo "Average, $avg_write_micros, $avg_read_micros, $avg_write_mb, $avg_read_mb" >> "$summary_output"
-         # done
+         #    # 평균값을 summary_output 파일에 추가
+         #    echo "Average, avg_write_micros, avg_read_micros, avg_write_mb, avg_read_mb" >> "$summary_output"
+         #    echo "Average, $avg_write_micros, $avg_read_micros, $avg_write_mb, $avg_read_mb" >> "$summary_output"
+         # # done
       done
    done
 done
