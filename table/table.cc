@@ -17,6 +17,7 @@
 #include "util/coding.h"
 #include "mod/stats.h"
 #include "mod/learned_index.h"
+#include <fstream>
 #include "../db/version_set.h"
 
 namespace leveldb {
@@ -296,51 +297,62 @@ uint64_t Table::ApproximateOffsetOf(const Slice& key) const {
 
 
 
+
+
 void Table::FillData(const ReadOptions& options, adgMod::LearnedIndexData* data) {
     if (data->filled) return;
-    //data->string_keys.clear();
-    //data->num_entries_accumulated.array.clear();
-  Status status;
-  Block::Iter* index_iter = dynamic_cast<Block::Iter*>(rep_->index_block->NewIterator(rep_->options.comparator));
-  //uint64_t num_points = 0;
-  for (uint32_t i = 0; i < index_iter->num_restarts_; ++i) {
-    // printf("index_iter->num_restarts_: %d\n", index_iter->num_restarts_);
-    index_iter->SeekToRestartPoint(i);
-    index_iter->ParseNextKey();
-    assert(index_iter->Valid());
-    Block::Iter* block_iter = dynamic_cast<Block::Iter*>(BlockReader(this, options, index_iter->value()));
-    // printf("block_iter->restarts_: %d\n", block_iter->restarts_);
-    // printf("index_iter->value().size(): %d\n", index_iter->value().size());
 
-    ParsedInternalKey parsed_key;
-    int num_entries_this_block = 0;
-    for (block_iter->SeekToRestartPoint(0); block_iter->ParseNextKey(); ++num_entries_this_block) {
-        ParseInternalKey(block_iter->key(), &parsed_key);
-        data->string_keys.emplace_back(parsed_key.user_key.data(), parsed_key.user_key.size());
-    }
-    //num_points += num_entries_this_block;
+    // 출력 파일 스트림 객체 생성
 
-    if (!adgMod::block_num_entries_recorded) {
-        adgMod::block_num_entries = num_entries_this_block;
-        // printf("block_num_entries: %d\n", adgMod::block_num_entries);
-        adgMod::block_num_entries_recorded = true;
-        adgMod::entry_size = block_iter->restarts_ / num_entries_this_block;
-        // printf("entry_size: %d\n", adgMod::entry_size);
-        BlockHandle temp;
-        Slice temp_slice = index_iter->value();
-        temp.DecodeFrom(&temp_slice);
-        adgMod::block_size = temp.size() + kBlockTrailerSize;
+    
+    // std::ofstream output_file("output_keys.txt", std::ios::out | std::ios::app);
+    // if (!output_file.is_open()) {
+    //     // 파일 열기 실패 시 적절히 처리
+    //     throw std::runtime_error("Failed to open output_keys.txt");
+    // }
+
+    Status status;
+    Block::Iter* index_iter = dynamic_cast<Block::Iter*>(rep_->index_block->NewIterator(rep_->options.comparator));
+
+    for (uint32_t i = 0; i < index_iter->num_restarts_; ++i) {
+        index_iter->SeekToRestartPoint(i);
+        index_iter->ParseNextKey();
+        assert(index_iter->Valid());
+        Block::Iter* block_iter = dynamic_cast<Block::Iter*>(BlockReader(this, options, index_iter->value()));
+
+        ParsedInternalKey parsed_key;
+        int num_entries_this_block = 0;
+        for (block_iter->SeekToRestartPoint(0); block_iter->ParseNextKey(); ++num_entries_this_block) {
+            ParseInternalKey(block_iter->key(), &parsed_key);
+            data->string_keys.emplace_back(parsed_key.user_key.data(), parsed_key.user_key.size());
+
+            // 파일에 user_key 기록
+            // output_file << std::string(parsed_key.user_key.data()) << "\n";
+        }
+
+        if (!adgMod::block_num_entries_recorded) {
+            adgMod::block_num_entries = num_entries_this_block;
+            adgMod::block_num_entries_recorded = true;
+            adgMod::entry_size = block_iter->restarts_ / num_entries_this_block;
+            BlockHandle temp;
+            Slice temp_slice = index_iter->value();
+            temp.DecodeFrom(&temp_slice);
+            adgMod::block_size = temp.size() + kBlockTrailerSize;
+        }
+
+        uint64_t current_total = data->num_entries_accumulated.NumEntries();
+        if (!data->Learned()) {
+            data->num_entries_accumulated.Add(current_total + num_entries_this_block, std::string(parsed_key.user_key.data(), parsed_key.user_key.size()));
+        }
+        delete block_iter;
     }
 
-    uint64_t current_total = data->num_entries_accumulated.NumEntries();
-    if (!data->Learned()) {
-        data->num_entries_accumulated.Add(current_total + num_entries_this_block, std::string(parsed_key.user_key.data(), parsed_key.user_key.size()));
-    }
-    delete block_iter;
-  }
-  //data->num_entries_accumulated.Add(num_points, "");
-  data->filled = true;
-  delete index_iter;
+    data->filled = true;
+    delete index_iter;
+
+    // 파일 스트림 닫기
+    // output_file.close();
 }
+
 
 }  // namespace leveldb

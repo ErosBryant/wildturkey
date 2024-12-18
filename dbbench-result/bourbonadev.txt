@@ -1,0 +1,130 @@
+eros@eros-System-Product-Name:~/workspace-lsm/wildturkey/build$ ./db_bench --benchmarks="fillrandom,readrandom,stats" --mod=7  --num=10000000
+mod: 7
+LevelDB:    version 1.22
+Date:       Wed Nov 27 17:13:43 2024
+CPU:        20 * 12th Gen Intel(R) Core(TM) i7-12700K
+CPUCache:   25600 KB
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    10000000
+RawSize:    1106.3 MB (estimated)
+FileSize:   629.4 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+fillrandom   :       2.520 micros/op;   43.9 MB/s;    25.201
+readrandom   :       3.100 micros/op;   35.7 MB/s (10000000 of 10000000 found);    31.004
+--------------------------------------------------
+memtable stall time: 0 s
+L0 stall time: 0  s
+L0 slow stall time: 17.6666  s
+waf:9.23332
+------About File Model------
+total segments: 49840
+total segments: 49840
+final models : 91
+avg segments: 547
+------About File Model------
+Timer 0: 2185142016 : 2.185142016
+Timer 1: 890955584 : 0.890955584
+Timer 2: 3887266816 : 3.887266816
+Timer 3: 5244334592 : 5.244334592
+Timer 4: 0 : 0.000000000
+Timer 5: 2470697728 : 2.470697728
+Timer 6: 16002195456 : 16.002195456
+Timer 7: 27478896640 : 27.478896640
+Timer 8: 6331814 : 0.006331814
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 558374912 : 0.558374912
+Timer 12: 4142633728 : 4.142633728
+Timer 13: 0 : 0.000000000
+Timer 14: 5139128832 : 5.139128832
+Timer 15: 217278032 : 0.217278032
+Timer 16: 3779342848 : 3.779342848
+Timer 17: 36742004 : 0.036742004
+Timer 18: 27007542 : 0.027007542
+Timer 19: 24530288 : 0.024530288
+
+                               Compactions
+Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+------------------------------------------------------------------------------------------------ 
+  0         0         0       11    385948         667       1013         33         35       18
+  1         5         8       14    102134        1355       1253         11         12      163
+  2        52        98        0     54466           6          8          6          6        1
+  3        71       139        0         0           0          0          0          0        0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 12550225136 18217984536 490023116 0 0 0 0 0
+394 156 166 72 0 0 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup 193269760 10881024 53764096 59510784 69113856 0 0 0 0
+15190656 933247 4380437 4650931 5226041 0 0 0 0
+Counter PutWait 16781 16781 0 0 0 0 0 0 0
+16781 16781 0 0 0 0 0 0 0
+Counter FileLearning 558372536 93957248 201318336 246858360 16238592 0 0 0 0
+91 12 36 40 3 0 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 24588121 0 9906856 9455224 5226041 0 0 0 0
+24588121 0 9906856 9455224 5226041 0 0 0 0
+Counter BaselineNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0

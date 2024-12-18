@@ -40,8 +40,10 @@ namespace adgMod {
 
     // the time we wait before learning (as the file may die within this short time and
     // if we learn, we waste the learning)
-    uint64_t learn_trigger_time = 2000000000;
+    uint64_t learn_trigger_time = 8000000;
     // 100000000000
+    // 50000000
+    // 1000000000
     // uint64_t learn_trigger_time = 0;
     int policy = 0;
     std::atomic<int> num_read(0);

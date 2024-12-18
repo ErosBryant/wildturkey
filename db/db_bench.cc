@@ -944,6 +944,7 @@ class Benchmark {
             int k = 0;
             if (FLAGS_ycsb_uniform==1){
             k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
+            //  k = thread->rand.Uniform(FLAGS_num);
             }else{
             k = seq ? i + j :  thread->rand.Zipfian(FLAGS_num, 1.0);
             }
@@ -971,6 +972,7 @@ class Benchmark {
       // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
       // }
     //  output_file.close();
+    // static_cast<leveldb::DBImpl*>(db_)->
 
       
       
@@ -1341,7 +1343,7 @@ class Benchmark {
     // }
 
     int k2=0;
-    for (int i = 0; i < reads_; i++) {
+    for (int i = 0; i < num_; i++) {
           
       if (FLAGS_ycsb_uniform==1){
        k2 = thread->rand.Next() % FLAGS_num;
@@ -1803,7 +1805,7 @@ class Benchmark {
   }
   
  void ReadRandom(ThreadState* thread) {
-    static_cast<leveldb::DBImpl*>(db_)->WaitForBackground();
+    // static_cast<leveldb::DBImpl*>(db_)->WaitForBackground();
     ReadOptions options;
     std::string value;
     int found = 0;
@@ -1813,7 +1815,9 @@ class Benchmark {
       for (int i = 0; i < reads_; i++) {
         auto start = std::chrono::high_resolution_clock::now(); // start time
         k = thread->rand.Next() % FLAGS_num;
+        // const int k = thread->rand.Uniform(FLAGS_num);
         snprintf(key, sizeof(key), "%016d", k);
+        
         if (db_->Get(options, key, &value).ok()) {
           found++;
           bytes += value.size() + strlen(key);
@@ -2036,6 +2040,7 @@ int main(int argc, char** argv) {
       printf("mod: %d\n", n);
       }else{    
       adgMod::MOD = n;
+      adgMod::adeb = 1;
       printf("mod: %d\n", n);
       }
       
@@ -2047,7 +2052,7 @@ int main(int argc, char** argv) {
     }else if (sscanf(argv[i], "--file_error=%d%c", &n, &junk) == 1) {
       adgMod::file_model_error  = n;
     } else if (sscanf(argv[i], "--lac=%d%c", &n, &junk) == 1) {
-      adgMod::MOD = 7;
+      adgMod::MOD = 10;
       // printf("lac: %d\n", n);
       adgMod::sst_size = n;
     } else if (strncmp(argv[i], "--db=", 5) == 0) {

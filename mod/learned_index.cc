@@ -4,6 +4,7 @@
 
 
 #include "learned_index.h"
+#include <fstream> // 파일 스트림을 위한 헤더
 
 #include "db/version_set.h"
 #include <cassert>
@@ -38,6 +39,7 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
   assert(this->string_multi_layer_segments.size() > 1);
   ++served;
   if (adgMod::adeb == 1) {
+    // printf("Get position\n");
     // check if the key is within the model bounds
     // printf("min_key: %lu, max_key: %lu\n", min_key, max_key);
 // check if the key is within the model bounds
@@ -59,8 +61,13 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
         segment > this->string_multi_layer_segments[i-1].size() ? segment = this->string_multi_layer_segments[i-1].size() - 1 : segment;
         uint64_t lower = segment - recursive_error_bound > 0 ? (uint64_t)std::floor(segment - recursive_error_bound) : 0;
         //std::cerr << "Lower is : " << lower << std::endl;
+
+        assert(lower >= 0 && lower < this->string_multi_layer_segments[i-1].size());
+        
         uint64_t upper = (uint64_t)std::ceil(segment + recursive_error_bound) < this->string_multi_layer_segments[i-1].size() ? (uint64_t)std::ceil(segment + recursive_error_bound) : (this->string_multi_layer_segments[i-1].size() - 1);
         //std::cerr << "Upper is : " << upper << std::endl;
+
+
         while (lower != upper - 1) {
           uint64_t mid = (upper + lower) / 2;
           if (target_int < this->string_multi_layer_segments[i-1][mid].x)
@@ -313,6 +320,7 @@ bool LearnedIndexData::Learn() {
   int muti_layer_err = 8;
    if (adgMod::adeb == 1) {
 
+  // printf("string_keys.back().c_str()22222 : %s\n", string_keys.back().c_str());
       // 初始化随机种子
       srand(static_cast<unsigned>(time(0)));
 
@@ -441,11 +449,22 @@ else { // FILL IN GAMMA (error)
   // check if data if filled
   if (string_keys.empty()) assert(false);
 
+
+  // fill in some bounds for the model
+  // printf("string_keys.back().c_str() : %s\n", string_keys.back().c_str());
+  //   std::string filename = "/home/eros/workspace-lsm/wildturkey/dbbench-result/output_keys_level_" + std::to_string(level) + ".txt";
+  //   std::ofstream output_file(filename, std::ios::out | std::ios::app);
+
+
   // fill in some bounds for the model
   uint64_t temp = atoll(string_keys.back().c_str());
   min_key = atoll(string_keys.front().c_str());
   max_key = atoll(string_keys.back().c_str());
   size = string_keys.size();
+
+  for (int i = 0; i < string_keys.size(); ++i) {
+//  output_file << std::string(string_keys[i].c_str()) << "\n";
+}
 
   std::vector<Segment> segs = plr.train(string_keys, !is_level);
   inverse_density = static_cast<uint64_t>((max_key - min_key) / size); 
@@ -838,6 +857,7 @@ void FileLearnedIndexData::Report() {
 
   int total = 0;
   int64_t segments = 0;
+  int64_t segments_s = 0;
   for (size_t i = 0; i < file_learned_index_data.size(); ++i) {
     auto pointer = file_learned_index_data[i];
     if (pointer != nullptr && pointer->cost != 0) {
@@ -846,17 +866,20 @@ void FileLearnedIndexData::Report() {
       if (adgMod::adeb==1){
         
         for (int i=0; i < pointer->index_layer_count; i++) {
-            segments += pointer->string_multi_layer_segments[i].size();
+            segments += pointer->string_multi_layer_segments[0].size();
         }
       }else{
       segments += pointer->string_segments.size();
       }
+
+      segments_s=segments;
       // printf("pointer->string_segments.size() %d\n", pointer->string_multi_layer_segments.size());
       total++;
     }
   }
     int64_t  avgsegments =  segments/total;
     printf("------About File Model------\n");
+    printf("total segments: %d\n", segments_s);
     printf("total segments: %d\n", segments);
     printf("final models : %d\n", total);
     printf("avg segments: %d\n", avgsegments);

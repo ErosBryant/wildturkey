@@ -278,7 +278,7 @@ void TableCache::LevelRead(const ReadOptions &options, uint64_t file_number,
     instance->PauseTimer(1);
 #endif
 
-    
+    adgMod::levelled_counters[13].Increment(0);
 
     if (!learned) {
       // if level model is not used, consult file model for predicted position

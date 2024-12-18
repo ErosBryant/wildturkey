@@ -3,28 +3,28 @@
 python3 ./test.py testing start 
 
 # Define the desired --num values in an array
-nums=(64000000)
+nums=(10000000)
 # nums=(10000000)
 
 
 # Define various configurations
 # memtable_size=(4)
-# max_file_size=(16 32 64)
-number_of_runs=2
+max_file_size=(2 4 8 16 32 64)
+number_of_runs=1
 # bwise=(1 0)
 # lacd=(1 2 3 4 5 6 7 8 9 10 15)
 # file_error=(2 4 8 16 32)
 
 # fb_w wiki_w book_w
 # workload=(osm_w)
-# lac=(5)
-mod=(5 7 8 10)
+# lacd=(1 2 3 4 5 6 7 8 9 10)
+mod=(8)
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/wildturkey/experiment/db_bench-w-r-99/"
+output_dir="/mnt/wildturkey/experiment/uni_motivation-78-fb7/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
@@ -47,11 +47,11 @@ for num in "${nums[@]}"; do
    # for wkload in "${workload[@]}"; do
    # for bw in "${bwise[@]}"; do
    # for lac in "${lacd[@]}"; do
-      # for max in "${max_file_size[@]}"; do
+      for max in "${max_file_size[@]}"; do
       # for err in "${file_error[@]}"; do
          for md in "${mod[@]}"; do
          # Initialize summary output file
-            summary_output="${output_dir}summary_results/lac=${lac}-mod=${md}-num=${num}.csv"
+            summary_output="${output_dir}summary_results/max=${max}-mod=${md}-num=${num}.csv"
             echo "  num,  run, write_micros/op, read_micros/op, write_MB/s, read_MB/s, mod , waf, memtable_stall, L0_stall, L0_slow_stall, avg_segment_size" > "$summary_output"
 
 
@@ -66,9 +66,9 @@ for num in "${nums[@]}"; do
                # max_file_size=${max}
                # error=${err}
                # bwise=${bw}
-               output_file="${output_dir}mod=${md}_alwaysruning_num=${num}_${i}.csv"
+               output_file="${output_dir}mod=${md}_--max=${max}alwaysruning_num=${num}_${i}.csv"
                
-               echo "Running db_bench with --num=$num --mod=${md} " > "$output_file"
+               echo "Running db_bench with --num=$num --maxac=${max} --mod=${md} " > "$output_file"
 
                # Run the benchmark
                # uni40,uniread,stats
@@ -81,7 +81,7 @@ for num in "${nums[@]}"; do
                # --file_error=$err
                # f=$((max / 2)) 
                # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,99p,stats" --mod=$md --num=$num >> "$output_file"
+               ${test_dir}/db_bench --benchmarks="fb_w,compact,real_r,stats" --mod=$md --max_file_size=$max --num=$num >> "$output_file"
                echo "-------------------------------------" >> "$output_file"
 
 
@@ -119,7 +119,7 @@ for num in "${nums[@]}"; do
             echo "Average, avg_write_micros, avg_read_micros, avg_write_mb, avg_read_mb" >> "$summary_output"
             echo "Average, $avg_write_micros, $avg_read_micros, $avg_write_mb, $avg_read_mb" >> "$summary_output"
          done
-   #    done
+      done
    # done
 done
 

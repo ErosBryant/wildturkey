@@ -806,6 +806,7 @@ class PosixEnv : public Env {
         // if the file has been created for longer than wait_time (learn_trigger_time),
         // we can do CBA analysis. else, wait until the file has lived wait_time
         time_diff = front.first + adgMod::learn_trigger_time - time_start;
+        
         if (time_diff > 0) {
           wait_for_time = true;
           break;
@@ -815,12 +816,14 @@ class PosixEnv : public Env {
         double score = adgMod::learn_cb_model->CalculateCB(level, front.second.second->file_size);
 
         if (adgMod::MOD == 10) {
-          // printf("score10: %f\n", score);
+     
           learn_pq.push(std::make_pair(score, front));
         }else{ 
-        // printf("score: %f\n", score);
+     
         if (score > CBModel_Learn::const_size_to_cost) learn_pq.push(std::make_pair(score, front)); 
         }
+
+
       }
       // CBModel_Learn::const_size_to_cost
 

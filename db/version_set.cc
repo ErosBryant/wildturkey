@@ -3,6 +3,7 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "db/version_set.h"
+#include <fstream> // 파일 스트림을 위한 헤더
 
 #include <stdio.h>
 #include <algorithm>
@@ -527,6 +528,7 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                           auto iter = adgMod::file_stats.find(f->number);
                           if (iter != adgMod::file_stats.end()) {
                               iter->second.num_lookup_neg += 1;
+                            //   printf("File %d, level %d, neg %d\n", f->number, level, iter->second.num_lookup_neg);
                           }
                           adgMod::file_stats_mutex.Unlock();
                         }
@@ -717,9 +719,7 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                 AppendNumberTo(&r, files[i]->file_size);
                 r.append("[");
                 r.append(files[i]->smallest.DebugString());
-                r.append("-");
-                // r.append(files[i]->);
-                r.append("-");
+                r.append("-==-");
                 r.append(" .. ");
                 r.append(files[i]->largest.DebugString());
                 r.append("]\n");
@@ -1338,6 +1338,7 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
              v = v->next_) {
             for (int level = 0; level < config::kNumLevels; level++) {
                 const std::vector<FileMetaData *> &files = v->files_[level];
+                // files.begin();
                 for (size_t i = 0; i < files.size(); i++) {
                     live->insert(files[i]->number);
                 }
@@ -1740,6 +1741,20 @@ uint64_t Compaction::MaxOutputFileSizeineachlevel(int level) {
     } else if (level == 5){
         return 2097152*pow(adgMod::sst_size,6);
     }
+    
+    //     if(level == 0){
+    //     return 2097152*pow(adgMod::sst_size,1);
+    // }else if (level == 1){
+    //     return 2097152*pow(adgMod::sst_size,1);
+    // } else if (level == 2){
+    //     return 2097152*pow(adgMod::sst_size,2);
+    // } else if (level == 3){
+    //     return 2097152*pow(adgMod::sst_size,3);
+    // } else if (level == 4){
+    //     return 2097152*pow(adgMod::sst_size,4);
+    // } else if (level == 5){
+    //     return 2097152*pow(adgMod::sst_size,5);
+    // }
 
     printf("Error in MaxOutputFileSizeineachlevel");
     return 2097152*adgMod::sst_size;
@@ -1832,6 +1847,7 @@ uint64_t Compaction::MaxOutputFileSizeineachlevel(int level) {
             for (int j = 0; j < files_[i].size(); ++j) {
                 if (j == 0) printf("Level %d\n", i);
                 FileMetaData *file = files_[i][j];
+                // Block::Iter* index_iter = dynamic_cast<Block::Iter*>(rep_->index_block->NewIterator(rep_->options.comparator));
                 string small_key = string(file->smallest.user_key().data(), file->smallest.user_key().size());
                 string large_key = string(file->largest.user_key().data(), file->largest.user_key().size());
                 printf("File %d in level %d:\n"
@@ -1844,6 +1860,7 @@ uint64_t Compaction::MaxOutputFileSizeineachlevel(int level) {
         }
     }
 
+
     bool Version::FillData(const ReadOptions &options, FileMetaData *meta, adgMod::LearnedIndexData *data) {
         return vset_->table_cache_->FillData(options, meta, data);
     }
@@ -1852,12 +1869,21 @@ uint64_t Compaction::MaxOutputFileSizeineachlevel(int level) {
         adgMod::LearnedIndexData *data = learned_index_data_[level].get();
 
         if (files_[level].empty()) return false;
+        
+    // std::string filename = "/home/eros/workspace-lsm/wildturkey/dbbench-result/output_keys_level_" + std::to_string(level) + ".txt";
+    // std::ofstream output_file(filename, std::ios::out | std::ios::app);
 
         for (int j = 0; j < files_[level].size(); ++j) {
             FileMetaData *file = files_[level][j];
             data->string_keys.emplace_back(file->smallest.user_key().data(), file->smallest.user_key().size());
             data->string_keys.emplace_back(file->largest.user_key().data(), file->largest.user_key().size());
+            
         }
+        // for (int i = 0; i < data->string_keys.size(); ++i) {
+        //      printf("Key %d: %s\n", i, data->string_keys[i].c_str());
+        //      output_file << std::string(data->string_keys[i].c_str()) << "\n";
+        // }
+        
         // push the maximun key in to the data points
         return true;
     }

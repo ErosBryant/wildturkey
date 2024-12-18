@@ -3,6 +3,8 @@
 // found in the LICENSE file. See the AUTHORS file for names of contributors.
 
 #include "db/db_impl.h"
+#include <iostream>
+#include <fstream> // 파일 스트림을 위한 헤더
 
 #include <stdint.h>
 #include <stdio.h>
@@ -310,23 +312,30 @@ void DBImpl::DeleteObsoleteFiles() {
           keep = true;
           break;
       }
-
+      
       if (!keep) {
         if (type == kTableFile) {
           table_cache_->Evict(number);
           if (!adgMod::fresh_write) {
-            // when a file is deleted due to compaction, its stats during the lifetime
-            // is recorded by CBA
+
             adgMod::file_stats_mutex.Lock();
             auto iter = adgMod::file_stats.find(number);
-            //assert(iter != adgMod::file_stats.end());
             adgMod::FileStats& file_stat = iter->second;
             file_stat.Finish();
+
+            
+          //  std::string filename = "/home/eros/workspace-lsm/wildturkey/dbbench-result/lifetime/64output_keys_level_" + std::to_string(file_stat.level) + ".txt";
+           
+          //  std::ofstream output_file(filename, std::ios::out | std::ios::app);
+
             if (file_stat.end - file_stat.start >= adgMod::learn_trigger_time) {
               adgMod::learn_cb_model->AddFileData(file_stat.level, file_stat.num_lookup_neg, file_stat.num_lookup_pos, file_stat.size);
             }
+            // output_file << file_stat.end - file_stat.start << "\n";
             adgMod::file_stats_mutex.Unlock();
+            
           }
+
         //  adgMod::LearnedIndexData* model = adgMod::file_data->GetModel(number);
         //  delete model;
 
@@ -653,13 +662,16 @@ int DBImpl::CompactMemTable() {
     int level = edit.new_files_[0].first;
     // printf("level: %d\n", level);
     
-    if (adgMod::MOD == 7){
+    // if (adgMod::MOD == 7){
     adgMod::compaction_counter_mutex.Lock();
     adgMod::events[0].push_back(new CompactionEvent(time, to_string(level)));
-    adgMod::levelled_counters[5].Increment(edit.new_files_[0].first, time.second - time.first);
+    adgMod::levelled_counters[0].Increment(0, time.second - time.first);
+    // adgMod::levelled_counters[2].Increment(level);
     adgMod::compaction_counter_mutex.Unlock();
+    
     env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
-    }
+    
+    // }
 
 
   return level;
@@ -689,20 +701,37 @@ void DBImpl::CompactMemTable(MemTable *table) {
 
 
 void DBImpl::CompactRange(const Slice* begin, const Slice* end) {
-  int max_level_with_files = 1;
+  // int max_level_with_files = 1;
+  // {
+  //   MutexLock l(&mutex_);
+  //   Version* base = versions_->current();
+  //   for (int level = 1; level < config::kNumLevels; level++) {
+  //     if (base->OverlapInLevel(level, begin, end)) {
+  //       max_level_with_files = level;
+  //     }
+  //   }
+  // }
+   int max_level_with_files = 1;
   {
     MutexLock l(&mutex_);
     Version* base = versions_->current();
-    for (int level = 1; level < config::kNumLevels; level++) {
-      if (base->OverlapInLevel(level, begin, end)) {
-        max_level_with_files = level;
-      }
+    // for (int level = 1; level < config::kNumLevels; level++) {
+      if (base->OverlapInLevel(0, begin, end)) {
+        max_level_with_files = 0;
+      // }
     }
   }
+
   TEST_CompactMemTable();  // TODO(sanjay): Skip if memtable does not overlap
-  for (int level = 0; level < max_level_with_files; level++) {
-    TEST_CompactRange(level, begin, end);
-  }
+  // for (int level = 0; level < max_level_with_files; level++) {
+    TEST_CompactRange(0, begin, end);
+  // }
+
+  // CompactMemTable(mem_);
+  // CompactMemTable(imm_);
+  // MaybeScheduleCompaction();
+  
+
 }
 
 void DBImpl::TEST_CompactRange(int level, const Slice* begin,
@@ -1108,7 +1137,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       compact->compaction->num_input_files(1),
       compact->compaction->level() + 1);
 
-  Log(options_.info_log, "Level-%d table  %lld bytes",compact->compaction->level(),read_size );
+  // Log(options_.info_log, "Level-%d table  %lld bytes",compact->compaction->level(),read_size );
 
 
 
@@ -1391,13 +1420,13 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
   adgMod::Stats* instance = adgMod::Stats::GetInstance();
   
   if (adgMod::MOD==10 && versions_->NumLevelFiles(0)>0 && adgMod::reopen==1) {
-      WaitForBackground();
+  //     // WaitForBackground();
       adgMod::reopen=0;
-      // printf("Get\n");
-      // mutex_.Unlock();
+  //     // printf("Get\n");
+  //     // mutex_.Unlock();
       CompactOrderdRange(nullptr, nullptr, 0);
-      // mutex_.Lock();
-      // printf("Get2\n");
+  //     // mutex_.Lock();
+  //     // printf("Get2\n");
       }
 
   Status s;
@@ -1741,6 +1770,7 @@ Status DBImpl::MakeRoomForWrite(bool force) {
 bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   value->clear();
   WaitForBackground();
+
   MutexLock l(&mutex_);
   Slice in = property;
   Slice prefix("leveldb.");
@@ -1767,21 +1797,30 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
     float NumLevelBytes_total = 0;
     snprintf(buf, sizeof(buf),
              "                               Compactions\n"
-             "Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count \n"
-             "------------------------------------------------------------------------------------------------ \n");
+             "Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count  WA \n"
+             "---------------------------------------------------------------------------------------------------- \n");
     value->append(buf);
     for (int level = 0; level < config::kNumLevels; level++) {
       int files = versions_->NumLevelFiles(level);
+
+
       if (stats_[level].micros > 0 || files > 0) {
-          snprintf(buf, sizeof(buf), "%3d  %8d %9.0f %8.0f %9ld    %8.0f  %9.0f   %8.0f  %9.0f  %7ld\n", level,
-                  files, versions_->NumLevelBytes(level) / 1048576.0,
-                  stats_[level].micros / 1e6,
-                  stats_[level].max_micros,
-                  stats_[level].bytes_read / 1048576.0,
-                  stats_[level].bytes_written / 1048576.0,
-                  stats_[level].max_bytes_written / 1048576.0,
-                  stats_[level].max_bytes_read / 1048576.0,
-                  stats_[level].compaction_count);
+                snprintf(buf, sizeof(buf), "%3d  %8d %9.0f %8.0f %9ld    %8.0f  %9.0f   %8.0f  %8.0f  %6ld  %4.2f\n", 
+                        level,
+                        files, 
+                        versions_->NumLevelBytes(level) / 1048576.0,
+                        stats_[level].micros / 1e6,
+                        stats_[level].max_micros,
+                        stats_[level].bytes_read / 1048576.0,
+                        stats_[level].bytes_written / 1048576.0,
+                        stats_[level].max_bytes_written / 1048576.0,
+                        stats_[level].max_bytes_read / 1048576.0,
+                        stats_[level].compaction_count,
+                        // static_cast<double>(stats_[level].bytes_written) / static_cast<double>(versions_->NumLevelBytes(level))
+                        static_cast<double>(stats_[level].bytes_written) / static_cast<double>(versions_->NumLevelBytes(level))
+
+                );
+
                  bytes_written_total+= stats_[level].bytes_written / 1048576.0;
                  NumLevelBytes_total+= versions_->NumLevelBytes(level) / 1048576.0;
                  
@@ -1797,18 +1836,21 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   std::cout << "L0 slow stall time: " << 1.0 * l0_slow_tall_time_ /1000000 << "  s" << std::endl; 
   std::cout << "waf:" << bytes_written_total / NumLevelBytes_total << std::endl;
   //versions_->current()->PrintAll();
- 
-    // if (adgMod::MOD == 7 || adgMod::MOD == 10) {
-    //   adgMod::compaction_counter_mutex.Lock();
-    //       adgMod::file_data->Report();
-    //   adgMod::compaction_counter_mutex.Unlock();
-    //       // Version* current = adgMod::db->versions_->current();
-    //       // std::cout << "Level model stats:" << std::endl;
-    //       // for (int i = 1; i < config::kNumLevels; ++i) {
-    //       //     current->learned_index_data_[i]->ReportStats();
-    //       // }
-    //       // adgMod::learn_cb_model->Report();
-    // }
+
+
+
+    if (adgMod::MOD == 7 || adgMod::MOD == 10) {
+
+
+          adgMod::file_data->Report();
+      // adgMod::compaction_counter_mutex.Unlock();
+          // Version* current = adgMod::db->versions_->current();
+          // std::cout << "Level model stats:" << std::endl;
+          // for (int i = 1; i < config::kNumLevels; ++i) {
+          //     current->learned_index_data_[i]->ReportStats();
+          // }
+          // adgMod::learn_cb_model->Report();
+    }
     adgMod::Stats* instance = adgMod::Stats::GetInstance();
     instance->ReportTime();
     // adgMod::learn_cb_model->Report();
@@ -1954,7 +1996,7 @@ if (base->OverlapInLevel(level, begin, end)) {
  }
 max_level_with_files = std::min(max_level_with_files, max_level);
 
-TEST_CompactMemTable(); 
+// TEST_CompactMemTable(); 
 
 for (int level = 0; level <= max_level_with_files; level++) {
 TEST_CompactRange(level, begin, end);

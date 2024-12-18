@@ -4,7 +4,7 @@ python3 ./test.py testing start
 
 # Define the desired --num values in an array
 # nums=(60000)
-nums=(20000000)
+nums=(50000000)
 
 
 
@@ -14,8 +14,8 @@ workload=(fillrandom ycsba ycsnb ycsbc ycscd ycsce ycsbf)
 # uniwrite
 
 # lac=(5)
-mod=(7 8 5)
-number_of_runs=2
+mod=(8 10 5)
+number_of_runs=1
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")

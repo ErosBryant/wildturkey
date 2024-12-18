@@ -1,0 +1,114 @@
+eros@eros-System-Product-Name:~/workspace-lsm/wildturkey/build$ ./db_bench --benchmarks="fillrandom,readrandom,stats" --mod=10  --num=10000000
+mod: 10
+LevelDB:    version 1.22
+Date:       Wed Nov 27 17:15:48 2024
+CPU:        20 * 12th Gen Intel(R) Core(TM) i7-12700K
+CPUCache:   25600 KB
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    10000000
+RawSize:    1106.3 MB (estimated)
+FileSize:   629.4 MB (estimated)
+------------------------------------------------
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter  0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+fillrandom   :       2.063 micros/op;   53.6 MB/s;    20.626
+readrandom   :       2.444 micros/op;   45.3 MB/s (10000000 of 10000000 found);    24.435
+--------------------------------------------------
+memtable stall time: 1.37333 s
+L0 stall time: 0  s
+L0 slow stall time: 11.8955  s
+waf:9.60435
+------About File Model------
+total segments: 154029
+total segments: 154029
+final models : 186
+avg segments: 828
+------About File Model------
+Timer 0: 1267317504 : 1.267317504
+Timer 1: 825749248 : 0.825749248
+Timer 2: 142589824 : 0.142589824
+Timer 3: 200425616 : 0.200425616
+Timer 4: 0 : 0.000000000
+Timer 5: 90751120 : 0.090751120
+Timer 6: 11594541056 : 11.594541056
+Timer 7: 22039574528 : 22.039574528
+Timer 8: 475666752 : 0.475666752
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 6009137152 : 6.009137152
+Timer 12: 3919901440 : 3.919901440
+Timer 13: 0 : 0.000000000
+Timer 14: 4934935552 : 4.934935552
+Timer 15: 174101248 : 0.174101248
+Timer 16: 3987940608 : 3.987940608
+Timer 17: 2509218816 : 2.509218816
+Timer 18: 1795902976 : 1.795902976
+Timer 19: 2231080960 : 2.231080960
+
+                               Compactions
+Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count 
+------------------------------------------------------------------------------------------------ 
+  0         0         0       10    307704         600        949         29         30       18
+  1         2         3       11    137220        1555       1453         17         17       44
+  2         7        80        0         0           0          3          0          0        0
+  3         7       167        0         0           0          0          0          0        0
+
+Counter LevelModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FileModel 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Baseline 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Succeeded 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseInternal 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter Compaction -2147483648 6823942688 15178692480 36943872 0 0 0 0 0
+69 18 44 7 0 0 0 0 0
+Counter Learn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter SuccessTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FalseTime 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter FilteredLookup 181395456 8710144 21145600 80390144 71149568 0 0 0 0
+15689527 711189 1868451 6981348 6128539 0 0 0 0
+Counter PutWait 11318 11297 21 0 0 0 0 0 0
+11318 11297 21 0 0 0 0 0 0
+Counter FileLearning -2147483648 0 1758801568 4250334400 0 0 0 0 0
+186 0 109 77 0 0 0 0 0
+Counter LevelLearn 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelUse 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter LevelModelNotUse 25770741 0 9908407 9733795 6128539 0 0 0 0
+25770741 0 9908407 9733795 6128539 0 0 0 0
