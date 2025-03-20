@@ -125,6 +125,7 @@ namespace adgMod {
         int level;
         uint32_t num_lookup_neg;
         uint32_t num_lookup_pos;
+        uint32_t num_lookup_bypass;
         uint64_t size;
 
         explicit FileStats(int level_, uint64_t size_) : start(0), end(0), level(level_), num_lookup_pos(0), num_lookup_neg(0), size(size_) {

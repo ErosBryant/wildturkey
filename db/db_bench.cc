@@ -535,7 +535,7 @@ class Benchmark {
       }
 
       input.close();
-      std::random_shuffle(data.begin(), data.end());
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       } else if (name == Slice("book_w")) {
@@ -552,7 +552,7 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      std::random_shuffle(data.begin(), data.end());
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       }else if (name == Slice("fb_w")) {
@@ -569,7 +569,7 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      std::random_shuffle(data.begin(), data.end());
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       }
@@ -587,15 +587,76 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      std::random_shuffle(data.begin(), data.end());
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
+
       } else if (name == Slice("osm_blanced")) {
+       uint64_t key;
+      fresh_db = true;
+  
+      input_file = "/mnt/datasets/data_set/data/osm_cellids_200M_uint64";
+      std::ifstream input; 
+      input.open(input_file, std::ios::binary); 
+      if (!input.is_open()) {
+          std::cerr << "Error opening file" << std::endl;
+          exit(1);
+      }
+
+      while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+
+        data.push_back(key);
+      }
+
+      input.close();
+      std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_blanced;
       } else if (name == Slice("book_blanced")) {
+              uint64_t key;
+      fresh_db = true;
+      input_file = "/mnt/datasets/data_set/data/books_200M_uint64";
+      std::ifstream input; 
+      input.open(input_file, std::ios::binary); 
+      if (!input.is_open()) {
+          std::cerr << "Error opening file" << std::endl;
+          exit(1);
+      }
+      while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+        data.push_back(key);
+      }
+      input.close();
+      std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_blanced;
       }else if (name == Slice("fb_blanced")) {
+      uint64_t key;
+      fresh_db = true;
+      input_file = "/mnt/datasets/data_set/data/fb_200M_uint64";
+      std::ifstream input; 
+      input.open(input_file, std::ios::binary); 
+      if (!input.is_open()) {
+          std::cerr << "Error opening file" << std::endl;
+          exit(1);
+      }
+      while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+        data.push_back(key);
+      }
+      input.close();
+      std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_blanced;
       }else if (name == Slice("wiki_blanced")) {
+         uint64_t key;
+      fresh_db = true;
+      input_file = "/mnt/datasets/data_set/data/wiki_ts_200M_uint64";
+      std::ifstream input; 
+      input.open(input_file, std::ios::binary); 
+      if (!input.is_open()) {
+          std::cerr << "Error opening file" << std::endl;
+          exit(1);
+      }
+      while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+        data.push_back(key);
+      }
+      input.close();
+      std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_blanced;
       }else if (name == Slice("osm_readheavy")) {
       method = &Benchmark::real_readheavy;
@@ -641,7 +702,7 @@ class Benchmark {
       } else if (name == Slice("fillrandom")) {
         fresh_db = true;
         method = &Benchmark::WriteRandom;
-      }  else if (name == Slice("zipfill")) {
+      }  else if (name == Slice("zipwrite")) {
         fresh_db = true;
         method = &Benchmark::zipfian;
       }else if (name == Slice("overwrite")) {
@@ -909,7 +970,7 @@ class Benchmark {
         batch.Clear();
         for (int j = 0; j < entries_per_batch_; j++) {
       
-          const int k =  thread->rand.Zipfian(FLAGS_num, 1.0);
+          const int k =  thread->rand.Zipfian(FLAGS_num, 1);
           // printf("key: %d\n", k);
           // output_file << k << std::endl;
 
@@ -940,6 +1001,7 @@ class Benchmark {
         batch.Clear();
         for (int j = 0; j < entries_per_batch_; j++) {
           auto start = std::chrono::high_resolution_clock::now(); // start time
+
           // const int k = seq ? i + j : (thread->rand.Next() % FLAGS_num);
             int k = 0;
             if (FLAGS_ycsb_uniform==1){
@@ -949,8 +1011,6 @@ class Benchmark {
             k = seq ? i + j :  thread->rand.Zipfian(FLAGS_num, 1.0);
             }
 
-          // printf("key: %d\n", k);
-          // printf("key: %d\n", k);
           // output_file << k << std::endl;
 
           char key[100];
@@ -1153,7 +1213,7 @@ class Benchmark {
     int kkkk=0;
     batch.Clear();
     char key[100];
-    num_=10000000;
+    // num_=10000000;
     // if (num_ != FLAGS_num) {
     //   char msg[100];
     //   snprintf(msg, sizeof(msg), "(%d ops)", num_);
@@ -1239,7 +1299,7 @@ class Benchmark {
     int k;
     batch.Clear();
     char key[100];
-    num_=10000000;
+    // num_=10000000;
     // if (num_ != FLAGS_num) {
     //   char msg[100];
     //   snprintf(msg, sizeof(msg), "(%d ops)", num_);
@@ -1789,7 +1849,7 @@ class Benchmark {
     int64_t bytes = 0;
     int k;
       for (int i = 0; i < reads_; i++) {
-        int k =  thread->rand.Zipfian(FLAGS_num, 1.0);
+        int k =  thread->rand.Zipfian(FLAGS_num, 1);
         snprintf(key, sizeof(key), "%016d", k);
         if (db_->Get(options, key, &value).ok()) {
           found++;
@@ -2040,17 +2100,17 @@ int main(int argc, char** argv) {
       printf("mod: %d\n", n);
       }else{    
       adgMod::MOD = n;
-      adgMod::adeb = 1;
       printf("mod: %d\n", n);
       }
       
     } else if (sscanf(argv[i], "--bwise=%d%c", &n, &junk) == 1) {
       adgMod::bwise = n;
       adgMod::MOD = 7;
+      adgMod::adeb=1;
       adgMod::sst_size = 4;
       adgMod::file_model_error=16;
     }else if (sscanf(argv[i], "--file_error=%d%c", &n, &junk) == 1) {
-      adgMod::file_model_error  = n;
+      adgMod::file_model_error=n;
     } else if (sscanf(argv[i], "--lac=%d%c", &n, &junk) == 1) {
       adgMod::MOD = 10;
       // printf("lac: %d\n", n);

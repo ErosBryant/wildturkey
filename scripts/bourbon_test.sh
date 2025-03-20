@@ -3,7 +3,7 @@
 python3 ./test.py testing start 
 
 # Define the desired --num values in an array
-nums=(10000000)
+nums=(20000000)
 # nums=(10000000)
 
 
@@ -18,13 +18,13 @@ number_of_runs=1
 # fb_w wiki_w book_w
 # workload=(osm_w)
 # lacd=(1 2 3 4 5 6 7 8 9 10)
-mod=(8)
+mod=(7)
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/wildturkey/experiment/uni_motivation-78-fb7/"
+output_dir="/mnt/analysis_bourbon/sstable/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
@@ -81,7 +81,7 @@ for num in "${nums[@]}"; do
                # --file_error=$err
                # f=$((max / 2)) 
                # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="fb_w,compact,real_r,stats" --mod=$md --max_file_size=$max --num=$num >> "$output_file"
+               ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --mod=$md --max_file_size=$max --num=$num >> "$output_file"
                echo "-------------------------------------" >> "$output_file"
 
 

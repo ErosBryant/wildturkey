@@ -452,12 +452,17 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                         }
                     }
                 } else {
+                    
                     adgMod::levelled_counters[14].Increment(level);
                     // Binary search to find earliest index whose largest key >= ikey.
                     uint32_t index = FindFile(vset_->icmp_, files_[level], ikey);
                     if (index >= num_files) {
                         files = nullptr;
                         num_files = 0;
+
+                
+
+
                     } else {
                         tmp2 = files[index];
                         if (ucmp->Compare(user_key, tmp2->smallest.user_key()) < 0) {
@@ -543,7 +548,10 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                           adgMod::file_stats_mutex.Lock();
                           auto iter = adgMod::file_stats.find(f->number);
                           if (iter != adgMod::file_stats.end()) {
+                              
                               iter->second.num_lookup_pos += 1;
+                              
+                              
                           }
                           adgMod::file_stats_mutex.Unlock();
                         }
@@ -1488,6 +1496,7 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
 
         SetupOtherInputs(c);
 
+        
         return c;
     }
 

@@ -36,7 +36,8 @@ namespace adgMod {
 
 std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
     const Slice& target_x) const {
-  assert(this->string_multi_layer_segments.size() > 1);
+  // assert(this->string_multi_layer_segments.size() > 1);
+  //  assert(string_segments.size() > 1);
   ++served;
   if (adgMod::adeb == 1) {
     // printf("Get position\n");
@@ -320,6 +321,7 @@ bool LearnedIndexData::Learn() {
   int muti_layer_err = 8;
    if (adgMod::adeb == 1) {
 
+    // printf("string_keyssssssssssssssssssssss.back().c_str() : %s\n", string_keys.back().c_str());
   // printf("string_keys.back().c_str()22222 : %s\n", string_keys.back().c_str());
       // 初始化随机种子
       srand(static_cast<unsigned>(time(0)));
@@ -440,33 +442,24 @@ bool LearnedIndexData::Learn() {
       learned.store(true);
       // string_keys.clear();
       return true;
-  }
-
-
-else { // FILL IN GAMMA (error)
+  }else { // FILL IN GAMMA (error)
   PLR plr = PLR(error);
+  // printf("errorrrrrrrrrrrrrrrrrr : %f\n", error);
 
   // check if data if filled
   if (string_keys.empty()) assert(false);
 
-
-  // fill in some bounds for the model
-  // printf("string_keys.back().c_str() : %s\n", string_keys.back().c_str());
-  //   std::string filename = "/home/eros/workspace-lsm/wildturkey/dbbench-result/output_keys_level_" + std::to_string(level) + ".txt";
-  //   std::ofstream output_file(filename, std::ios::out | std::ios::app);
-
-
-  // fill in some bounds for the model
   uint64_t temp = atoll(string_keys.back().c_str());
   min_key = atoll(string_keys.front().c_str());
   max_key = atoll(string_keys.back().c_str());
   size = string_keys.size();
 
-  for (int i = 0; i < string_keys.size(); ++i) {
+  // for (int i = 0; i < string_keys.size(); ++i) {
 //  output_file << std::string(string_keys[i].c_str()) << "\n";
-}
+// }
 
   std::vector<Segment> segs = plr.train(string_keys, !is_level);
+
   inverse_density = static_cast<uint64_t>((max_key - min_key) / size); 
   if(inverse_density < 10) inverse_density = 0;
   else if(inverse_density < 30) inverse_density = 1;
@@ -588,12 +581,12 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
     learn_counter_mutex.Unlock();
   }
 
-  if (!fresh_write) {
-             self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
-             to_string(mas->meta->number) + ".fmodel");
-             self->string_keys.clear();
-             self->num_entries_accumulated.array.clear();
-         }
+  // if (!fresh_write) {
+  //            self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
+  //            to_string(mas->meta->number) + ".fmodel");
+  //            self->string_keys.clear();
+  //            self->num_entries_accumulated.array.clear();
+  //        }
 
   if (!fresh_write) delete mas->meta;
   delete mas;
@@ -857,7 +850,7 @@ void FileLearnedIndexData::Report() {
 
   int total = 0;
   int64_t segments = 0;
-  int64_t segments_s = 0;
+  // int64_t segments_s = 0;
   for (size_t i = 0; i < file_learned_index_data.size(); ++i) {
     auto pointer = file_learned_index_data[i];
     if (pointer != nullptr && pointer->cost != 0) {
@@ -869,17 +862,18 @@ void FileLearnedIndexData::Report() {
             segments += pointer->string_multi_layer_segments[0].size();
         }
       }else{
+        // printf("pointer->string_segments.size() %d\n", pointer->string_segments.size());
       segments += pointer->string_segments.size();
       }
 
-      segments_s=segments;
+      // segments_s=segments;
       // printf("pointer->string_segments.size() %d\n", pointer->string_multi_layer_segments.size());
       total++;
     }
   }
     int64_t  avgsegments =  segments/total;
     printf("------About File Model------\n");
-    printf("total segments: %d\n", segments_s);
+    // printf("total segments: %d\n", segments_s);
     printf("total segments: %d\n", segments);
     printf("final models : %d\n", total);
     printf("avg segments: %d\n", avgsegments);

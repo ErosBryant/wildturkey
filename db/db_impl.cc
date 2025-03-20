@@ -167,32 +167,29 @@ DBImpl::DBImpl(const Options& raw_options, const std::string& dbname)
 DBImpl::~DBImpl() {
   // Wait for background work to finish.
 
-  for (int i = 0; i < adgMod::levelled_counters.size(); ++i) {
-    adgMod::levelled_counters[i].Report();
-  }
-  //printf("-----------------\n");
-  // PrintFileInfo();
-// adgMod::file_data->Report();
+  // for (int i = 0; i < adgMod::levelled_counters.size(); ++i) {
+  //   adgMod::levelled_counters[i].Report();
+  // }
 
-  //versions_->current()->WriteLevelModel();
+  // //versions_->current()->WriteLevelModel();
   mutex_.Lock();
-  shutting_down_.store(true, std::memory_order_release);
-  while (background_compaction_scheduled_) {
-    background_work_finished_signal_.Wait();
-  }
-  if (adgMod::MOD == 7 ) {
-        // adgMod::file_data->Report();
-        // Version* current = adgMod::db->versions_->current();
-        // std::cout << "Level model stats:" << std::endl;
-        // for (int i = 1; i < config::kNumLevels; ++i) {
-        //     current->learned_index_data_[i]->ReportStats();
-        // }
-        adgMod::learn_cb_model->Report();
+  // shutting_down_.store(true, std::memory_order_release);
+  // while (background_compaction_scheduled_) {
+  //   background_work_finished_signal_.Wait();
+  // }
+  // if (adgMod::MOD == 7 ) {
+  //       // adgMod::file_data->Report();
+  //       // Version* current = adgMod::db->versions_->current();
+  //       // std::cout << "Level model stats:" << std::endl;
+  //       // for (int i = 1; i < config::kNumLevels; ++i) {
+  //       //     current->learned_index_data_[i]->ReportStats();
+  //       // }
+  //       adgMod::learn_cb_model->Report();
 
-  // adgMod::Stats* instance = adgMod::Stats::GetInstance();
-  //  instance->ReportTime();
-  // //adgMod::learn_cb_model->Report();
-  }
+  // // adgMod::Stats* instance = adgMod::Stats::GetInstance();
+  // //  instance->ReportTime();
+  // // //adgMod::learn_cb_model->Report();
+  // }
 
 
   if (adgMod::MOD >= 7) {
@@ -336,14 +333,18 @@ void DBImpl::DeleteObsoleteFiles() {
             
           }
 
-        //  adgMod::LearnedIndexData* model = adgMod::file_data->GetModel(number);
-        //  delete model;
+         adgMod::LearnedIndexData* model = adgMod::file_data->GetModel(number);
+        if (model) {
+          if (model->Learned()) {
+            // printf("File %d, size %d\n", number, model->size);
+           delete model;
+          }
+          
+           
+        }
 
-        // if (adgMod::adeb==1){
-
-        // // for (int i=0; i < pointer->index_layer_count; i++) {
-        // //     segments += pointer->string_multi_layer_segments[i].size();
-        // // }
+        // free (model);
+      
 
 
         }
@@ -663,13 +664,13 @@ int DBImpl::CompactMemTable() {
     // printf("level: %d\n", level);
     
     // if (adgMod::MOD == 7){
-    adgMod::compaction_counter_mutex.Lock();
-    adgMod::events[0].push_back(new CompactionEvent(time, to_string(level)));
-    adgMod::levelled_counters[0].Increment(0, time.second - time.first);
-    // adgMod::levelled_counters[2].Increment(level);
-    adgMod::compaction_counter_mutex.Unlock();
+    // adgMod::compaction_counter_mutex.Lock();
+    // adgMod::events[0].push_back(new CompactionEvent(time, to_string(level)));
+    // adgMod::levelled_counters[0].Increment(0, time.second - time.first);
+    // // adgMod::levelled_counters[2].Increment(level);
+    // adgMod::compaction_counter_mutex.Unlock();
     
-    env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
+    // env_->PrepareLearning(time.second, level, new FileMetaData(edit.new_files_[0].second));
     
     // }
 
@@ -870,7 +871,7 @@ void DBImpl::BackgroundCompaction() {
         (m->done ? "(end)" : manual_end.DebugString().c_str()));
   } else {
     c = versions_->PickCompaction();
-    // c = versions_->PickCompaction_titred();
+    // //c = versions_->PickCompaction_titred();
   }
 
   Status status;
@@ -1128,6 +1129,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
   for (int which = 0; which < 2; which++) {
     for (int i = 0; i < compact->compaction->num_input_files(which); i++) {
         read_size += compact->compaction->input(which, i)->file_size;
+        // printf("compact->compaction->input(which, i)->number %d \n", compact->compaction->input(which, i)->number);
     }
   }
 
@@ -1259,7 +1261,8 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       compact->current_output()->largest.DecodeFrom(key);
       compact->builder->Add(key, input->value());
 
-      if (adgMod::MOD==10 or adgMod::sst_size>=1){
+      if (adgMod::MOD==10 or adgMod::sst_size>1){
+        // printf("sst_size = %d\n", adgMod::sst_size);
           if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
           status = FinishCompactionOutputFile(compact, input);
           if (!status.ok()) {
@@ -1419,15 +1422,10 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
 
   adgMod::Stats* instance = adgMod::Stats::GetInstance();
   
-  if (adgMod::MOD==10 && versions_->NumLevelFiles(0)>0 && adgMod::reopen==1) {
-  //     // WaitForBackground();
-      adgMod::reopen=0;
-  //     // printf("Get\n");
-  //     // mutex_.Unlock();
-      CompactOrderdRange(nullptr, nullptr, 0);
-  //     // mutex_.Lock();
-  //     // printf("Get2\n");
-      }
+  // if (adgMod::MOD==10 && versions_->NumLevelFiles(0)>0 && adgMod::reopen==1) {
+  //     adgMod::reopen=0;
+  //     CompactOrderdRange(nullptr, nullptr, 0);
+  //     }
 
   Status s;
   MutexLock l(&mutex_);
@@ -1448,8 +1446,6 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
 
   bool have_stat_update = false;
   Version::GetStats stats;
-
-
 
   // Unlock while reading from files and memtables
   {
@@ -1798,7 +1794,7 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
     snprintf(buf, sizeof(buf),
              "                               Compactions\n"
              "Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count  WA \n"
-             "---------------------------------------------------------------------------------------------------- \n");
+             "----------------------------------------------------------------------------------------------------- \n");
     value->append(buf);
     for (int level = 0; level < config::kNumLevels; level++) {
       int files = versions_->NumLevelFiles(level);
@@ -1817,7 +1813,8 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
                         stats_[level].max_bytes_read / 1048576.0,
                         stats_[level].compaction_count,
                         // static_cast<double>(stats_[level].bytes_written) / static_cast<double>(versions_->NumLevelBytes(level))
-                        static_cast<double>(stats_[level].bytes_written) / static_cast<double>(versions_->NumLevelBytes(level))
+                        (static_cast<double>(stats_[level].bytes_written) +  static_cast<double>(stats_[0].bytes_written)) / static_cast<double>(stats_[0].bytes_written)
+                        
 
                 );
 
@@ -1834,15 +1831,16 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   std::cout << "memtable stall time: " <<1.0 * mem_stall_time_ /1000000 << " s" << std::endl;
   std::cout << "L0 stall time: " << 1.0 * L0_stop_stall_time_ /1000000<< "  s" << std::endl; 
   std::cout << "L0 slow stall time: " << 1.0 * l0_slow_tall_time_ /1000000 << "  s" << std::endl; 
-  std::cout << "waf:" << bytes_written_total / NumLevelBytes_total << std::endl;
+  std::cout << "waf data:" << bytes_written_total / NumLevelBytes_total << std::endl;
+  std::cout << "waf flsuh:" << (bytes_written_total / (stats_[0].bytes_written / 1048576.0))/stats_[0].bytes_written << std::endl;
   //versions_->current()->PrintAll();
 
 
 
     if (adgMod::MOD == 7 || adgMod::MOD == 10) {
 
-
-          adgMod::file_data->Report();
+          // WaitForBackground();
+          // adgMod::file_data->Report();
       // adgMod::compaction_counter_mutex.Unlock();
           // Version* current = adgMod::db->versions_->current();
           // std::cout << "Level model stats:" << std::endl;
@@ -1851,8 +1849,8 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
           // }
           // adgMod::learn_cb_model->Report();
     }
-    adgMod::Stats* instance = adgMod::Stats::GetInstance();
-    instance->ReportTime();
+    // adgMod::Stats* instance = adgMod::Stats::GetInstance();
+    // instance->ReportTime();
     // adgMod::learn_cb_model->Report();
 
 

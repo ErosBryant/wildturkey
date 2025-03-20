@@ -705,7 +705,7 @@ class PosixEnv : public Env {
       *result = env;
     } else {
       char buf[100];
-      std::snprintf(buf, sizeof(buf), "/tmp/leveldbtest-%d",
+      std::snprintf(buf, sizeof(buf), "/mnt/1tb/db/leveldbtest-%d",
                     static_cast<int>(::geteuid()));
       *result = buf;
     }
@@ -815,13 +815,12 @@ class PosixEnv : public Env {
         learning_prepare.pop();
         double score = adgMod::learn_cb_model->CalculateCB(level, front.second.second->file_size);
 
-        if (adgMod::MOD == 10) {
+        // if (adgMod::MOD == 10) {
      
-          learn_pq.push(std::make_pair(score, front));
-        }else{ 
-     
+          // learn_pq.push(std::make_pair(score, front));
+        // }else{ 
         if (score > CBModel_Learn::const_size_to_cost) learn_pq.push(std::make_pair(score, front)); 
-        }
+        // }
 
 
       }

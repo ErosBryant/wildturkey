@@ -4,35 +4,27 @@ python3 ./test.py testing start
 
 # Define the desired --num values in an array
 # nums=(60000)
-nums=(50000000)
-
-
-
-# fb_w wiki_w book_w
-workload=(fillrandom ycsba ycsnb ycsbc ycscd ycsce ycsbf)
-# zipfill
-# uniwrite
+nums=(20000000)
 
 # lac=(5)
-mod=(8 10 5)
+mod=(7 8)
 number_of_runs=1
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/wildturkey/experiment/fig13_ycsb_final/"
+output_dir="/mnt/analysis_bourbon/ycsb/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
-total_experiment="/mnt/1tb/lac_experiment/"
+# total_experiment="/mnt/1tb/lac_experiment/"
 
 
 
 # Create output directories if they do not exist
 if [ ! -d "$output_dir" ]; then
    mkdir -p "$output_dir"
-   mkdir -p "${output_dir}summary_results/"
 fi
 
 # if [ ! -d "$total_experiment" ]; then
@@ -82,17 +74,7 @@ for num in "${nums[@]}"; do
                
          echo "Running db_bench with --num=$num  --mod=${md} " > "$output_file"
 
-               # Run the benchmark
-               # uni40,uniread,stats
-               # osm_w,real_r,stats
-               # fillrandom,readrandom
-               # --lac=$lacd 
-               # --bwise=$bw
-               # --max_file_size=$max
-               # --lsize=${max/2} 
-               # --file_error=$err
-               # f=$((max / 2)) 
-               # --lsize=$f
+
          ${test_dir}/db_bench --benchmarks="zipfill,ycsba,ycsbb,ycsbc,ycsbd,ycsbf,stats" --mod=$md --uni=0 --num=$num >> "$output_file"
          echo "-------------------------------------" >> "$output_file"
 
