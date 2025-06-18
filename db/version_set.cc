@@ -49,6 +49,7 @@ namespace leveldb {
 
         // Result for both level-0 and level-1
         double result = 10. * 1048576.0* adgMod::level_size;
+        // double result = 10. * 1048576.0*  adgMod::level_multiple;
         while (level > 1) {
             result *= 10;
             level--;
@@ -517,16 +518,16 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                 }
 
 
-#ifdef RECORD_LEVEL_INFO
+// #ifdef RECORD_LEVEL_INFO
                 adgMod::learn_cb_model->AddLookupData(level, saver.state == kFound, file_learned, temp.second - temp.first);
-          //        if (model != nullptr) {
-          //            model->FillCBAStat(saver.state == kFound, file_learned, temp.second - temp.first);
-          //        }
-#endif
+                //  if (model != nullptr) {
+                //      model->FillCBAStat(saver.state == kFound, file_learned, temp.second - temp.first);
+                //  }
+// #endif
                 switch (saver.state) {
                     case kNotFound: {
                         // record negative internal lookup info
-#ifdef RECORD_LEVEL_INFO
+// #ifdef RECORD_LEVEL_INFO
                         adgMod::levelled_counters[4].Increment(level, temp.second - temp.first);
                         if (!adgMod::fresh_write) {
                           adgMod::file_stats_mutex.Lock();
@@ -537,12 +538,12 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                           }
                           adgMod::file_stats_mutex.Unlock();
                         }
-#endif
+// #endif
                         break;  // Keep searching in other files
                     }
                     case kFound: {
                         // record positive internal lookup info
-#ifdef RECORD_LEVEL_INFO
+// #ifdef RECORD_LEVEL_INFO
                         adgMod::levelled_counters[3].Increment(level, temp.second - temp.first);
                         if (!adgMod::fresh_write) {
                           adgMod::file_stats_mutex.Lock();
@@ -555,7 +556,7 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                           }
                           adgMod::file_stats_mutex.Unlock();
                         }
-#endif
+// #endif
                         return s;
                     }
                     case kDeleted:

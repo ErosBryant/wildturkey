@@ -8,7 +8,7 @@ echo 3 > /proc/sys/vm/drop_caches
 - Timer 2: search index block
 - Timer 5: load datablock 
 - Timer 3: search datablock
-  
+- Timer 15: FilteredLookup time
 
 - Timer 8: load model
 - Timer 17: model lookup + precdition

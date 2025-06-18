@@ -52,7 +52,6 @@ static const char* FLAGS_benchmarks =
     "readrandom,"
     "readrandom,"  // Extra run to allow previous compactions to quiesce
     "readseq,"
-    "reads"
     "99p,"
     "readreverse,"
     "compact,"
@@ -553,7 +552,7 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      std::random_shuffle(data.begin(), data.end());
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       }else if (name == Slice("fb_w")) {
@@ -570,7 +569,7 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      std::random_shuffle(data.begin(), data.end());
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       }
@@ -588,7 +587,7 @@ class Benchmark {
         data.push_back(key);
       }
       input.close();
-      std::random_shuffle(data.begin(), data.end());
+      // std::random_shuffle(data.begin(), data.end());
       method = &Benchmark::real_workload_w;
 
       } else if (name == Slice("osm_blanced")) {
@@ -673,7 +672,25 @@ class Benchmark {
       method = &Benchmark::real_workload_r;
 
       }else if (name == Slice("ycsba")) {
-      
+        uint64_t key;
+        fresh_db = true;
+    
+        input_file = "/mnt/datasets/data_set/data/osm_cellids_200M_uint64";
+        std::ifstream input; 
+        input.open(input_file, std::ios::binary); 
+        if (!input.is_open()) {
+            std::cerr << "Error opening file" << std::endl;
+            exit(1);
+        }
+  
+        while (input.read(reinterpret_cast<char*>(&key), sizeof(uint64_t))) {
+  
+          data.push_back(key);
+        }
+  
+        input.close();
+        std::random_shuffle(data.begin(), data.end());
+  
       method = &Benchmark::YCSBA;
 
       }else if (name == Slice("ycsbb")) {
@@ -725,8 +742,6 @@ class Benchmark {
         method = &Benchmark::ReadReverse;
       } else if (name == Slice("readrandom")) {
         method = &Benchmark::ReadRandom;
-      }else if (name == Slice("reads")) {
-        method = &Benchmark::Reads;
       }else if (name == Slice("99p")) {
         method = &Benchmark::Get99PercentileLatency;
       }  else if (name == Slice("zipread")) {
@@ -1203,10 +1218,14 @@ class Benchmark {
   }
 
   void YCSBA(ThreadState* thread) { // here
+
+
+    
     RandomGenerator gen;
     ReadOptions options;
     WriteBatch batch;
     Status s;
+    string the_key;
     std::string value;
     int64_t bytes = 0;
     int64_t found = 0;
@@ -1219,14 +1238,21 @@ class Benchmark {
 
     int k2=0;
     for (int i = 0; i < num_; i++) {
-          
-      if (FLAGS_ycsb_uniform==1){
-      k2 = thread->rand.Next() % FLAGS_num;
-      }else{
-      k2 =  thread->rand.Zipfian(FLAGS_num, 1.0);
-      }
-      snprintf(key, sizeof(key), "%016d", k2);
+      
 
+      // data set
+      // if (FLAGS_ycsb_uniform==1){
+      // k2 = thread->rand.Next() % FLAGS_num;
+      // }else{
+      // k2 =  thread->rand.Zipfian(FLAGS_num, 1.0);
+      // }
+      
+
+
+
+      // snprintf(key, sizeof(key), "%016d", k2);
+
+      the_key = adgMod::generate_key(std::to_string(data[i]));
 
       int next_op = thread->rand.Next() % 100;
       
@@ -1247,10 +1273,6 @@ class Benchmark {
           db_->Put(write_options_,  key, gen.Generate(value_size_));
           bytes += value_size_ + strlen(key);
           writes_done++;
-      // if (adgMod::MOD==10 && next_op == 50){
-      //   printf("1111\n");
-      // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
-      // }
 
         thread->stats.FinishedSingleOp();
       }
@@ -1258,7 +1280,6 @@ class Benchmark {
     
     }
 
-    // printf("%d ------------------",kkkk);
     thread->stats.AddBytes(bytes);
     char msg[100];
         snprintf(msg, sizeof(msg), "( reads:%d"  " writes:%d" \
@@ -1735,23 +1756,23 @@ class Benchmark {
   //  while(data.size()){
     // for (int i = 0; i < data.size(); i++) {
       for (int i = 0; i < num_ ; i++) {
-        //  auto start = std::chrono::high_resolution_clock::now(); // start time
+         auto start = std::chrono::high_resolution_clock::now(); // start time
         // printf("key: %s\n",std::to_string(data[i]));
         the_key = adgMod::generate_key(std::to_string(data[i]));
         // the_key= std::to_string(data[i]);
         // printf("the_key: %s\n", the_key.c_str());
         db_->Put(write_options_, the_key, gen.Generate(value_size_));
 
-        // auto end = std::chrono::high_resolution_clock::now(); // end time
-        // auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
-        // latencies_w.push_back(latency); // store latency in vector
+        auto end = std::chrono::high_resolution_clock::now(); // end time
+        auto latency = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count(); // latency in nanoseconds
+        latencies_w.push_back(latency); // store latency in vector
 
         thread->stats.FinishedSingleOp();
         bytes += value_size_ + the_key.length();
    }
   // printf("num: %d\n", num_);
   thread->stats.AddBytes(bytes);
-  // printf("finish writing\n");
+  printf("finish writing\n");
   // input.close();
   // static_cast<leveldb::DBImpl*>(db_)->CompactOrderdRange(nullptr, nullptr, 0);
 }
@@ -1848,36 +1869,6 @@ class Benchmark {
     thread->stats.AddMessage(msg);
   }
   
-
-  void Reads(ThreadState* thread) {
-    // static_cast<leveldb::DBImpl*>(db_)->WaitForBackground();
-    ReadOptions options;
-    std::string value;
-    int found = 0;
-    char key[100];
-    int64_t bytes = 0;
-    int k;
-      for (int i = 0; i < 10000000; i++) {
-        k = thread->rand.Next() % FLAGS_num;
-        // const int k = thread->rand.Uniform(FLAGS_num);
-        snprintf(key, sizeof(key), "%016d", k);
-        
-        if (db_->Get(options, key, &value).ok()) {
-          found++;
-          bytes += value.size() + strlen(key);
-        }
-        
-    
-        thread->stats.FinishedSingleOp();
-      }
-
-    thread->stats.AddBytes(bytes);
-    char msg[100];
-    snprintf(msg, sizeof(msg), "(%d of %d found)", found, num_);
-    thread->stats.AddMessage(msg);
-  }
-
-
  void ReadRandom(ThreadState* thread) {
     // static_cast<leveldb::DBImpl*>(db_)->WaitForBackground();
     ReadOptions options;
@@ -2106,27 +2097,25 @@ int main(int argc, char** argv) {
       FLAGS_bloom_bits = n;
     } else if (sscanf(argv[i], "--open_files=%d%c", &n, &junk) == 1) {
       FLAGS_open_files = n;
+    } else if (sscanf(argv[i], "--level_multiple=%d%c", &n, &junk) == 1) {
+      adgMod::level_multiple = n;
     } else if (sscanf(argv[i], "--mod=%d%c", &n, &junk) == 1) {
       if (n==10){
       adgMod::MOD = n;  
-      adgMod::sst_size = 3;
+      adgMod::sst_size = 4;
       adgMod::adeb = 1;
       printf("mod: %d\n", n);
-      printf("lac: %d\n" ,adgMod::sst_size);
       }else{    
       adgMod::MOD = n;
       printf("mod: %d\n", n);
-      printf("lac: %d\n" ,adgMod::sst_size);
       }
       
     } else if (sscanf(argv[i], "--bwise=%d%c", &n, &junk) == 1) {
-      adgMod::bwise = 1;
+      adgMod::bwise = n;
       adgMod::MOD = 7;
       adgMod::adeb=1;
       adgMod::sst_size = 4;
-      printf("lac: %d\n" ,adgMod::sst_size);
-      printf("mod: %d\n", adgMod::MOD );
-      // adgMod::file_model_error=16;
+      adgMod::file_model_error=16;
     }else if (sscanf(argv[i], "--file_error=%d%c", &n, &junk) == 1) {
       adgMod::file_model_error=n;
     } else if (sscanf(argv[i], "--lac=%d%c", &n, &junk) == 1) {

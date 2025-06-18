@@ -96,7 +96,7 @@ namespace adgMod {
         // Learned linear segments and some other data needed
         std::vector<std::vector<Segment>> string_multi_layer_segments;
         std::vector<Segment> string_segments;
-        uint8_t index_layer_count;
+        uint64_t index_layer_count;
         uint64_t min_key;
         uint64_t max_key;
         uint64_t size;
@@ -109,20 +109,11 @@ namespace adgMod {
         double recursive_error_bound;
 
 
-        // // Q-table 由state-error_bound对以及model_load和correct_time还有build_time组成
-        // struct QTableEntry {
-        //     double q_value;               // Q 值
-        //     double error_bound;           // 误差界限
-        //     double avg_load_model;        // 平均加载模型时间
-        //     double avg_correct_time;      // 平均校正时间
-        //     double avg_build_time;        // 平均构建时间
-        // };
-        // std::vector<QTableEntry> Q_table;
-
-
        double getRandomAction(double error_) const;
        double getAction(int state) const;
        double getEpsilon(int state, double action) const;
+
+       std::pair<double, double> testLookup(uint64_t key, uint64_t random_index, uint64_t layer, double recursive_error_bound, double error_bound, LearnedIndexData* model);
 
 
 

@@ -202,7 +202,7 @@ DBImpl::~DBImpl() {
   if (db_lock_ != nullptr) {
     env_->UnlockFile(db_lock_);
   }
-
+  // printf("DBImpl destructor\n");
   delete versions_;
   if (mem_ != nullptr) mem_->Unref();
   if (imm_ != nullptr) imm_->Unref();
@@ -217,11 +217,14 @@ DBImpl::~DBImpl() {
   if (owns_cache_) {
     delete options_.block_cache;
   }
-
-  delete adgMod::file_data;
+  // printf("DBImpl destructor1\n");
+  // delete adgMod::file_data;
+  // printf("DBImpl destructor4\n");
   delete adgMod::learn_cb_model;
   delete vlog;
+  // printf("DBImpl destructor3\n");
   adgMod::file_stats.clear();
+  // printf("DBImpl destructor2\n");
 }
 
 Status DBImpl::NewDB() {
@@ -313,28 +316,13 @@ void DBImpl::DeleteObsoleteFiles() {
       if (!keep) {
         if (type == kTableFile) {
           table_cache_->Evict(number);
-          if (!adgMod::fresh_write) {
+          // if (!adgMod::fresh_write) {
 
-            adgMod::file_stats_mutex.Lock();
-            auto iter = adgMod::file_stats.find(number);
-            adgMod::FileStats& file_stat = iter->second;
-            file_stat.Finish();
-
-            
-          //  std::string filename = "/home/eros/workspace-lsm/wildturkey/dbbench-result/lifetime/64output_keys_level_" + std::to_string(file_stat.level) + ".txt";
-           
-          //  std::ofstream output_file(filename, std::ios::out | std::ios::app);
-
-            if (file_stat.end - file_stat.start >= adgMod::learn_trigger_time) {
-              adgMod::learn_cb_model->AddFileData(file_stat.level, file_stat.num_lookup_neg, file_stat.num_lookup_pos, file_stat.size);
-            }
-            // output_file << file_stat.end - file_stat.start << "\n";
-            adgMod::file_stats_mutex.Unlock();
-            
-          }
+          // }
 
          adgMod::LearnedIndexData* model = adgMod::file_data->GetModel(number);
         if (model) {
+          
           if (model->Learned()) {
             // printf("File %d, size %d\n", number, model->size);
            delete model;
@@ -346,7 +334,22 @@ void DBImpl::DeleteObsoleteFiles() {
         // free (model);
       
 
+        adgMod::file_stats_mutex.Lock();
+        auto iter = adgMod::file_stats.find(number);
+        adgMod::FileStats& file_stat = iter->second;
+        file_stat.Finish();
 
+        
+      //  std::string filename = "/home/eros/workspace-lsm/wildturkey/vldb/lifetime1/64output_keys_level_" + std::to_string(file_stat.level) + ".txt";
+       
+      //  std::ofstream output_file(filename, std::ios::out | std::ios::app);
+
+        if (file_stat.end - file_stat.start >= adgMod::learn_trigger_time) {
+          adgMod::learn_cb_model->AddFileData(file_stat.level, file_stat.num_lookup_neg, file_stat.num_lookup_pos, file_stat.size);
+        }
+        // output_file << file_stat.end - file_stat.start << "\n";
+        adgMod::file_stats_mutex.Unlock();
+        
         }
         Log(options_.info_log, "Delete type=%d #%lld\n", static_cast<int>(type),
             static_cast<unsigned long long>(number));
@@ -604,12 +607,12 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
                   meta.largest);
 
     // record stats for newly generated file
-    if (!adgMod::fresh_write) {
+    // if (!adgMod::fresh_write) {
       adgMod::file_stats_mutex.Lock();
       assert(adgMod::file_stats.find(meta.number) == adgMod::file_stats.end());
       adgMod::file_stats.insert({meta.number, adgMod::FileStats(level, meta.file_size)});
       adgMod::file_stats_mutex.Unlock();
-    }
+    // }
 
 
   } else return Status::NotFound("Empty");
@@ -617,6 +620,7 @@ Status DBImpl::WriteLevel0Table(MemTable* mem, VersionEdit* edit,
 
 
   CompactionStats stats;
+  stats.compaction_count+=1;
   stats.micros = env_->NowMicros() - start_micros;
   stats.bytes_written = meta.file_size;
   stats_[level].Add(stats);
@@ -857,22 +861,22 @@ void DBImpl::BackgroundCompaction() {
   Compaction* c;
   bool is_manual = (manual_compaction_ != nullptr);
   InternalKey manual_end;
-  if (is_manual) {
-    ManualCompaction* m = manual_compaction_;
-    c = versions_->CompactRange(m->level, m->begin, m->end);
-    m->done = (c == nullptr);
-    if (c != nullptr) {
-      manual_end = c->input(0, c->num_input_files(0) - 1)->largest;
-    }
-    Log(options_.info_log,
-        "Manual compaction at level-%d from %s .. %s; will stop at %s\n",
-        m->level, (m->begin ? m->begin->DebugString().c_str() : "(begin)"),
-        (m->end ? m->end->DebugString().c_str() : "(end)"),
-        (m->done ? "(end)" : manual_end.DebugString().c_str()));
-  } else {
+  // if (is_manual) {
+  //   ManualCompaction* m = manual_compaction_;
+  //   c = versions_->CompactRange(m->level, m->begin, m->end);
+  //   m->done = (c == nullptr);
+  //   if (c != nullptr) {
+  //     manual_end = c->input(0, c->num_input_files(0) - 1)->largest;
+  //   }
+  //   Log(options_.info_log,
+  //       "Manual compaction at level-%d from %s .. %s; will stop at %s\n",
+  //       m->level, (m->begin ? m->begin->DebugString().c_str() : "(begin)"),
+  //       (m->end ? m->end->DebugString().c_str() : "(end)"),
+  //       (m->done ? "(end)" : manual_end.DebugString().c_str()));
+  // } else {
     c = versions_->PickCompaction();
     // //c = versions_->PickCompaction_titred();
-  }
+  // }
 
   Status status;
   if (c == nullptr) {
@@ -1062,12 +1066,12 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
   CompactionState::Output* output = compact->current_output();
 
   // record file stats for newly generated files
-  if (!adgMod::fresh_write) {
+  // if (!adgMod::fresh_write) {
     adgMod::file_stats_mutex.Lock();
     assert(adgMod::file_stats.find(output_number) == adgMod::file_stats.end());
     adgMod::file_stats.insert({output_number, adgMod::FileStats(compact->compaction->level() + 1, current_bytes)});
     adgMod::file_stats_mutex.Unlock();
-  }
+  // }
 
 
 
@@ -1083,7 +1087,8 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
   // When a new file is generated, it's put into learning_prepare queue.
   //  file learing
   // printf("PrepareLearning\n");
-  env_->PrepareLearning((__rdtscp(&dummy) - instance->initial_time) / adgMod::reference_frequency, level, meta);
+  if (adgMod::MOD <=7) {
+    env_->PrepareLearning((__rdtscp(&dummy) - instance->initial_time) / adgMod::reference_frequency, level, meta);}
 
   if (s.ok() && current_entries > 0) {
     // Verify that the table is usable
@@ -1093,7 +1098,7 @@ Status DBImpl::FinishCompactionOutputFile(CompactionState* compact,
     delete iter;
     if (s.ok()) {
       Log(options_.info_log, "Generated table #%llu@%d: %lld keys, %lld bytes",
-          (unsigned long long)output_number, compact->compaction->level(),
+          (unsigned long long)output_number, compact->compaction->level()+1,
           (unsigned long long)current_entries,
           (unsigned long long)current_bytes);
     }
@@ -1260,24 +1265,29 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       }
       compact->current_output()->largest.DecodeFrom(key);
       compact->builder->Add(key, input->value());
-
-      if (adgMod::MOD==10 or adgMod::sst_size>1){
+      
+      // or adgMod::sst_size>2
+      // if (adgMod::MOD==10){
         // printf("sst_size = %d\n", adgMod::sst_size);
           if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
           status = FinishCompactionOutputFile(compact, input);
           if (!status.ok()) {
             break;
           }
-        }
-      }else {
-        if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSize()) {
-          status = FinishCompactionOutputFile(compact, input);
-          if (!status.ok()) {
-            break;
-          }
-        }
+        // }
+      // }else {
+
+        // if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSize()) {
+
+        //   status = FinishCompactionOutputFile(compact, input);
+        //   if (!status.ok()) {
+        //     break;
+        //   }
+        // }
       }
-    }
+      
+      }
+
 
     input->Next();
   }
@@ -1335,7 +1345,7 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
 
   stats.compaction_count+=1;
   // stats_[compact->compaction->level()+1].compaction_count+=1;
-  stats_[compact->compaction->level()].Add(stats);
+  stats_[compact->compaction->level()+1].Add(stats);
   mutex_.Lock();
   // asd+=1;
   // printf("asd: %d\n", asd);
@@ -1422,7 +1432,7 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
 
   adgMod::Stats* instance = adgMod::Stats::GetInstance();
   
-  // if (adgMod::MOD==10 && versions_->NumLevelFiles(0)>0 && adgMod::reopen==1) {
+  // if (versions_->NumLevelFiles(0)>0 && adgMod::reopen==1) {
   //     adgMod::reopen=0;
   //     CompactOrderdRange(nullptr, nullptr, 0);
   //     }
@@ -1476,7 +1486,9 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
       instance->PauseTimer(14);
 #endif
     //printf("------start get from current\n");
+    instance->StartTimer(13);
       s = current->Get(options, lkey, value, &stats);
+      instance->PauseTimer(13);
     }
 
     // if Wisckey based implementation, need to read the value log to get the actual value
@@ -1813,12 +1825,12 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
                         stats_[level].max_bytes_read / 1048576.0,
                         stats_[level].compaction_count,
                         // static_cast<double>(stats_[level].bytes_written) / static_cast<double>(versions_->NumLevelBytes(level))
-                        (static_cast<double>(stats_[level].bytes_written) +  static_cast<double>(stats_[0].bytes_written)) / static_cast<double>(stats_[0].bytes_written)
+                        ((static_cast<double>(stats_[level].bytes_written) +  static_cast<double>(stats_[0].bytes_written)) / static_cast<double>(stats_[0].bytes_written))-1
                         
 
                 );
 
-                 bytes_written_total+= stats_[level].bytes_written / 1048576.0;
+                 bytes_written_total+= stats_[level].bytes_written;
                  NumLevelBytes_total+= versions_->NumLevelBytes(level) / 1048576.0;
                  
         value->append(buf);
@@ -1831,8 +1843,8 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   std::cout << "memtable stall time: " <<1.0 * mem_stall_time_ /1000000 << " s" << std::endl;
   std::cout << "L0 stall time: " << 1.0 * L0_stop_stall_time_ /1000000<< "  s" << std::endl; 
   std::cout << "L0 slow stall time: " << 1.0 * l0_slow_tall_time_ /1000000 << "  s" << std::endl; 
-  std::cout << "waf data:" << bytes_written_total / NumLevelBytes_total << std::endl;
-  std::cout << "waf flsuh:" << (bytes_written_total / (stats_[0].bytes_written / 1048576.0))/stats_[0].bytes_written << std::endl;
+  std::cout << "disk data:" <<  NumLevelBytes_total << std::endl;
+  // std::cout << "waf flsuh:" << int(bytes_written_total) << std::endl;
   //versions_->current()->PrintAll();
 
 
@@ -1840,18 +1852,15 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
     if (adgMod::MOD == 7 || adgMod::MOD == 10) {
 
           // WaitForBackground();
-          // adgMod::file_data->Report();
+          adgMod::file_data->Report();
       // adgMod::compaction_counter_mutex.Unlock();
-          // Version* current = adgMod::db->versions_->current();
-          // std::cout << "Level model stats:" << std::endl;
-          // for (int i = 1; i < config::kNumLevels; ++i) {
-          //     current->learned_index_data_[i]->ReportStats();
-          // }
+
+      
           // adgMod::learn_cb_model->Report();
     }
-    // adgMod::Stats* instance = adgMod::Stats::GetInstance();
-    // instance->ReportTime();
-    // adgMod::learn_cb_model->Report();
+    adgMod::Stats* instance = adgMod::Stats::GetInstance();
+    instance->ReportTime();
+    adgMod::learn_cb_model->Report();
 
 
     // PrintFileInfo();

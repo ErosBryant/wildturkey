@@ -4,7 +4,6 @@
 
 
 #include "learned_index.h"
-#include <fstream> // 파일 스트림을 위한 헤더
 
 #include "db/version_set.h"
 #include <cassert>
@@ -36,14 +35,10 @@ namespace adgMod {
 
 std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
     const Slice& target_x) const {
-  // assert(this->string_multi_layer_segments.size() > 1);
-  //  assert(string_segments.size() > 1);
+  assert(this->string_multi_layer_segments.size() > 1);
   ++served;
   if (adgMod::adeb == 1) {
-    // printf("Get position\n");
     // check if the key is within the model bounds
-    // printf("min_key: %lu, max_key: %lu\n", min_key, max_key);
-// check if the key is within the model bounds
     uint64_t target_int = SliceToInteger(target_x);
     if (target_int > max_key) return std::make_pair(size, size);
     if (target_int < min_key) return std::make_pair(size, size);
@@ -61,14 +56,10 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
         // " and this key : " << target_int << " is in segment num " << segment << " next layer has segments " << string_multi_layer_segments[i-1].size() <<std::endl;
         segment > this->string_multi_layer_segments[i-1].size() ? segment = this->string_multi_layer_segments[i-1].size() - 1 : segment;
         uint64_t lower = segment - recursive_error_bound > 0 ? (uint64_t)std::floor(segment - recursive_error_bound) : 0;
-        //std::cerr << "Lower is : " << lower << std::endl;
-
         assert(lower >= 0 && lower < this->string_multi_layer_segments[i-1].size());
-        
+        //std::cerr << "Lower is : " << lower << std::endl;
         uint64_t upper = (uint64_t)std::ceil(segment + recursive_error_bound) < this->string_multi_layer_segments[i-1].size() ? (uint64_t)std::ceil(segment + recursive_error_bound) : (this->string_multi_layer_segments[i-1].size() - 1);
         //std::cerr << "Upper is : " << upper << std::endl;
-
-
         while (lower != upper - 1) {
           uint64_t mid = (upper + lower) / 2;
           if (target_int < this->string_multi_layer_segments[i-1][mid].x)
@@ -79,11 +70,11 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
         segment = std::move(lower);
       }
     }
-
     else {
     // Linear search
       for (int i = index_layer_count; i > 0; --i) {
           segment = target_int * this->string_multi_layer_segments[i][segment].k + this->string_multi_layer_segments[i][segment].b;
+          segment = segment > this->string_multi_layer_segments[i - 1].size() ? this->string_multi_layer_segments[i - 1].size() - 1 : segment;
           uint64_t lower = segment - recursive_error_bound > 0 ? (uint64_t)std::floor(segment - recursive_error_bound) : 0;
           uint64_t upper = (uint64_t)std::ceil(segment + recursive_error_bound) < this->string_multi_layer_segments[i - 1].size() 
                           ? (uint64_t)std::ceil(segment + recursive_error_bound) 
@@ -128,6 +119,41 @@ std::pair<uint64_t, uint64_t> LearnedIndexData::GetPosition(
     if (lower >= size) return std::make_pair(size, size);
     upper = upper < size ? upper : size - 1;
     return std::make_pair(lower, upper);
+
+    // uint64_t target_int = SliceToInteger(target_x);
+    // if (target_int > max_key) return std::make_pair(size, size);
+    // if (target_int < min_key) return std::make_pair(size, size);
+
+    // // binary search between segments
+    // uint32_t left = 0, right = (uint32_t)string_multi_layer_segments[0].size() - 1;
+    // while (left != right - 1) {
+    //   uint32_t mid = (right + left) / 2;
+    //   if (target_int < string_multi_layer_segments[0][mid].x)
+    //     right = mid;
+    //   else
+    //     left = mid;
+    // }
+
+    // // calculate the interval according to the selected segment
+    // // predicted position
+    // double error_bound = this->error_bound;
+    // double result =
+    //     target_int * string_multi_layer_segments[0][left].k + string_multi_layer_segments[0][left].b;
+    // result = is_level ? result / 2 : result;
+    // uint64_t lower =
+    //     result - error_bound > 0 ? (uint64_t)std::floor(result - error_bound) : 0;
+    // uint64_t upper = (uint64_t)std::ceil(result + error_bound);
+    // //uint64_t upper = (uint64_t)std::ceil(result + error_bound) < this->string_multi_layer_segments[0].size() ? (uint64_t)std::ceil(result + error_bound) : (this->string_multi_layer_segments[0].size() - 1);
+    // if (lower >= size) return std::make_pair(size, size);
+    // upper = upper < size ? upper : size - 1;
+    // //                printf("%s %s %s\n", string_keys[lower].c_str(),
+    // //                string(target_x.data(), target_x.size()).c_str(),
+    // //                string_keys[upper].c_str()); assert(target_x >=
+    // //                string_keys[lower] && target_x <= string_keys[upper]);
+    // //std::cout << error << std::endl;
+
+    // return std::make_pair(lower, upper);
+
   }
 
   else {// check if the key is within the model bounds
@@ -216,67 +242,134 @@ double LearnedIndexData::getRandomAction(double error_) const {
 
 double LearnedIndexData::getEpsilon(int state, double action) const {
     int action_visits = adgMod::getQTableManagerInstance().Q_table[state].visit_counts[action];
-    double epsilon_min = 0.01;
+    double epsilon_min = 0.04;
     double epsilon_max = 0.9;
-    double decay_factor = 0.06;  // 衰减速率
+    double decay_factor = 0.01;  // 衰减速率
     double epsilon = epsilon_min + (epsilon_max - epsilon_min) * std::exp(-decay_factor * action_visits);
-
+    adgMod::getQTableManagerInstance().Q_table[state].visit_counts[action] += 1;
+    //std::cerr << "Epsilon: " << epsilon << std::endl;
     return epsilon;
 }
 
 
+// // 使用一般的 Q-learning 算法
+// double LearnedIndexData::getAction(int state) const {
+//     // 获取当前状态的 Q 表条目
+//     auto& entry = adgMod::getQTableManagerInstance().Q_table[state];
+//     double epsilon = getEpsilon(state, entry.last_action);
+//     //entry.visit_counts[entry.last_action] += 1;
 
-double LearnedIndexData::getAction(int state) const {
-    // 获取当前状态的 Q 表条目
-    auto& entry = adgMod::getQTableManagerInstance().Q_table[state];
-    double epsilon = getEpsilon(state, entry.last_action);
-    entry.visit_counts[entry.last_action] += 1;
+//     // 初始化随机数生成器
+//     thread_local std::random_device rd;
+//     thread_local std::mt19937 gen(rd());
+//     thread_local std::uniform_real_distribution<> dis(0.0, 1.0);
 
-    // 初始化随机数生成器
-    thread_local std::random_device rd;
-    thread_local std::mt19937 gen(rd());
-    thread_local std::uniform_real_distribution<> dis(0.0, 1.0);
+//     double random_value = dis(gen);
+//     bool is_exploration = random_value < epsilon;
+//     //std::cerr << "Epsilon: " << epsilon << " random_value: " << random_value << std::endl;
 
-    double random_value = dis(gen);
-    bool is_exploration = random_value < epsilon;
+//     // 动作池
+//     std::vector<double> actions = {4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48, 52, 56, 60, 64};  // 可选的 error_bound 值
+//     //std::vector<double> actions = {8, 12, 16, 20, 24, 32, 36};
 
-    // 动作池
-    std::vector<double> actions = {8, 12, 16, 20, 24, 32, 36};  // 可选的 error_bound 值
+//     if (is_exploration) {
+//       double new_action = 0;
+//       if (epsilon < 0.3) {
+//         // 基于上次的动作进行偏移
+//         auto it = std::find(actions.begin(), actions.end(), entry.last_action);
+//         int index = std::distance(actions.begin(), it);  // 找到上次动作的索引
 
-    if (is_exploration) {
-        // 基于上次的动作进行偏移
-        auto it = std::find(actions.begin(), actions.end(), entry.last_action);
-        int index = std::distance(actions.begin(), it);  // 找到上次动作的索引
+//         // 随机生成偏移方向
+//         std::uniform_int_distribution<> direction_dis(-1, 1);  // -1 表示左移，1 表示右移
+//         int offset = direction_dis(gen);
 
-        // 随机生成偏移方向
-        std::uniform_int_distribution<> direction_dis(-1, 1);  // -1 表示左移，1 表示右移
-        int offset = direction_dis(gen);
+//         // 计算新的索引，并确保不越界
+//         int new_index = clamp(index + offset, 0, static_cast<int>(actions.size() - 1));
+//         new_action = actions[new_index];
+//       } else {
 
-        // 计算新的索引，并确保不越界
-        int new_index = clamp(index + offset, 0, static_cast<int>(actions.size() - 1));
-        double new_action = actions[new_index];
+//         // 完全随机选择动作
+//         std::uniform_int_distribution<> random_action_dis(0, static_cast<int>(actions.size() - 1));  // 随机索引生成
+//         int random_index = random_action_dis(gen);  // 生成随机索引
+//         new_action = actions[random_index];  // 从动作列表中选择随机动作
+//       }
+//       // 更新 last_action
+//       entry.last_action = new_action;
+//       return new_action;
 
-        // 更新 last_action
-        entry.last_action = new_action;
-        return new_action;
+//     } else {
+//         // 利用：选择 Q 值最高的动作
+//         double best_action = 0;
+//         double max_q_value = -std::numeric_limits<double>::infinity();
 
-    } else {
-        // 利用：选择 Q 值最高的动作
-        double best_action = 0;
-        double max_q_value = -std::numeric_limits<double>::infinity();
+//         for (const auto& pair : entry.q_values) {
+//             if (pair.second > max_q_value) {
+//                 max_q_value = pair.second;
+//                 best_action = pair.first;
+//             }
+//         }
 
-        for (const auto& pair : entry.q_values) {
-            if (pair.second > max_q_value) {
-                max_q_value = pair.second;
-                best_action = pair.first;
+//         // 更新 last_action 为选择的最优动作
+//         entry.last_action = best_action;
+//         return best_action;
+//     }
+// }
+
+
+double LearnedIndexData::getAction(int state) const
+{
+    /* ---------- 0) 准备 ---------- */
+    auto &q_mgr   = adgMod::getQTableManagerInstance();
+    auto &entry   = q_mgr.Q_table[state];
+
+    // 动作离散集合（可以放到静态成员里避免每次构造）
+    static const std::vector<double> actions =
+        {4, 8, 12, 16, 20, 24, 28, 32, 36, 40, 44, 48};
+
+    /* ---------- 1) ε 设定（可维持你原先的下降公式） ---------- */
+    const double epsilon = getEpsilon(state, entry.last_action);
+
+    thread_local std::mt19937              gen{std::random_device{}()};
+    std::uniform_real_distribution<double> uni01(0.0, 1.0);
+
+    /* ---------- 2) 决定探索 or 利用 ---------- */
+    bool explore = uni01(gen) < epsilon;
+
+    /* ---------- 3) 如果探索：挑 “访问次数最少” 的动作 ---------- */
+    if (explore)
+    {
+        // 找到最小 visit_count
+        int    min_vis   = std::numeric_limits<int>::max();
+        double candidate = actions.front();
+        for (double a : actions) {
+            int cnt = entry.visit_counts[a];      // 默认为 0
+            if (cnt < min_vis) {
+                min_vis   = cnt;
+                candidate = a;
             }
         }
-
-        // 更新 last_action 为选择的最优动作
-        entry.last_action = best_action;
-        return best_action;
+        entry.last_action = candidate;
+        return candidate;
     }
+
+    /* ---------- 4) 如果利用：带微弱随机 tie-break 的 arg-max ---------- */
+    double best_q        = -std::numeric_limits<double>::infinity();
+    double best_action   = actions.front();
+    std::uniform_int_distribution<int> coin(0,1); // 随机打破完全平手
+
+    for (double a : actions) {
+        double q = entry.q_values.count(a) ? entry.q_values[a] : 0.0;
+        if (q > best_q || (q == best_q && coin(gen)))
+        {
+            best_q      = q;
+            best_action = a;
+        }
+    }
+    entry.last_action = best_action;
+    return best_action;
 }
+
+
 
 // double LearnedIndexData::getAction(int state) const { 
 //     double epsilon = getEpsilon(state);
@@ -313,40 +406,165 @@ double LearnedIndexData::getAction(int state) const {
 // }
 
 
+std::pair<double, double> LearnedIndexData::testLookup(uint64_t key, uint64_t random_index, uint64_t layer, double recursive_error_bound, double error_bound, LearnedIndexData* model) {
+  // 从此时开始计时
+  std::chrono::_V2::system_clock::time_point prediction_start;
+  if(key > max_key) return std::pair<uint64_t, uint64_t>(size, size);
+  if(key < min_key) return std::pair<uint64_t, uint64_t>(size, size);
+  std::pair<uint64_t, uint64_t> boundary;
+  double prediction_double = 0;
+  double correction_double = 0;
+  
+  double result = 0;
+
+  if(adgMod::adeb == 1) {
+    if(adgMod::bwise == 1) {
+      // 多层模型
+      prediction_start = std::chrono::high_resolution_clock::now();
+      double segment = 0;
+      for(int i = layer; i > 0; --i){
+        segment = key * string_multi_layer_segments[i][segment].k + string_multi_layer_segments[i][segment].b;
+        segment = segment > string_multi_layer_segments[i-1].size() ? string_multi_layer_segments[i-1].size() - 1 : segment;
+        uint64_t lower = segment - recursive_error_bound > 0 ? (uint64_t)std::floor(segment - recursive_error_bound) : 0;
+        uint64_t upper = (uint64_t)std::ceil(segment + recursive_error_bound) < string_multi_layer_segments[i-1].size() ? (uint64_t)std::ceil(segment + recursive_error_bound) : (model->string_multi_layer_segments[i-1].size() - 1);
+        while(lower != upper - 1){
+          uint64_t mid = (upper + lower) / 2;
+          if(key < string_multi_layer_segments[i-1][mid].x)
+            upper = mid;
+          else
+            lower = mid;
+        }
+        segment = std::move(lower);
+      }
+      result = key * string_multi_layer_segments[0][segment].k + string_multi_layer_segments[0][segment].b;
+      result = is_level ? result / 2 : result;
+    }
+
+    else {
+      // 二分查找模型
+      prediction_start = std::chrono::high_resolution_clock::now();
+      uint32_t left_seg = 0, right_seg = (uint32_t)string_multi_layer_segments[0].size() - 1;
+      while (left_seg != right_seg - 1) {
+        uint32_t mid_seg = (right_seg + left_seg) / 2;
+        if (key < string_multi_layer_segments[0][mid_seg].x)
+          right_seg = mid_seg;
+        else
+          left_seg = mid_seg;
+      } 
+      result =
+        key * string_multi_layer_segments[0][left_seg].k + string_multi_layer_segments[0][left_seg].b;
+      result = is_level ? result / 2 : result;
+    }
+
+    uint64_t lower = result - error_bound > 0 ? (uint64_t)std::floor(result - error_bound) : 0;
+    uint64_t upper = (uint64_t)std::ceil(result + error_bound);
+    if(lower >= size) return std::pair<uint64_t, uint64_t>(size, size);
+    upper = upper < size ? upper : size - 1;
+    boundary = std::make_pair(lower, upper);
+    auto prediction_end = std::chrono::high_resolution_clock::now();
+
+
+    auto prediction = std::chrono::duration_cast<std::chrono::nanoseconds>(prediction_end - prediction_start);
+    // 将prediction转换为double
+    prediction_double = static_cast<double>(prediction.count());
+
+    // 使用lower与upper为边界，二分查找到random_index
+    auto correction_start = std::chrono::high_resolution_clock::now();
+    uint64_t left = boundary.first;
+    uint64_t right = boundary.second;
+    while(left < right){
+      uint32_t mid = (left + right) / 2;
+      if(mid == random_index) break;
+      if(mid < random_index) left = mid + 1;
+      else right = mid;
+    }
+    auto correction_end = std::chrono::high_resolution_clock::now();
+    auto correction = std::chrono::duration_cast<std::chrono::nanoseconds>(correction_end - correction_start);
+    correction_double = static_cast<double>(correction.count());
+    return std::pair<double, double>(prediction_double, correction_double);
+
+  }
+  else {// check if the key is within the model bounds
+    // binary search between segments
+    prediction_start = std::chrono::high_resolution_clock::now();
+    uint32_t left_seg = 0, right_seg = (uint32_t)string_segments.size() - 1;
+    while (left_seg != right_seg - 1) {
+      uint32_t mid_seg = (right_seg + left_seg) / 2;
+      if (key < string_segments[mid_seg].x)
+        right_seg = mid_seg;
+      else
+        left_seg = mid_seg;
+    }
+
+    // calculate the interval according to the selected segment
+    // predicted position
+    double result =
+        key * string_segments[left_seg].k + string_segments[left_seg].b;
+    result = is_level ? result / 2 : result;
+    uint64_t lower =
+        result - error_bound > 0 ? (uint64_t)std::floor(result - error_bound) : 0;
+    uint64_t upper = (uint64_t)std::ceil(result + error_bound);
+    if (lower >= size) return std::pair<uint64_t, uint64_t>(size, size);
+    upper = upper < size ? upper : size - 1;
+
+    boundary = std::make_pair(lower, upper);
+
+    auto prediction_end = std::chrono::high_resolution_clock::now();
+    auto prediction = std::chrono::duration_cast<std::chrono::nanoseconds>(prediction_end - prediction_start);
+    // 将prediction转换为double
+    prediction_double = static_cast<double>(prediction.count());
+
+    // 使用lower与upper为边界，二分查找到random_index
+    auto correction_start = std::chrono::high_resolution_clock::now();
+    uint64_t left = boundary.first;
+    uint64_t right = boundary.second;
+    while(left < right){
+      uint32_t mid = (left + right) / 2;
+      if(mid == random_index) break;
+      if(mid < random_index) left = mid + 1;
+      else right = mid;
+    }
+    auto correction_end = std::chrono::high_resolution_clock::now();
+    auto correction = std::chrono::duration_cast<std::chrono::nanoseconds>(correction_end - correction_start);
+    correction_double = static_cast<double>(correction.count());
+    return std::pair<double, double>(prediction_double, correction_double);
+
+  }
+
+}
 
 // Actual function doing learning
 bool LearnedIndexData::Learn() {
 
-
-  int muti_layer_err = 8;
-   if (adgMod::adeb == 1) {
-
-    // printf("string_keyssssssssssssssssssssss.back().c_str() : %s\n", string_keys.back().c_str());
-  // printf("string_keys.back().c_str()22222 : %s\n", string_keys.back().c_str());
+  if (adgMod::adeb == 1) {
       // 初始化随机种子
       srand(static_cast<unsigned>(time(0)));
-
       // 检查数据是否已填充
       if (string_keys.empty()) {
           std::cerr << "Error: string_keys is empty!" << std::endl;
           assert(false);
       }
-
       // 填充模型的边界
       uint64_t temp = atoll(string_keys.back().c_str());
       min_key = atoll(string_keys.front().c_str());   // SST内最小Key, 为Uint64型
       max_key = atoll(string_keys.back().c_str());    // SST内最大Key, 为Uint64型
       size = string_keys.size();                      // SST内Key的数量, 为Uint64型
+      
+       // Step 1 : Identify s'
       inverse_density = static_cast<uint64_t>((max_key - min_key) / size); // SST内key分布的模拟密度
 
-      // 预定将inverse_density < 10 为一档， < 30为二档， < 50为3档， >=50为4档
-      if (inverse_density < 10) inverse_density = 0;
-      else if (inverse_density < 30) inverse_density = 1;
-      else if (inverse_density < 50) inverse_density = 2;
-      else inverse_density = 3;
-      int state = inverse_density;
+      adgMod::getQTableManagerInstance().onNewSSTableID(inverse_density);
 
-      double temp_error = getAction(state);  // 根据档位选择对应的error_bound
+      if (inverse_density < adgMod::getQTableManagerInstance().ID_1) inverse_density = 0;
+      else if (inverse_density < adgMod::getQTableManagerInstance().ID_2) inverse_density = 1;
+      else if (inverse_density < adgMod::getQTableManagerInstance().ID_3) inverse_density = 2;
+      else inverse_density = 3;
+
+      int next_state = inverse_density;
+
+      // Step 2 and 3 : Determine Final Error Bound a or a'
+      double temp_error = getAction(next_state);  // 根据档位选择对应的error_bound
+      // Learned Index
       PLR plr = PLR(temp_error);             // error_bound可调整为q-table对应的error
 
       // 记录训练时间
@@ -369,8 +587,11 @@ bool LearnedIndexData::Learn() {
       this->error_bound = temp_error;
       uint64_t total_segment_count = segment_count;
 
+      recursive_error_bound = 5;
+
+      // Build upper-layer models
       while (prev_model_size > 1) {
-          PLR upper_PLR(muti_layer_err); // 假设 upper_PLR 是已定义的类
+          PLR upper_PLR(recursive_error_bound); // 假设 upper_PLR 是已定义的类
           if (!seg_last_buffer.empty()) {
               seg_last = std::move(seg_last_buffer);
           }
@@ -381,7 +602,7 @@ bool LearnedIndexData::Learn() {
           if (prev_model_size != 1) { prev_model_size += 1; }
           total_segment_count += prev_model_size;
 
-          this->recursive_error_bound = muti_layer_err;
+          //this->recursive_error_bound = 8;
           multi_layer_models.emplace_back(std::move(segs));
           layer_count++;
       }
@@ -400,71 +621,110 @@ bool LearnedIndexData::Learn() {
           weighted_sum += P_i * S_i;          // 加权累加
       }
 
-      // 计算reward，假设smtable_size为segment_count
+      // Step 4 : Estimate Reward r'
       double reward = adgMod::getQTableManagerInstance().compute_reward(
-            state,
+            inverse_density, // 当前状态, 即inverse_density
             temp_error,       // 当前动作, 同样是error_bound
             weighted_sum,     // 底层模型加载cost
             layer_count,
-            size     // sstable_size
+            size,     // sstable_size
+            LearnedIndexData::level
       );
-
-      // 获取 next_state
-      int next_state = adgMod::getQTableManagerInstance().getNextState(string_keys);
-
-      // 添加经验到回放缓冲区
-      adgMod::getQTableManagerInstance().addExperience(state, temp_error, reward, next_state);
 
       // 从回放缓冲区学习
       adgMod::getQTableManagerInstance().learnFromReplay();
 
-      // 计算 Q 值，包含最优未来价值估计
+      // Step 5 : Update Q(s, a)
+      double prev_reward = adgMod::getQTableManagerInstance().Q_table_sar.prev_reward;
+      int prev_state = adgMod::getQTableManagerInstance().Q_table_sar.prev_state;
+      double prev_error = adgMod::getQTableManagerInstance().Q_table_sar.prev_action;
       double Q_value = adgMod::getQTableManagerInstance().compute_q_value(
-            state, temp_error, reward, next_state);
+            prev_state, prev_error, prev_reward, inverse_density);
+      // 添加经验到回放缓冲区
+      if (prev_state != 7) {
+      adgMod::getQTableManagerInstance().addExperience(prev_state, prev_error, prev_reward);
+      // 更新 Q 值   
+      adgMod::getQTableManagerInstance().updateQValue(prev_state, prev_error, Q_value);
+      }
 
-      // 更新 Q 值
-      adgMod::getQTableManagerInstance().updateQValue(state, temp_error, Q_value);
-
-      // std::cout << " | level " << LearnedIndexData::level
-      //           << " | keys_num: " << size 
-      //           << " | inverse_density: " << inverse_density 
-      //           << " | segment_num " <<  segment_count 
-      //           << " | Layer_of_Index " << (layer_count+1) 
-      //           << " | Models_size " << model_size 
-      //           << " | load_cost " << weighted_sum 
-      //           << " | meta's_err " << this->error_bound 
-      //           << " | Q_value " << Q_value << std::endl;
-
+      // 更新Q_table_sar
+      adgMod::getQTableManagerInstance().Q_table_sar.prev_state = inverse_density;
+      adgMod::getQTableManagerInstance().Q_table_sar.prev_action = temp_error;
+      adgMod::getQTableManagerInstance().Q_table_sar.prev_reward = reward;
+      
       string_multi_layer_segments = std::move(multi_layer_models);
       for (auto& str : string_multi_layer_segments) {
           // printf("%s %f\n", str.first.c_str(), str.second);
       }
+
+      static const int _clear_qcsv = []{
+          std::ofstream("Qresult.csv", std::ios::out | std::ios::trunc).close();
+          return 0;
+      }();
+      static std::ofstream qcsv("Qresult.csv", std::ios::out | std::ios::app);
+      if (qcsv.tellp() == 0) {                // 文件刚创建或被清空时 tellp()==0
+          qcsv << "level,keys_num,inverse_density,segment_num,"
+                  "Layer_of_Index,Models_size,load_cost,meta_err,"
+                  "Q_value,reward\n";
+      }
+
+      // qcsv  << LearnedIndexData::level        << ','  // level
+      // << size                           << ','  // keys_num
+      // << inverse_density                << ','  // inverse_density
+      // << segment_count                  << ','  // segment_num
+      // << (layer_count + 1)              << ','  // Layer_of_Index
+      // << model_size                     << ','  // Models_size
+      // << weighted_sum                   << ','  // load_cost
+      // << this->error_bound              << ','  // meta's_err
+      // << Q_value                        << ','  // Q_value
+      // << reward                         << '\n';// reward
+
+
+
       learned.store(true);
+      // 从string_keys中随机获取一个key
+      // uint64_t random_index = rand() % string_keys.size();
+      // uint64_t random_key = atoll(string_keys[random_index].c_str());
+      //std::pair<double, double> lookup_time = testLookup(random_key, random_index, layer_count, recursive_error_bound, temp_error, this);
+      //std::cerr << "Lookup Time: " << lookup_time << std::endl;
+      // 将 lookup_time 写入txt文件
+      // std::ofstream lookup_time_file;
+      // lookup_time_file.open("lookup_time.txt", std::ios::app);
+      // lookup_time_file << inverse_density << ", " << lookup_time.first << ", " << lookup_time.second << std::endl;
+      // lookup_time_file.close();
       // string_keys.clear();
       return true;
-  }else { // FILL IN GAMMA (error)
+  }
+
+
+
+else { // FILL IN GAMMA (error)
   PLR plr = PLR(error);
-  // printf("errorrrrrrrrrrrrrrrrrr : %f\n", error);
 
   // check if data if filled
   if (string_keys.empty()) assert(false);
 
+  // fill in some bounds for the model
   uint64_t temp = atoll(string_keys.back().c_str());
   min_key = atoll(string_keys.front().c_str());
   max_key = atoll(string_keys.back().c_str());
   size = string_keys.size();
 
-  // for (int i = 0; i < string_keys.size(); ++i) {
-//  output_file << std::string(string_keys[i].c_str()) << "\n";
-// }
-
   std::vector<Segment> segs = plr.train(string_keys, !is_level);
-
   inverse_density = static_cast<uint64_t>((max_key - min_key) / size); 
-  if(inverse_density < 10) inverse_density = 0;
-  else if(inverse_density < 30) inverse_density = 1;
-  else if(inverse_density < 50) inverse_density = 2;
-  else inverse_density = 3;
+  // if (inverse_density < 5) inverse_density = 0;
+  // else if (inverse_density < 10) inverse_density = 1;
+  // else if (inverse_density < 20) inverse_density = 2;
+  // else if (inverse_density < 40) inverse_density = 3;
+  // else if (inverse_density < 70) inverse_density = 4;
+  // else if (inverse_density < 100) inverse_density = 5;
+  // else if (inverse_density < 150) inverse_density = 6;
+  // else inverse_density = 7;
+  if (inverse_density < 10) inverse_density = 0;
+      else if (inverse_density < 30) inverse_density = 1;
+      else if (inverse_density < 80) inverse_density = 2;
+      else inverse_density = 3;
+
   int segment_count = segs.size();
   double sum_prob = 0.0;
   for (int i = 1; i <= segment_count; ++i) {
@@ -484,8 +744,9 @@ bool LearnedIndexData::Learn() {
   uint64_t model_size =  (segment_count + 1) * 24;
 
   // std::cout << " | level " << LearnedIndexData::level 
-  //           << " | keys_num: " << size 
-  //           << " | inverse_density: " << inverse_density 
+  //           << " | keys_num " << size 
+  //           << " | key_range " << max_key - min_key
+  //           << " | inverse_density " << inverse_density 
   //           << " | segment_num " << segment_count 
   //           << " | Models_size " << model_size 
   //           << " | load_cost " << weighted_sum 
@@ -497,6 +758,19 @@ bool LearnedIndexData::Learn() {
   }
   learned.store(true);
   // string_keys.clear();
+
+  // 从string_keys中随机获取一个key
+  // int random_index = rand() % string_keys.size();
+  // uint64_t random_key = atoll(string_keys[random_index].c_str());
+  //std::pair<double, double> lookup_time = testLookup(random_key, random_index, 1, error, error, this);
+  //std::cerr << "Lookup Time: " << lookup_time << std::endl;
+  // 将 lookup_time 写入txt文件
+  // std::ofstream lookup_time_file;
+  // lookup_time_file.open("lookup_time.txt", std::ios::app);
+  // lookup_time_file << inverse_density << ", " << lookup_time.first << ", " << lookup_time.second << std::endl;
+  // lookup_time_file.close();
+
+
   return true;
   }
 
@@ -509,7 +783,7 @@ void LearnedIndexData::LevelLearn(void* arg, bool nolock) {
   Stats* instance = Stats::GetInstance();
   bool success = false;
   bool entered = false;
-
+  instance->StartTimer(8);
 
   VersionAndSelf* vas = reinterpret_cast<VersionAndSelf*>(arg);
   LearnedIndexData* self = vas->self;
@@ -536,7 +810,7 @@ void LearnedIndexData::LevelLearn(void* arg, bool nolock) {
     adgMod::db->ReturnCurrentVersion(c);
   }
 
-  auto time = instance->PauseTimer(13, true);
+  auto time = instance->PauseTimer(8, true);
 
   if (entered) {
     self->cost = time.second - time.first;
@@ -561,6 +835,8 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
   self->level = mas->level;
   self->meta = mas->meta;
 
+  adgMod::compactionCount[mas->level]++;
+
   Version* c = db->GetCurrentVersion();
   if (self->FillData(c, mas->meta)) {
     self->Learn();
@@ -581,12 +857,12 @@ uint64_t LearnedIndexData::FileLearn(void* arg) {
     learn_counter_mutex.Unlock();
   }
 
-  // if (!fresh_write) {
-  //            self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
-  //            to_string(mas->meta->number) + ".fmodel");
-  //            self->string_keys.clear();
-  //            self->num_entries_accumulated.array.clear();
-  //        }
+  if (!fresh_write) {
+             self->WriteModel(adgMod::db->versions_->dbname_ + "/" +
+             to_string(mas->meta->number) + ".fmodel");
+            //  self->string_keys.clear();
+            //  self->num_entries_accumulated.array.clear();
+         }
 
   if (!fresh_write) delete mas->meta;
   delete mas;
@@ -844,13 +1120,14 @@ FileLearnedIndexData::~FileLearnedIndexData() {
 
 void FileLearnedIndexData::Report() {
   leveldb::MutexLock l(&mutex);
-
   std::set<uint64_t> live_files;
   adgMod::db->versions_->AddLiveFiles(&live_files);
-
   int total = 0;
   int64_t segments = 0;
-  // int64_t segments_s = 0;
+  int64_t bottom_segments = 0;
+  int64_t segments_s = 0;
+  std::vector<uint64_t> model_in_levels(6, 0);
+
   for (size_t i = 0; i < file_learned_index_data.size(); ++i) {
     auto pointer = file_learned_index_data[i];
     if (pointer != nullptr && pointer->cost != 0) {
@@ -858,27 +1135,43 @@ void FileLearnedIndexData::Report() {
       // pointer->ReportStats();
       if (adgMod::adeb==1){
         
-        for (int i=0; i < pointer->index_layer_count; i++) {
-            segments += pointer->string_multi_layer_segments[0].size();
+        for (int j=0; j < pointer->index_layer_count; j++) {
+            segments += pointer->string_multi_layer_segments[j].size();
         }
+        bottom_segments += pointer->string_multi_layer_segments[0].size();
       }else{
-        // printf("pointer->string_segments.size() %d\n", pointer->string_segments.size());
       segments += pointer->string_segments.size();
       }
+      segments_s=segments;
 
-      // segments_s=segments;
+      model_in_levels[pointer->level] += pointer->string_segments.size();
       // printf("pointer->string_segments.size() %d\n", pointer->string_multi_layer_segments.size());
       total++;
     }
   }
     int64_t  avgsegments =  segments/total;
+    int64_t avgbottomsegments = bottom_segments/total;
     printf("------About File Model------\n");
-    // printf("total segments: %d\n", segments_s);
+    printf("total segments: %d\n", segments_s);
     printf("total segments: %d\n", segments);
     printf("final models : %d\n", total);
     printf("avg segments: %d\n", avgsegments);
+    printf("avg bottom segments: %d\n", avgbottomsegments);
     // printf("admog::coune_Read: %d\n", adgMod::counte_read);
     // printf("admog::coune_Write: %d\n", adgMod::counte_read_base);
+    printf("Compaction in level 0: %d\n", adgMod::compactionCount[0]);
+    printf("Compaction in level 1: %d\n", adgMod::compactionCount[1]);
+    printf("Compaction in level 2: %d\n", adgMod::compactionCount[2]);
+    printf("Compaction in level 3: %d\n", adgMod::compactionCount[3]);
+    printf("Compaction in level 4: %d\n", adgMod::compactionCount[4]);
+    printf("Compaction in level 5: %d\n", adgMod::compactionCount[5]);
+    printf("segments in level 0: %lu\n", model_in_levels[0]);
+    printf("segments in level 1: %lu\n", model_in_levels[1]);
+    printf("segments in level 2: %lu\n", model_in_levels[2]);
+    printf("segments in level 3: %lu\n", model_in_levels[3]);
+    printf("segments in level 4: %lu\n", model_in_levels[4]);
+    printf("segments in level 5: %lu\n", model_in_levels[5]);
+
     printf("------About File Model------\n");
 }
 

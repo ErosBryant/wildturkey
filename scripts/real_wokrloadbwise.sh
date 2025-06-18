@@ -16,18 +16,17 @@ number_of_runs=2
 # file_error=(2 4 8 16 32)
 
 # fb_w wiki_w book_w
-workload=(osm_w fb_w wiki_w book_w) 
+workload=(osm_w fb_w wiki_w book_w fillrandom zipwrite) 
 # lac=(5)
-mod=(10 8 7 5)
+mod=(1)
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/home/eros/workspace-lsm/wildturkey/icde/06017/"
+output_dir="/home/eros/workspace-lsm/wildturkey/icde/0601/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
-db_name="/mnt/nvme/wildturkey_db"
 
 # total_experiment="/mnt/analysis_bourbon/results/"
 
@@ -51,7 +50,7 @@ for num in "${nums[@]}"; do
 
                for i in $(seq 1 $number_of_runs); do
 
-               output_file="${output_dir}mod=${md}-wkload=${wkload}-num=${num}_${i}.csv"
+               output_file="${output_dir}bwise=${md}-wkload=${wkload}-num=${num}_${i}.csv"
                
                echo "Running db_bench with --num=$num -wkload=${wkload}  --mod=${md} " > "$output_file"
             #   --max_file_size=${max}
@@ -66,7 +65,7 @@ for num in "${nums[@]}"; do
                # --file_error=$err
                # f=$((max / 2)) 
                # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="${wkload},real_r,stats" --mod=$md --db=$db_name --num=$num >> "$output_file"
+               ${test_dir}/db_bench --benchmarks="${wkload},stats" --bwise=$md --num=$num >> "$output_file"
                echo "-------------------------------------" >> "$output_file"
 
                sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'

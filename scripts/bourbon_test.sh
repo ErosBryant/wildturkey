@@ -3,13 +3,14 @@
 python3 ./test.py testing start 
 
 # Define the desired --num values in an array
-nums=(20000000)
+nums=(200000000)
 # nums=(10000000)
 
 
 # Define various configurations
 # memtable_size=(4)
-max_file_size=(2 4 8 16 32 64)
+# max_file_size=(2 4 8 16 32 64)
+max_file_size=(64 32 16 8 4 2)
 number_of_runs=1
 # bwise=(1 0)
 # lacd=(1 2 3 4 5 6 7 8 9 10 15)
@@ -18,13 +19,13 @@ number_of_runs=1
 # fb_w wiki_w book_w
 # workload=(osm_w)
 # lacd=(1 2 3 4 5 6 7 8 9 10)
-mod=(7)
+mod=(8 7)
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")
 # Define output directories
 # output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/analysis_bourbon/sstable/"
+output_dir="/home/eros/workspace-lsm/wildturkey/vldb/0526-200/"
 
 test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
@@ -34,8 +35,8 @@ test_dir="/home/eros/workspace-lsm/wildturkey/build/"
 
 # Create output directories if they do not exist
 if [ ! -d "$output_dir" ]; then
-   mkdir -p "$output_dir"
-   mkdir -p "${output_dir}summary_results/"
+mkdir -p "$output_dir"
+mkdir -p "${output_dir}summary_results/"
 fi
 
 # if [ ! -d "$total_experiment" ]; then
@@ -66,9 +67,16 @@ for num in "${nums[@]}"; do
                # max_file_size=${max}
                # error=${err}
                # bwise=${bw}
-               output_file="${output_dir}mod=${md}_--max=${max}alwaysruning_num=${num}_${i}.csv"
+               output_file="${output_dir}mod=${md}_--max=${max}num=${num}_${i}.csv"
                
                echo "Running db_bench with --num=$num --maxac=${max} --mod=${md} " > "$output_file"
+
+               dev=sdc         # 측정하려는 디바이스 이름
+               sector_size=512 # 대부분 512B; 필요에 따라 확인
+
+               # 실행 전 stat 읽기 (3열: 읽은 섹터 수, 7열: 쓴 섹터 수)
+               reads_before=$(awk '{print $1}' /sys/block/$dev/stat)
+               writes_before=$(awk '{print $5}' /sys/block/$dev/stat)
 
                # Run the benchmark
                # uni40,uniread,stats
@@ -81,15 +89,31 @@ for num in "${nums[@]}"; do
                # --file_error=$err
                # f=$((max / 2)) 
                # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --mod=$md --max_file_size=$max --num=$num >> "$output_file"
+               # if  [[ $max -eq 2 ]]; then
+               #    ${test_dir}/db_bench --benchmarks="fillrandom,readrandom,stats" --mod=$md --max_file_size=$max --db="/mnt/1tb/lifetime/" --num=$num >> "$output_file"
+               #    echo "-------------------------------------" >> "$output_file"
+               # else
+               ${test_dir}/db_bench --benchmarks="fillrandom,stats,readrandom,stats" --mod=$md --max_file_size=$max --num=$num >> "$output_file"
                echo "-------------------------------------" >> "$output_file"
+               # fi
 
+            
+               
+
+                  reads_after=$(awk '{print $1}' /sys/block/$dev/stat)
+                  writes_after=$(awk '{print $5}' /sys/block/$dev/stat)
+
+                  # 차분 → I/O 요청 횟수
+                  delta_reads=$(( reads_after  - reads_before  ))
+                  delta_writes=$(( writes_after - writes_before ))
+
+                  echo "I/O 요청 횟수 → 읽기: $delta_reads, 쓰기: $delta_writes" >> "$output_file"
 
                # Extract performance data
                write_micros_per_op=$(grep "fillrandom" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
-               read_micros_per_op=$(grep "readrandom" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
+               read_micros_per_op=$(grep "reads" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="micros/op;") print $(i-1)}')
                write_mb_per_s=$(grep "fillrandom" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s;") print $(i-1)}')
-               read_mb_per_s=$(grep "readrandom" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
+               read_mb_per_s=$(grep "reads" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
                # 99p=$(grep "99p" "$output_file" | awk '{for(i=1;i<=NF;i++) if($i=="MB/s") print $(i-1)}')
                waf=$(grep 'waf:' "$output_file" | awk -F':' '{print $2}')
                memtable_stall=$(grep 'memtable stall time' "$output_file" | awk '{print $(NF-1)}')

@@ -12,15 +12,16 @@ using std::to_string;
 namespace adgMod {
 
     int MOD = 5;
-    int adeb = 0;
     int bwise = 0;
+    int adeb = 0;
+    int cleanlevel = -1;
     bool string_mode = true;
     uint64_t segement_size = 0;
     uint64_t key_multiple = 1;
     uint32_t file_model_error = 8;
     double level_size = 1;
 
-    uint32_t level_model_error = 1;
+    uint32_t level_model_error = 40;
     int block_restart_interval = 16;
     uint32_t test_num_level_segments = 100;
     uint32_t test_num_file_segments = 100;
@@ -36,14 +37,12 @@ namespace adgMod {
     bool use_filter = false;
     bool restart_read = false;
     bool fresh_write = false;
-    bool reopen = true;
+    bool reopen = false;
+    std::vector<uint64_t> compactionCount = std::vector<uint64_t>(8, 0);
 
     // the time we wait before learning (as the file may die within this short time and
     // if we learn, we waste the learning)
-    uint64_t learn_trigger_time = 5000000000;
-    // 100000000000
-    // 50000000
-    // 1000000000
+    uint64_t learn_trigger_time = 50000000;
     // uint64_t learn_trigger_time = 0;
     int policy = 0;
     std::atomic<int> num_read(0);
@@ -61,10 +60,10 @@ namespace adgMod {
     uint64_t block_num_entries = 0;
     uint64_t block_size = 0;
     uint64_t entry_size = 0;
-    int counte_read = 0;
-    int counte_read_base = 0;
     
     int sst_size = 0;
+
+    uint64_t CompareBlock = 0;
 
 
     vector<Counter> levelled_counters(15);
@@ -97,20 +96,21 @@ namespace adgMod {
 //    }
 
 
-string generate_key(const string& key) {
-    const int key_size = 16;  // 确保定义在函数或全局范围
-    string result;
-    // printf("key_size: %d\n", key.length());
-    if (key.length() > key_size) {
-        result = string(key.substr(0, key_size));
-        result = string(key_size - result.length(), '0') + result;
-        // printf("result : %d\n", result.length());    
-        return result;  // 无需 std::move
+    string generate_key(const string& key) {
+         string result ;
+        if (key.length() > key_size) {
+            //printf("generate_key: %s\n", key.c_str());
+            result = string(key.substr(0, key_size));
+            //  result = string(key.substr(0, 10));
+            result = string(key_size - result.length(), '0') + result;
+            // printf("generate_key: %s\n",  result.c_str());
+            return std::move(result);  // 截断超长的 key
+        }
+        // printf("key_length: %d\n", key.length());
+        result = string(key_size - key.length(), '0') + key;
+
+        return std::move(result);
     }
-    result = string(key_size - key.length(), '0') + key;
-    // printf("result : %d\n", result.length());
-    return result;  // 无需 std::move
-}
 
 
 

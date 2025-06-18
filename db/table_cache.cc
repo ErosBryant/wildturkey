@@ -155,7 +155,7 @@ Status TableCache::Get(const ReadOptions& options, uint64_t file_number,
       cache_->Release(handle);
   }
   if (s.ok()) {
-      adgMod::counte_read_base += 1;
+      // adgMod::counte_read_base += 1;
       return s;
   }
 #ifdef RECORD_LEVEL_INFO
