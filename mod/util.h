@@ -1,6 +1,3 @@
-//
-// Created by daiyi on 2020/02/02.
-// a collection of global variables and flags/states/parameters
 
 #ifndef LEVELDB_UTIL_H
 #define LEVELDB_UTIL_H

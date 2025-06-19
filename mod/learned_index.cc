@@ -1,6 +1,3 @@
-//
-// Created by daiyi on 2020/02/02.
-//
 
 
 #include "learned_index.h"
@@ -711,19 +708,19 @@ else { // FILL IN GAMMA (error)
   size = string_keys.size();
 
   std::vector<Segment> segs = plr.train(string_keys, !is_level);
-  inverse_density = static_cast<uint64_t>((max_key - min_key) / size); 
-  // if (inverse_density < 5) inverse_density = 0;
-  // else if (inverse_density < 10) inverse_density = 1;
-  // else if (inverse_density < 20) inverse_density = 2;
-  // else if (inverse_density < 40) inverse_density = 3;
-  // else if (inverse_density < 70) inverse_density = 4;
-  // else if (inverse_density < 100) inverse_density = 5;
-  // else if (inverse_density < 150) inverse_density = 6;
-  // else inverse_density = 7;
-  if (inverse_density < 10) inverse_density = 0;
-      else if (inverse_density < 30) inverse_density = 1;
-      else if (inverse_density < 80) inverse_density = 2;
-      else inverse_density = 3;
+  // inverse_density = static_cast<uint64_t>((max_key - min_key) / size); 
+  // // if (inverse_density < 5) inverse_density = 0;
+  // // else if (inverse_density < 10) inverse_density = 1;
+  // // else if (inverse_density < 20) inverse_density = 2;
+  // // else if (inverse_density < 40) inverse_density = 3;
+  // // else if (inverse_density < 70) inverse_density = 4;
+  // // else if (inverse_density < 100) inverse_density = 5;
+  // // else if (inverse_density < 150) inverse_density = 6;
+  // // else inverse_density = 7;
+  // if (inverse_density < 10) inverse_density = 0;
+  //     else if (inverse_density < 30) inverse_density = 1;
+  //     else if (inverse_density < 80) inverse_density = 2;
+  //     else inverse_density = 3;
 
   int segment_count = segs.size();
   double sum_prob = 0.0;

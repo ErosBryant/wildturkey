@@ -1267,23 +1267,23 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
       compact->builder->Add(key, input->value());
       
       // or adgMod::sst_size>2
-      // if (adgMod::MOD==10){
+      if (adgMod::MOD==10 or adgMod::sst_size>3){
         // printf("sst_size = %d\n", adgMod::sst_size);
           if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSizeineachlevel(compact->compaction->level())) {
           status = FinishCompactionOutputFile(compact, input);
           if (!status.ok()) {
             break;
           }
-        // }
-      // }else {
+        }
+      }else {
 
-        // if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSize()) {
+        if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSize()) {
 
-        //   status = FinishCompactionOutputFile(compact, input);
-        //   if (!status.ok()) {
-        //     break;
-        //   }
-        // }
+          status = FinishCompactionOutputFile(compact, input);
+          if (!status.ok()) {
+            break;
+          }
+        }
       }
       
       }
@@ -1432,8 +1432,9 @@ Status DBImpl::Get(const ReadOptions& options, const Slice& key,
 
   adgMod::Stats* instance = adgMod::Stats::GetInstance();
   
-  // if (versions_->NumLevelFiles(0)>0 && adgMod::reopen==1) {
-  //     adgMod::reopen=0;
+  // if (adgMod::reopen==0 && adgMod::MOD == 10) {
+  //     adgMod::reopen=1;
+  //     printf("reopen db\n");
   //     CompactOrderdRange(nullptr, nullptr, 0);
   //     }
 
@@ -1826,8 +1827,6 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
                         stats_[level].compaction_count,
                         // static_cast<double>(stats_[level].bytes_written) / static_cast<double>(versions_->NumLevelBytes(level))
                         ((static_cast<double>(stats_[level].bytes_written) +  static_cast<double>(stats_[0].bytes_written)) / static_cast<double>(stats_[0].bytes_written))-1
-                        
-
                 );
 
                  bytes_written_total+= stats_[level].bytes_written;
@@ -1843,21 +1842,21 @@ bool DBImpl::GetProperty(const Slice& property, std::string* value) {
   std::cout << "memtable stall time: " <<1.0 * mem_stall_time_ /1000000 << " s" << std::endl;
   std::cout << "L0 stall time: " << 1.0 * L0_stop_stall_time_ /1000000<< "  s" << std::endl; 
   std::cout << "L0 slow stall time: " << 1.0 * l0_slow_tall_time_ /1000000 << "  s" << std::endl; 
-  std::cout << "disk data:" <<  NumLevelBytes_total << std::endl;
+  // std::cout << "disk data:" <<  NumLevelBytes_total << std::endl;
   // std::cout << "waf flsuh:" << int(bytes_written_total) << std::endl;
   //versions_->current()->PrintAll();
 
 
 
-    if (adgMod::MOD == 7 || adgMod::MOD == 10) {
+    // if (adgMod::MOD == 7 || adgMod::MOD == 10) {
 
-          // WaitForBackground();
-          adgMod::file_data->Report();
-      // adgMod::compaction_counter_mutex.Unlock();
+    //       // WaitForBackground();
+    //       adgMod::file_data->Report();
+    //   // adgMod::compaction_counter_mutex.Unlock();
 
       
-          // adgMod::learn_cb_model->Report();
-    }
+    //       // adgMod::learn_cb_model->Report();
+    // }
     adgMod::Stats* instance = adgMod::Stats::GetInstance();
     instance->ReportTime();
     adgMod::learn_cb_model->Report();

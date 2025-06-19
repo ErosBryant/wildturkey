@@ -1,0 +1,52 @@
+Running db_bench with --num=200000 --mod=7 
+mod: 7
+lac: 0
+Keys:       16 bytes each
+Values:     100 bytes each (50 bytes after compression)
+Entries:    200000
+RawSize:    22.1 MB (estimated)
+FileSize:   12.6 MB (estimated)
+------------------------------------------------
+fillrandom   :       0.800 micros/op;  138.4 MB/s;     0.160
+readrandom   :       1.711 micros/op;   64.6 MB/s (200000 of 200000 found);     0.342
+--------------------------------------------------
+memtable stall time: 0 s
+L0 stall time: 0  s
+L0 slow stall time: 0  s
+Timer 0: 5766997 : 0.005766997
+Timer 1: 5350583 : 0.005350583
+Timer 2: 30335122 : 0.030335122
+Timer 3: 34221404 : 0.034221404
+Timer 4: 0 : 0.000000000
+Timer 5: 16699911 : 0.016699911
+Timer 6: 118346832 : 0.118346832
+Timer 7: 23 : 0.000000023
+Timer 8: 0 : 0.000000000
+Timer 9: 0 : 0.000000000
+Timer 10: 0 : 0.000000000
+Timer 11: 0 : 0.000000000
+Timer 12: 70142800 : 0.070142800
+Timer 13: 136730288 : 0.136730288
+Timer 14: 93271208 : 0.093271208
+Timer 15: 1729165 : 0.001729165
+Timer 16: 42486812 : 0.042486812
+Timer 17: 0 : 0.000000000
+Timer 18: 0 : 0.000000000
+Timer 19: 0 : 0.000000000
+Counter BaselineNegative 31166528 0 31166528 0 0 0 0 0 0
+37447 0 37447 0 0 0 0 0 0
+Counter LLSMNegative 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+Counter BaselinePositive 87184112 0 56438912 30745200 0 0 0 0 0
+106641 0 69193 37448 0 0 0 0 0
+Counter LLSMPositive 0 0 0 0 0 0 0 0 0
+0 0 0 0 0 0 0 0 0
+
+                               Compactions
+Level  Files  Size(MB) Time(sec) M_Time(micros) Read(MB) Write(MB)  M_Read(MB) M_Write(MB) Count  WA 
+----------------------------------------------------------------------------------------------------- 
+  1         1         3        0         0           0          3          0         0       1   inf
+  2         1         3        0         0           0          3          0         0       1   inf
+
+-------------------------------------
+I/O 요청 횟수 → 읽기: 140, 쓰기: 46

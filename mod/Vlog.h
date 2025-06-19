@@ -1,7 +1,3 @@
-//
-// Created by daiyi on 2020/03/23.
-// A very simple implementation of Wisckey's Value Log
-// Since Bourbon doesn't test on deletion, Vlog garbage collection is not ported
 
 #ifndef LEVELDB_VLOG_H
 #define LEVELDB_VLOG_H
