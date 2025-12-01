@@ -2130,7 +2130,7 @@ int main(int argc, char** argv) {
     }else if (sscanf(argv[i], "--file_error=%d%c", &n, &junk) == 1) {
       adgMod::file_model_error=n;
     } else if (sscanf(argv[i], "--lac=%d%c", &n, &junk) == 1) {
-      adgMod::MOD = 10;
+      adgMod::MOD = 8;
       // printf("lac: %d\n", n);
       adgMod::sst_size = n;
     } else if (strncmp(argv[i], "--db=", 5) == 0) {

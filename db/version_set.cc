@@ -352,6 +352,8 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
             }
         }
     }
+    std::string filename = "/home/eros/workspace-lsm/wildturkey/64output_keys_level";
+    std::ofstream output_file(filename, std::ios::out | std::ios::app);
 
     Status Version::Get(const ReadOptions &options, const LookupKey &k,
                         std::string *value, GetStats *stats) {
@@ -556,6 +558,8 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                           }
                           adgMod::file_stats_mutex.Unlock();
                         }
+                    
+                        output_file << level;
 // #endif
                         return s;
                     }
@@ -1738,33 +1742,29 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
 uint64_t Compaction::MaxOutputFileSizeineachlevel(int level) {
 
 
-    if(level == 0){
-        return 2097152*pow(adgMod::sst_size,1);
-    }else if (level == 1){
-        return 2097152*pow(adgMod::sst_size,2);
-    } else if (level == 2){
-        return 2097152*pow(adgMod::sst_size,3);
-    } else if (level == 3){
-        return 2097152*pow(adgMod::sst_size,4);
-    } else if (level == 4){
-        return 2097152*pow(adgMod::sst_size,5);
-    } else if (level == 5){
-        return 2097152*pow(adgMod::sst_size,6);
-    }
-    
-    //     if(level == 0){
+    // defalut lac
+
+    // if(level == 0){
     //     return 2097152*pow(adgMod::sst_size,1);
     // }else if (level == 1){
-    //     return 2097152*pow(adgMod::sst_size,1);
-    // } else if (level == 2){
     //     return 2097152*pow(adgMod::sst_size,2);
-    // } else if (level == 3){
+    // } else if (level == 2){
     //     return 2097152*pow(adgMod::sst_size,3);
-    // } else if (level == 4){
+    // } else if (level == 3){
     //     return 2097152*pow(adgMod::sst_size,4);
-    // } else if (level == 5){
+    // } else if (level == 4){
     //     return 2097152*pow(adgMod::sst_size,5);
+    // } else if (level == 5){
+    //     return 2097152*pow(adgMod::sst_size,6);
     // }
+    
+    // --- 10-14 ---  수정
+    if(level > 3){
+        return 2097152*4;
+    } else {
+        return 2097152*16;
+    }
+
 
     printf("Error in MaxOutputFileSizeineachlevel");
     return 2097152*adgMod::sst_size;

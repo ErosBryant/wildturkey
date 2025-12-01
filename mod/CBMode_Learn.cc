@@ -25,6 +25,7 @@ void CBModel_Learn::AddLearnCost(int level, uint64_t cost, uint64_t size) {
 }
 
 double CBModel_Learn::CalculateCB(int level, uint64_t file_size) {
+   
     // used for simple testing different learning policies, not used now
     if (adgMod::policy == 2) return 0;
 

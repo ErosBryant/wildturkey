@@ -1276,7 +1276,6 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
           }
         }
       }else {
-
         if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSize()) {
 
           status = FinishCompactionOutputFile(compact, input);
@@ -1285,6 +1284,29 @@ Status DBImpl::DoCompactionWork(CompactionState* compact) {
           }
         }
       }
+      
+      // ---- 
+
+      // if (compact->compaction->level()+1 < 3){
+      //    if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSize())
+      //     status = FinishCompactionOutputFile(compact, input);
+      //     if (!status.ok()) {
+      //       break;
+      //     }
+      //   }
+      // }else {
+
+      //   if (compact->builder->FileSize() >= compact->compaction->MaxOutputFileSize()) {
+      //     status = FinishCompactionOutputFile(compact, input);
+      //     if (!status.ok()) {
+      //       break;
+      //     }
+      //   }
+      // }
+      
+      // -----
+
+
       
       }
 

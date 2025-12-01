@@ -19,7 +19,7 @@ number_of_runs=1
 # fb_w wiki_w book_w
 # workload=(osm_w)
 # lacd=(1 2 3 4 5 6 7 8 9 10)
-mod=(8 7)
+mod=(8)
 # file_error=(22)
 
 current_time=$(date "+%Y%m%d-%H%M%S")

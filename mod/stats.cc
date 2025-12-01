@@ -1,3 +1,6 @@
+//
+// Created by daiyi on 2019/09/30.
+//
 
 #include <cassert>
 #include "stats.h"
@@ -14,8 +17,7 @@ namespace adgMod {
     Stats* Stats::singleton = nullptr;
 
     Stats::Stats() : timers(20, Timer{}), initial_time(__rdtsc()) {
-        levelled_counters[0].name = "Flushcount";
-        // levelled_counters[0].name = "levelmodel";
+        levelled_counters[0].name = "LevelModel";
         levelled_counters[1].name = "FileModel";
         levelled_counters[2].name = "Baseline";
         levelled_counters[3].name = "Succeeded";

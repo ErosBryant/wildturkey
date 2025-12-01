@@ -8,7 +8,6 @@
 #include <unordered_map>
 #include <deque>
 #include <set>
-#include <cstdint>
 #include <string>
 
 namespace adgMod {
@@ -22,20 +21,15 @@ namespace adgMod {
         std::unordered_map<double, double> min_error_bound;         // 最小误差界限
         std::unordered_map<double, double> max_error_bound;         // 最大误差界限
         std::unordered_map<double, int> visit_counts;               // 访问次数
-        uint64_t max_sst_size = 0; // 最大 SSTable 大小
-        // Prev action
-        double last_action;
+        uint64_t max_sst_size = 0;                                  // 最大 SSTable 大小
+        double last_action = 16.0;                                  // 上一次动作
     };
 
-    struct Qtable_sar
-    {
+    struct Qtable_sar {
         double prev_action = 16;
-        // Prev state
         uint64_t prev_state = 7;
-        // Prev reward
         double prev_reward = 1;
     };
-    
 
     struct Experience {
         int state;
@@ -49,7 +43,7 @@ namespace adgMod {
             std::vector<QTableEntry> Q_table;
             Qtable_sar Q_table_sar;
             std::vector<Experience> replay_buffer;
-            const size_t max_replay_size = 10000; // 根据需求调整
+            const size_t max_replay_size = 100; // 经验回放窗口 100
             const size_t batch_size = 32;
 
             // ID 量化边界
@@ -73,11 +67,11 @@ namespace adgMod {
             // 计算 reward
             double compute_reward(
                 int state,                // 当前档位
-                double action,           // error bound
+                double action,            // error bound
                 double new_load_model_cost,
                 int layer_count,
-                uint64_t sstable_size,          // 新增参数
-                int level            // 新增参数，默认为0
+                uint64_t sstable_size,
+                int level
             );
 
             double getLearningRate(int state, double action);
@@ -98,33 +92,25 @@ namespace adgMod {
             int getNextState(const std::vector<std::string>& string_keys) const;
 
             // 添加经验到回放缓冲区
-            void addExperience(int state, double action, double reward);
+            void addExperience(int state, double action, double reward, int next_state);
 
             // 从回放缓冲区学习
             void learnFromReplay();
 
-            // --------- 新增方法: 处理新的 SSTable ID 并更新状态边界 ---------
-            /**
-             * @brief Handle new SSTable inverse density and update ID boundaries with rolling history
-             * @param inverse_density Computed inverse density of the SSTable
-             */
+            // 处理新的 SSTable inverse density 并更新状态边界
             void onNewSSTableID(double inverse_density) {
-                // Step 1: Evict oldest if history is full
                 if (id_history.size() == HISTORY_SIZE) {
                     double old = id_history.front();
                     id_history.pop_front();
                     auto it = id_set.find(old);
                     if (it != id_set.end()) id_set.erase(it);
                 }
-                // Step 2: Insert new density
                 id_history.push_back(inverse_density);
                 id_set.insert(inverse_density);
 
-                // Step 3: Update boundaries
                 ID_min = *id_set.begin();
                 ID_max = *id_set.rbegin();
 
-                // Step 4: Recompute cut points for four states
                 double span = (ID_max - ID_min) / 4.0;
                 ID_1 = ID_min + span;
                 ID_2 = ID_min + 2 * span;

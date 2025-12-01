@@ -1,89 +1,74 @@
 #!/bin/bash
+set -euo pipefail
 
-python3 ./test.py testing start 
+python3 ./test.py testing start
 
-# Define the desired --num values in an array
-# nums=(60000)
-nums=(20000000)
-
-# lac=(5)
-mod=(7 8)
+# Params
+nums=(100000000)
+mods=(8)
+# max_files=(8)
+lac=(4)
 number_of_runs=1
-# file_error=(22)
 
-current_time=$(date "+%Y%m%d-%H%M%S")
-# Define output directories
-# output_dir="/mnt/lac-sec/ad-wt-bour/bourbon&wt-last/bourbon/"
-output_dir="/mnt/analysis_bourbon/ycsb/"
+output_dir="/home/eros/workspace-lsm/wicdee/KCC/ycsb/"
+test_dir="/home/eros/workspace-lsm/wildturkey/build"
 
-test_dir="/home/eros/workspace-lsm/wildturkey/build/"
+mkdir -p "$output_dir"
 
-# total_experiment="/mnt/1tb/lac_experiment/"
+drop_caches() {
+  # Optional: add sync for safety
+  sudo sh -c 'sync; echo 3 > /proc/sys/vm/drop_caches'
+}
 
-
-
-# Create output directories if they do not exist
-if [ ! -d "$output_dir" ]; then
-   mkdir -p "$output_dir"
-fi
-
-# if [ ! -d "$total_experiment" ]; then
-#    mkdir -p "$total_experiment"
-# fi
-
-
+# --- Uniform runs (explicit --uni=1) ---
 for num in "${nums[@]}"; do
+  for md in "${mods[@]}"; do
+   #  for max_file in "${max_files[@]}"; do
+    for lac_experiment in "${lac[@]}"; do
+      for i in $(seq 1 "$number_of_runs"); do
 
-   for md in "${mod[@]}"; do
+        out="${output_dir}mod=${md}_uni=1_lac_experiment=${lac_experiment}_num=${num}_run=${i}.txt"
+        {
+          echo "Running db_bench (UNIFORM) --num=${num} --mod=${md} --lac_experiment=${lac_experiment} --uni=1"
+          "${test_dir}/db_bench" \
+            --benchmarks="fillseq,ycsba,ycsbb,ycsbc,ycsbd,ycsbe,ycsbf,stats" \
+            --mod="${md}" \
+            --num="${num}" \
+            --lac="${lac_experiment}" \
+            --uni=1
+          echo "-------------------------------------"
+        } > "${out}"
 
-      for i in $(seq 1 $number_of_runs); do
-
-               output_file="${output_dir}mod=${md}-uni-num=${num}_${i}.txt"
-               
-               echo "Running db_bench with --num=$num  --mod=${md} " > "$output_file"
-
-               # Run the benchmark
-               # uni40,uniread,stats
-               # osm_w,real_r,stats
-               # fillrandom,readrandom
-               # --lac=$lacd 
-               # --bwise=$bw
-               # --max_file_size=$max
-               # --lsize=${max/2} 
-               # --file_error=$err
-               # f=$((max / 2)) 
-               # --lsize=$f
-               ${test_dir}/db_bench --benchmarks="uniwrite,ycsba,ycsbb,ycsbc,ycsbd,ycsbe,ycsbf,stats" --mod=$md --num=$num >> "$output_file"
-               echo "-------------------------------------" >> "$output_file"
-
-               sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+# --max_file_size="${max_file}" \
+        drop_caches
       done
-
-   done
+    done
+  done
 done
 
-
-# Execute the db_bench command for each configuration and save results
+# --- Zipf runs (explicit --uni=0) ---
 for num in "${nums[@]}"; do
+  for md in "${mods[@]}"; do
+   #  for max_file in "${max_files[@]}"; do
+    for lac_experiment in "${lac[@]}"; do
+      for i in $(seq 1 "$number_of_runs"); do
 
-   for md in "${mod[@]}"; do
+        out="${output_dir}mod=${md}_zip=1_lac_experiment=${lac_experiment}_num=${num}_run=${i}.txt"
+        {
+          echo "Running db_bench (UNIFORM) --num=${num} --mod=${md} --lac_experiment=${lac_experiment} --zip=1"
+          "${test_dir}/db_bench" \
+            --benchmarks="fillseq,ycsba,ycsbb,ycsbc,ycsbd,ycsbe,ycsbf,stats" \
+            --mod="${md}" \
+            --num="${num}" \
+            --lac="${lac_experiment}" \
+            --uni=0
+          echo "-------------------------------------"
+        } > "${out}"
 
-      for i in $(seq 1 $number_of_runs); do
-
-         output_file="${output_dir}mod=${md}-zip-1-num=${num}_${i}.txt"
-               
-         echo "Running db_bench with --num=$num  --mod=${md} " > "$output_file"
-
-
-         ${test_dir}/db_bench --benchmarks="zipfill,ycsba,ycsbb,ycsbc,ycsbd,ycsbf,stats" --mod=$md --uni=0 --num=$num >> "$output_file"
-         echo "-------------------------------------" >> "$output_file"
-
-         sudo sh -c 'echo 3 > /proc/sys/vm/drop_caches'
+         # --max_file_size="${max_file}" \
+        drop_caches
       done
-
-   done
+    done
+  done
 done
-
-
-
 python3 ./test.py testing end

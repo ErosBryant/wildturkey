@@ -304,7 +304,7 @@ int main(int argc, char *argv[]) {
             delete db;
             status = DB::Open(options, db_location, &db);
             adgMod::db->WaitForBackground();
-            if (adgMod::MOD == 6 || adgMod::MOD == 7 || adgMod::MOD == 1) {
+            if (adgMod::MOD == 6 || adgMod::MOD == 7 || adgMod::MOD == 9) {
                 Version* current = adgMod::db->versions_->current();
 
                 // offline level learning

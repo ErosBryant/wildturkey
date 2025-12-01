@@ -1,3 +1,6 @@
+//
+// Created by daiyi on 2020/02/02.
+// a collection of global variables and flags/states/parameters
 
 #ifndef LEVELDB_UTIL_H
 #define LEVELDB_UTIL_H
@@ -66,7 +69,6 @@ namespace adgMod {
     extern bool restart_read;
     extern bool fresh_write;
     extern bool reopen;
-    extern std::vector<uint64_t> compactionCount;
     extern uint64_t learn_trigger_time;
     extern int policy;
     extern std::atomic<int> num_read;
@@ -90,8 +92,6 @@ namespace adgMod {
     extern uint64_t block_num_entries;
     extern uint64_t block_size;
     extern uint64_t entry_size;
-    
-    extern uint64_t CompareBlock;
 
     // runtime data collectors
     extern vector<Counter> levelled_counters;
@@ -106,9 +106,6 @@ namespace adgMod {
     // some util functions
     uint64_t ExtractInteger(const char* pos, size_t size);
 //bool SearchNumEntriesArray(const std::vector<uint64_t>& num_entries_array, const uint64_t position, size_t* index, uint64_t* relative_position);
-    inline void generate_key(uint64_t k, char* out_buf, size_t len = 16) {
-        snprintf(out_buf, len + 1, "%016lu", k);  // 补齐为16字节 key
-    }
     string generate_key(const string& key);
     string generate_value(uint64_t value);
     uint64_t SliceToInteger(const Slice& slice);

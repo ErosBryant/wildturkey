@@ -33,7 +33,7 @@ private:
     leveldb::port::Mutex lookup_mutex;
     leveldb::port::Mutex file_mutex;
 public:
-    static const int const_size_to_cost = 10;
+    static const int const_size_to_cost = 1;
     static const int lookup_average_limit = 10000;
 
     CBModel_Learn();
