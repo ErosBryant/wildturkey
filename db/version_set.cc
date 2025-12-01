@@ -352,8 +352,8 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
             }
         }
     }
-    std::string filename = "/home/eros/workspace-lsm/wildturkey/64output_keys_level";
-    std::ofstream output_file(filename, std::ios::out | std::ios::app);
+    // std::string filename = "/home/eros/workspace-lsm/wildturkey/64output_keys_level";
+    // std::ofstream output_file(filename, std::ios::out | std::ios::app);
 
     Status Version::Get(const ReadOptions &options, const LookupKey &k,
                         std::string *value, GetStats *stats) {
@@ -544,8 +544,6 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                         break;  // Keep searching in other files
                     }
                     case kFound: {
-                        // record positive internal lookup info
-// #ifdef RECORD_LEVEL_INFO
                         adgMod::levelled_counters[3].Increment(level, temp.second - temp.first);
                         if (!adgMod::fresh_write) {
                           adgMod::file_stats_mutex.Lock();
@@ -559,8 +557,8 @@ static uint64_t MaxFileSizeForLevel(const Options *options, int level) {
                           adgMod::file_stats_mutex.Unlock();
                         }
                     
-                        output_file << level;
-// #endif
+                        // output_file << level;
+
                         return s;
                     }
                     case kDeleted:
@@ -1744,26 +1742,26 @@ uint64_t Compaction::MaxOutputFileSizeineachlevel(int level) {
 
     // defalut lac
 
-    // if(level == 0){
-    //     return 2097152*pow(adgMod::sst_size,1);
-    // }else if (level == 1){
-    //     return 2097152*pow(adgMod::sst_size,2);
-    // } else if (level == 2){
-    //     return 2097152*pow(adgMod::sst_size,3);
-    // } else if (level == 3){
-    //     return 2097152*pow(adgMod::sst_size,4);
-    // } else if (level == 4){
-    //     return 2097152*pow(adgMod::sst_size,5);
-    // } else if (level == 5){
-    //     return 2097152*pow(adgMod::sst_size,6);
-    // }
+    if(level == 0){
+        return 2097152*pow(adgMod::sst_size,1);
+    }else if (level == 1){
+        return 2097152*pow(adgMod::sst_size,2);
+    } else if (level == 2){
+        return 2097152*pow(adgMod::sst_size,3);
+    } else if (level == 3){
+        return 2097152*pow(adgMod::sst_size,4);
+    } else if (level == 4){
+        return 2097152*pow(adgMod::sst_size,5);
+    } else if (level == 5){
+        return 2097152*pow(adgMod::sst_size,6);
+    }
     
     // --- 10-14 ---  수정
-    if(level > 3){
-        return 2097152*4;
-    } else {
-        return 2097152*16;
-    }
+    // if(level > 3){
+    //     return 2097152*4;
+    // } else {
+    //     return 2097152*16;
+    // }
 
 
     printf("Error in MaxOutputFileSizeineachlevel");
